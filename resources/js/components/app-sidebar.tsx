@@ -14,15 +14,15 @@ import { dashboard } from '@/routes';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/react';
 import {
-    LayoutGrid,
-    Users,
-    UserCircle,
-    ShoppingCart,
-    DollarSign,
-    CreditCard,
-    Receipt,
-    FileText,
     BarChart3,
+    CreditCard,
+    DollarSign,
+    FileText,
+    LayoutGrid,
+    Receipt,
+    ShoppingCart,
+    UserCircle,
+    Users,
 } from 'lucide-react';
 import AppLogo from './app-logo';
 

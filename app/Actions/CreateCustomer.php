@@ -16,4 +16,3 @@ final readonly class CreateCustomer
         return Customer::query()->create($attributes);
     }
 }
-

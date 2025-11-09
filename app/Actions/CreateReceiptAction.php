@@ -33,7 +33,7 @@ final readonly class CreateReceiptAction
             ->first();
 
         if ($lastReceipt) {
-            $lastNumber = (int) mb_substr($lastReceipt->receipt_number, -6);
+            $lastNumber = (int) mb_substr((string) $lastReceipt->receipt_number, -6);
             $nextNumber = $lastNumber + 1;
         } else {
             $nextNumber = 1;

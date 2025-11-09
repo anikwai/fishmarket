@@ -16,7 +16,7 @@ final readonly class CreateExpense
     {
         // Handle batch creation
         if (isset($attributes['expenses']) && is_array($attributes['expenses'])) {
-            return DB::transaction(function () use ($attributes) {
+            return DB::transaction(function () use ($attributes): Expense {
                 $expenses = [];
                 foreach ($attributes['expenses'] as $expenseData) {
                     $expenses[] = Expense::query()->create($expenseData);

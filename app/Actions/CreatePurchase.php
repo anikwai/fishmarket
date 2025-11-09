@@ -16,4 +16,3 @@ final readonly class CreatePurchase
         return Purchase::query()->create($attributes);
     }
 }
-

@@ -35,19 +35,19 @@ final readonly class GenerateExpenseReportAction
             ->get();
 
         return [
-            'expenses' => $expenses->map(fn ($expense) => [
+            'expenses' => $expenses->map(fn ($expense): array => [
                 'id' => $expense->id,
                 'date' => $expense->expense_date->format('Y-m-d'),
-                'type' => ucfirst($expense->type),
+                'type' => ucfirst((string) $expense->type),
                 'description' => $expense->description,
                 'amount' => $expense->amount,
                 'supplier' => $expense->purchase?->supplier?->name,
             ]),
-            'breakdown' => $breakdown->map(fn ($item) => [
-                'type' => ucfirst($item->type),
+            'breakdown' => $breakdown->map(fn ($item): array => [
+                'type' => ucfirst((string) $item->type),
                 'total' => (float) $item->total,
             ]),
-            'daily_data' => $dailyData->map(fn ($item) => [
+            'daily_data' => $dailyData->map(fn ($item): array => [
                 'date' => $item->date,
                 'total' => (float) $item->total,
             ]),

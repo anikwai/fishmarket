@@ -17,7 +17,7 @@ final readonly class SessionController
     public function create(Request $request): Response|RedirectResponse
     {
         if (Auth::check()) {
-            return redirect()->route('dashboard');
+            return to_route('dashboard');
         }
 
         return Inertia::render('session/create', [

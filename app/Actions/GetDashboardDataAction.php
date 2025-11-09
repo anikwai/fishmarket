@@ -29,8 +29,8 @@ final readonly class GetDashboardDataAction
             ->where('is_credit', true)
             ->with('customer', 'payments')
             ->get()
-            ->filter(fn (Sale $sale) => $sale->outstanding_balance > 0)
-            ->map(fn (Sale $sale) => [
+            ->filter(fn (Sale $sale): bool => $sale->outstanding_balance > 0)
+            ->map(fn (Sale $sale): array => [
                 'sale_id' => $sale->id,
                 'customer' => $sale->customer->name,
                 'total' => $sale->total_amount,
@@ -48,7 +48,7 @@ final readonly class GetDashboardDataAction
             ->groupByRaw("TO_CHAR(sale_date, 'YYYY-MM')")
             ->orderBy('month')
             ->get()
-            ->map(fn ($item) => [
+            ->map(fn ($item): array => [
                 'month' => $item->month,
                 'revenue' => (float) $item->revenue,
                 'count' => (int) $item->count,
@@ -63,7 +63,7 @@ final readonly class GetDashboardDataAction
             ->groupByRaw("TO_CHAR(purchase_date, 'YYYY-MM')")
             ->orderBy('month')
             ->get()
-            ->map(fn ($item) => [
+            ->map(fn ($item): array => [
                 'month' => $item->month,
                 'cost' => (float) $item->cost,
                 'quantity' => (float) $item->quantity,
@@ -73,7 +73,7 @@ final readonly class GetDashboardDataAction
         $monthlyComparison = collect(range(0, 5))
             ->map(fn ($i) => now()->subMonths($i)->format('Y-m'))
             ->reverse()
-            ->map(function ($month) use ($salesRevenueData, $purchasesCostData) {
+            ->map(function (string $month) use ($salesRevenueData, $purchasesCostData): array {
                 $sales = $salesRevenueData->firstWhere('month', $month);
                 $purchases = $purchasesCostData->firstWhere('month', $month);
 
@@ -89,8 +89,8 @@ final readonly class GetDashboardDataAction
             ->select('type', DB::raw('SUM(amount) as total'))
             ->groupBy('type')
             ->get()
-            ->map(fn ($item) => [
-                'type' => ucfirst($item->type),
+            ->map(fn ($item): array => [
+                'type' => ucfirst((string) $item->type),
                 'total' => (float) $item->total,
             ]);
 
@@ -103,7 +103,7 @@ final readonly class GetDashboardDataAction
             ->groupByRaw('sale_date::date')
             ->orderBy('date')
             ->get()
-            ->map(fn ($item) => [
+            ->map(fn ($item): array => [
                 'date' => $item->date,
                 'revenue' => (float) $item->revenue,
                 'quantity' => (float) $item->quantity,
@@ -137,15 +137,13 @@ final readonly class GetDashboardDataAction
         // Supplier stock breakdown for pie chart
         $supplierStockData = Supplier::query()
             ->get()
-            ->map(function (Supplier $supplier) {
-                return [
-                    'name' => $supplier->name,
-                    'value' => (float) $supplier->remaining_stock,
-                ];
-            })
-            ->filter(fn ($item) => $item['value'] > 0)
+            ->map(fn (Supplier $supplier): array => [
+                'name' => $supplier->name,
+                'value' => (float) $supplier->remaining_stock,
+            ])
+            ->filter(fn ($item): bool => $item['value'] > 0)
             ->values()
-            ->toArray();
+            ->all();
 
         return [
             'currentStock' => $currentStock,

@@ -25,7 +25,7 @@ final readonly class ReceiptController
 
         $query = Receipt::query()
             ->with(['sale.customer'])
-            ->when($request->search, fn ($query, $search) => $query->where(function ($q) use ($search) {
+            ->when($request->search, fn ($query, $search) => $query->where(function ($q) use ($search): void {
                 $q->where('receipt_number', 'like', "%{$search}%")
                     ->orWhereHas('sale.customer', fn ($q) => $q->where('name', 'like', "%{$search}%"));
             }))
@@ -68,20 +68,20 @@ final readonly class ReceiptController
     {
         $action->handle($receipt);
 
-        return redirect()->back()->with('success', 'Receipt email sent successfully.');
+        return back()->with('success', 'Receipt email sent successfully.');
     }
 
     public function void(VoidReceiptRequest $request, Receipt $receipt, VoidReceiptAction $action): RedirectResponse
     {
         $action->handle($receipt, $request->validated()['reason']);
 
-        return redirect()->back()->with('success', 'Receipt voided successfully.');
+        return back()->with('success', 'Receipt voided successfully.');
     }
 
     public function reissue(Receipt $receipt, ReissueReceiptAction $action): RedirectResponse
     {
         $newReceipt = $action->handle($receipt);
 
-        return redirect()->back()->with('success', 'Receipt reissued successfully. New receipt number: '.$newReceipt->receipt_number);
+        return back()->with('success', 'Receipt reissued successfully. New receipt number: '.$newReceipt->receipt_number);
     }
 }

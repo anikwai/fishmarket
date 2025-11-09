@@ -144,35 +144,46 @@
     /* Make all icons muted/greyish by default */
     /* Targets SVG elements that are likely icons (have size classes) and don't have explicit colors */
     /* Excludes chart SVGs and SVGs with explicit fill/text colors */
-    svg[class*="h-"]:not([class*="text-"]):not([class*="recharts"]):not([class*="chart"]):not([class*="fill-"]) {
+    svg[class*='h-']:not([class*='text-']):not([class*='recharts']):not(
+            [class*='chart']
+        ):not([class*='fill-']) {
         @apply text-muted-foreground;
     }
-    
-    svg[class*="w-"]:not([class*="text-"]):not([class*="recharts"]):not([class*="chart"]):not([class*="fill-"]) {
+
+    svg[class*='w-']:not([class*='text-']):not([class*='recharts']):not(
+            [class*='chart']
+        ):not([class*='fill-']) {
         @apply text-muted-foreground;
     }
-    
-    svg[class*="size-"]:not([class*="text-"]):not([class*="recharts"]):not([class*="chart"]):not([class*="fill-"]) {
+
+    svg[class*='size-']:not([class*='text-']):not([class*='recharts']):not(
+            [class*='chart']
+        ):not([class*='fill-']) {
         @apply text-muted-foreground;
     }
-    
+
     /* Ensure sidebar icons are muted by default */
-    [data-sidebar="menu-button"] > svg:not([class*="text-"]) {
+    [data-sidebar='menu-button'] > svg:not([class*='text-']) {
         @apply text-muted-foreground;
     }
-    
+
     /* Ensure button icons are muted unless explicitly colored */
-    button svg:not([class*="text-"]):not([class*="recharts"]):not([class*="chart"]) {
+    button
+        svg:not([class*='text-']):not([class*='recharts']):not(
+            [class*='chart']
+        ) {
         @apply text-muted-foreground;
     }
-    
+
     /* Ensure card header icons are muted */
-    [data-slot="card-header"] svg:not([class*="text-"]) {
+    [data-slot='card-header'] svg:not([class*='text-']) {
         @apply text-muted-foreground;
     }
-    
+
     /* Target lucide-react icons specifically (they use stroke, not fill) */
-    svg[stroke]:not([class*="text-"]):not([class*="recharts"]):not([class*="chart"]):not([class*="fill-"]) {
+    svg[stroke]:not([class*='text-']):not([class*='recharts']):not(
+            [class*='chart']
+        ):not([class*='fill-']) {
         @apply text-muted-foreground;
     }
 }

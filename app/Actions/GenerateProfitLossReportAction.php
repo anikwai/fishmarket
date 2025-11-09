@@ -42,8 +42,8 @@ final readonly class GenerateProfitLossReportAction
             'expenses' => (float) $expenses,
             'profit' => (float) $profit,
             'profit_margin' => $revenue > 0 ? (($profit / $revenue) * 100) : 0,
-            'expense_breakdown' => $expenseBreakdown->map(fn ($item) => [
-                'type' => ucfirst($item->type),
+            'expense_breakdown' => $expenseBreakdown->map(fn ($item): array => [
+                'type' => ucfirst((string) $item->type),
                 'total' => (float) $item->total,
             ]),
         ];

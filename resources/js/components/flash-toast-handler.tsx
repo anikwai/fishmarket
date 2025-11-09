@@ -10,12 +10,18 @@ interface FlashProps {
 }
 
 export default function FlashToastHandler() {
-    const { flash, errors } = usePage<{ flash?: FlashProps; errors?: Record<string, string> }>().props;
+    const { flash, errors } = usePage<{
+        flash?: FlashProps;
+        errors?: Record<string, string>;
+    }>().props;
     const shownFlashRef = useRef<Set<string>>(new Set());
 
     useEffect(() => {
         // Show success toast only once per unique message
-        if (flash?.success && !shownFlashRef.current.has(`success:${flash.success}`)) {
+        if (
+            flash?.success &&
+            !shownFlashRef.current.has(`success:${flash.success}`)
+        ) {
             toast.success(flash.success);
             shownFlashRef.current.add(`success:${flash.success}`);
             // Clear the ref after a delay to allow same message to show again if needed
@@ -23,9 +29,12 @@ export default function FlashToastHandler() {
                 shownFlashRef.current.delete(`success:${flash.success}`);
             }, 1000);
         }
-        
+
         // Show error toast only once per unique message
-        if (flash?.error && !shownFlashRef.current.has(`error:${flash.error}`)) {
+        if (
+            flash?.error &&
+            !shownFlashRef.current.has(`error:${flash.error}`)
+        ) {
             toast.error(flash.error);
             shownFlashRef.current.add(`error:${flash.error}`);
             setTimeout(() => {
@@ -39,8 +48,14 @@ export default function FlashToastHandler() {
         if (errors && Object.keys(errors).length > 0) {
             const firstErrorKey = Object.keys(errors)[0];
             const firstError = errors[firstErrorKey];
-            const errorMessage = Array.isArray(firstError) ? firstError[0] : firstError;
-            if (errorMessage && typeof errorMessage === 'string' && !shownFlashRef.current.has(`validation:${errorMessage}`)) {
+            const errorMessage = Array.isArray(firstError)
+                ? firstError[0]
+                : firstError;
+            if (
+                errorMessage &&
+                typeof errorMessage === 'string' &&
+                !shownFlashRef.current.has(`validation:${errorMessage}`)
+            ) {
                 toast.error(errorMessage);
                 shownFlashRef.current.add(`validation:${errorMessage}`);
                 setTimeout(() => {
@@ -52,4 +67,3 @@ export default function FlashToastHandler() {
 
     return null;
 }
-

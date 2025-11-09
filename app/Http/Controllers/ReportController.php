@@ -88,7 +88,7 @@ final readonly class ReportController
             default => "report-{$reportType}-".now()->format('Y-m-d').'.csv',
         };
 
-        return response()->streamDownload(function () use ($reportType, $startDate, $endDate, $customerId, $supplierId) {
+        return response()->streamDownload(function () use ($reportType, $startDate, $endDate, $customerId, $supplierId): void {
             $handle = fopen('php://output', 'w');
 
             match ($reportType) {
@@ -124,7 +124,7 @@ final readonly class ReportController
         $sales = $query->get();
 
         // Header
-        fputcsv($handle, ['Sale ID', 'Date', 'Customer', 'Quantity (kg)', 'Price per kg', 'Discount %', 'Subtotal', 'Delivery Fee', 'Total Amount', 'Type', 'Notes']);
+        fputcsv($handle, ['Sale ID', 'Date', 'Customer', 'Quantity (kg)', 'Price per kg', 'Discount %', 'Subtotal', 'Delivery Fee', 'Total Amount', 'Type', 'Notes'], escape: '\\');
 
         // Data rows
         foreach ($sales as $sale) {
@@ -140,18 +140,19 @@ final readonly class ReportController
                 number_format((float) $sale->total_amount, 2),
                 $sale->is_credit ? 'Credit' : 'Cash',
                 $sale->notes ?? '',
-            ]);
+            ],
+                escape: '\\');
         }
 
         // Summary row
-        fputcsv($handle, []);
-        fputcsv($handle, ['Summary']);
-        fputcsv($handle, ['Total Revenue', number_format($sales->sum('total_amount'), 2)]);
-        fputcsv($handle, ['Total Quantity (kg)', number_format($sales->sum('quantity_kg'), 2)]);
-        fputcsv($handle, ['Total Sales', $sales->count()]);
-        fputcsv($handle, ['Average Sale', number_format($sales->count() > 0 ? $sales->sum('total_amount') / $sales->count() : 0, 2)]);
-        fputcsv($handle, ['Credit Sales', number_format($sales->where('is_credit', true)->sum('total_amount'), 2)]);
-        fputcsv($handle, ['Cash Sales', number_format($sales->where('is_credit', false)->sum('total_amount'), 2)]);
+        fputcsv($handle, [], escape: '\\');
+        fputcsv($handle, ['Summary'], escape: '\\');
+        fputcsv($handle, ['Total Revenue', number_format($sales->sum('total_amount'), 2)], escape: '\\');
+        fputcsv($handle, ['Total Quantity (kg)', number_format($sales->sum('quantity_kg'), 2)], escape: '\\');
+        fputcsv($handle, ['Total Sales', $sales->count()], escape: '\\');
+        fputcsv($handle, ['Average Sale', number_format($sales->count() > 0 ? $sales->sum('total_amount') / $sales->count() : 0, 2)], escape: '\\');
+        fputcsv($handle, ['Credit Sales', number_format($sales->where('is_credit', true)->sum('total_amount'), 2)], escape: '\\');
+        fputcsv($handle, ['Cash Sales', number_format($sales->where('is_credit', false)->sum('total_amount'), 2)], escape: '\\');
     }
 
     private function exportSalesByCustomer($handle, string $startDate, string $endDate): void
@@ -167,7 +168,7 @@ final readonly class ReportController
             ->orderByDesc('total_revenue')
             ->get();
 
-        fputcsv($handle, ['Customer ID', 'Customer Name', 'Total Revenue', 'Total Quantity (kg)', 'Sales Count', 'Average Sale']);
+        fputcsv($handle, ['Customer ID', 'Customer Name', 'Total Revenue', 'Total Quantity (kg)', 'Sales Count', 'Average Sale'], escape: '\\');
 
         foreach ($data as $item) {
             fputcsv($handle, [
@@ -177,7 +178,8 @@ final readonly class ReportController
                 number_format((float) $item->total_quantity, 2),
                 $item->sale_count,
                 number_format((int) $item->sale_count > 0 ? (float) $item->total_revenue / (int) $item->sale_count : 0, 2),
-            ]);
+            ],
+                escape: '\\');
         }
     }
 
@@ -187,11 +189,11 @@ final readonly class ReportController
             ->where('is_credit', true)
             ->with('customer', 'payments')
             ->get()
-            ->filter(fn (Sale $sale) => $sale->outstanding_balance > 0)
+            ->filter(fn (Sale $sale): bool => $sale->outstanding_balance > 0)
             ->sortByDesc(fn (Sale $sale) => $sale->sale_date->diffInDays(now()))
             ->values();
 
-        fputcsv($handle, ['Sale ID', 'Date', 'Customer', 'Total Amount', 'Paid', 'Outstanding', 'Days Outstanding']);
+        fputcsv($handle, ['Sale ID', 'Date', 'Customer', 'Total Amount', 'Paid', 'Outstanding', 'Days Outstanding'], escape: '\\');
 
         foreach ($credits as $credit) {
             fputcsv($handle, [
@@ -202,7 +204,8 @@ final readonly class ReportController
                 number_format((float) $credit->payments->sum('amount'), 2),
                 number_format((float) $credit->outstanding_balance, 2),
                 $credit->sale_date->diffInDays(now()),
-            ]);
+            ],
+                escape: '\\');
         }
     }
 
@@ -214,21 +217,22 @@ final readonly class ReportController
             ->orderBy('expense_date', 'desc')
             ->get();
 
-        fputcsv($handle, ['ID', 'Date', 'Type', 'Description', 'Amount', 'Supplier']);
+        fputcsv($handle, ['ID', 'Date', 'Type', 'Description', 'Amount', 'Supplier'], escape: '\\');
 
         foreach ($expenses as $expense) {
             fputcsv($handle, [
                 $expense->id,
                 $expense->expense_date->format('Y-m-d'),
-                ucfirst($expense->type),
+                ucfirst((string) $expense->type),
                 $expense->description,
                 number_format((float) $expense->amount, 2),
                 $expense->purchase?->supplier?->name ?? '',
-            ]);
+            ],
+                escape: '\\');
         }
 
-        fputcsv($handle, []);
-        fputcsv($handle, ['Total', '', '', '', number_format($expenses->sum('amount'), 2), '']);
+        fputcsv($handle, [], escape: '\\');
+        fputcsv($handle, ['Total', '', '', '', number_format($expenses->sum('amount'), 2), ''], escape: '\\');
     }
 
     private function exportPurchaseReport($handle, string $startDate, string $endDate, ?string $supplierId): void
@@ -244,7 +248,7 @@ final readonly class ReportController
 
         $purchases = $query->get();
 
-        fputcsv($handle, ['Purchase ID', 'Date', 'Supplier', 'Quantity (kg)', 'Price per kg', 'Total Cost', 'Notes']);
+        fputcsv($handle, ['Purchase ID', 'Date', 'Supplier', 'Quantity (kg)', 'Price per kg', 'Total Cost', 'Notes'], escape: '\\');
 
         foreach ($purchases as $purchase) {
             fputcsv($handle, [
@@ -255,14 +259,15 @@ final readonly class ReportController
                 number_format((float) $purchase->price_per_kg, 2),
                 number_format((float) $purchase->total_cost, 2),
                 $purchase->notes ?? '',
-            ]);
+            ],
+                escape: '\\');
         }
 
-        fputcsv($handle, []);
-        fputcsv($handle, ['Summary']);
-        fputcsv($handle, ['Total Cost', number_format($purchases->sum('total_cost'), 2)]);
-        fputcsv($handle, ['Total Quantity (kg)', number_format($purchases->sum('quantity_kg'), 2)]);
-        fputcsv($handle, ['Purchase Count', $purchases->count()]);
+        fputcsv($handle, [], escape: '\\');
+        fputcsv($handle, ['Summary'], escape: '\\');
+        fputcsv($handle, ['Total Cost', number_format($purchases->sum('total_cost'), 2)], escape: '\\');
+        fputcsv($handle, ['Total Quantity (kg)', number_format($purchases->sum('quantity_kg'), 2)], escape: '\\');
+        fputcsv($handle, ['Purchase Count', $purchases->count()], escape: '\\');
     }
 
     private function exportStockReport($handle): void
@@ -271,18 +276,19 @@ final readonly class ReportController
             ->orderBy('name')
             ->get();
 
-        fputcsv($handle, ['Supplier ID', 'Supplier Name', 'Remaining Stock (kg)']);
+        fputcsv($handle, ['Supplier ID', 'Supplier Name', 'Remaining Stock (kg)'], escape: '\\');
 
         foreach ($suppliers as $supplier) {
             fputcsv($handle, [
                 $supplier->id,
                 $supplier->name,
                 number_format((float) $supplier->remaining_stock, 2),
-            ]);
+            ],
+                escape: '\\');
         }
 
-        fputcsv($handle, []);
-        fputcsv($handle, ['Total Stock', number_format(Stock::current(), 2)]);
+        fputcsv($handle, [], escape: '\\');
+        fputcsv($handle, ['Total Stock', number_format(Stock::current(), 2)], escape: '\\');
     }
 
     private function exportCustomerReport($handle, ?string $customerId): void
@@ -292,30 +298,30 @@ final readonly class ReportController
                 ->with(['sales' => fn ($q) => $q->orderByDesc('sale_date')])
                 ->findOrFail($customerId);
 
-            fputcsv($handle, ['Customer Details']);
-            fputcsv($handle, ['ID', $customer->id]);
-            fputcsv($handle, ['Name', $customer->name]);
-            fputcsv($handle, ['Email', $customer->email ?? '']);
-            fputcsv($handle, ['Phone', $customer->phone ?? '']);
-            fputcsv($handle, ['Type', $customer->type]);
-            fputcsv($handle, ['Address', $customer->address ?? '']);
-            fputcsv($handle, []);
+            fputcsv($handle, ['Customer Details'], escape: '\\');
+            fputcsv($handle, ['ID', $customer->id], escape: '\\');
+            fputcsv($handle, ['Name', $customer->name], escape: '\\');
+            fputcsv($handle, ['Email', $customer->email ?? ''], escape: '\\');
+            fputcsv($handle, ['Phone', $customer->phone ?? ''], escape: '\\');
+            fputcsv($handle, ['Type', $customer->type], escape: '\\');
+            fputcsv($handle, ['Address', $customer->address ?? ''], escape: '\\');
+            fputcsv($handle, [], escape: '\\');
 
             $outstandingCredits = $customer->sales()
                 ->where('is_credit', true)
                 ->with('payments')
                 ->get()
-                ->filter(fn (Sale $sale) => $sale->outstanding_balance > 0);
+                ->filter(fn (Sale $sale): bool => $sale->outstanding_balance > 0);
 
-            fputcsv($handle, ['Summary']);
-            fputcsv($handle, ['Total Sales', $customer->sales()->count()]);
-            fputcsv($handle, ['Total Revenue', number_format($customer->sales()->sum('total_amount'), 2)]);
-            fputcsv($handle, ['Outstanding Credits', number_format($outstandingCredits->sum('outstanding_balance'), 2)]);
-            fputcsv($handle, ['Credit Count', $outstandingCredits->count()]);
-            fputcsv($handle, []);
+            fputcsv($handle, ['Summary'], escape: '\\');
+            fputcsv($handle, ['Total Sales', $customer->sales()->count()], escape: '\\');
+            fputcsv($handle, ['Total Revenue', number_format($customer->sales()->sum('total_amount'), 2)], escape: '\\');
+            fputcsv($handle, ['Outstanding Credits', number_format($outstandingCredits->sum('outstanding_balance'), 2)], escape: '\\');
+            fputcsv($handle, ['Credit Count', $outstandingCredits->count()], escape: '\\');
+            fputcsv($handle, [], escape: '\\');
 
-            fputcsv($handle, ['Sales History']);
-            fputcsv($handle, ['Sale ID', 'Date', 'Amount', 'Quantity (kg)', 'Type', 'Outstanding']);
+            fputcsv($handle, ['Sales History'], escape: '\\');
+            fputcsv($handle, ['Sale ID', 'Date', 'Amount', 'Quantity (kg)', 'Type', 'Outstanding'], escape: '\\');
 
             foreach ($customer->sales as $sale) {
                 fputcsv($handle, [
@@ -325,7 +331,8 @@ final readonly class ReportController
                     number_format((float) $sale->quantity_kg, 2),
                     $sale->is_credit ? 'Credit' : 'Cash',
                     $sale->is_credit ? number_format((float) $sale->outstanding_balance, 2) : '0.00',
-                ]);
+                ],
+                    escape: '\\');
             }
         } else {
             $customers = Customer::query()
@@ -334,7 +341,7 @@ final readonly class ReportController
                 ->orderBy('name')
                 ->get();
 
-            fputcsv($handle, ['Customer ID', 'Name', 'Email', 'Phone', 'Type', 'Total Sales', 'Total Revenue']);
+            fputcsv($handle, ['Customer ID', 'Name', 'Email', 'Phone', 'Type', 'Total Sales', 'Total Revenue'], escape: '\\');
 
             foreach ($customers as $customer) {
                 fputcsv($handle, [
@@ -345,7 +352,8 @@ final readonly class ReportController
                     $customer->type,
                     $customer->sales_count,
                     number_format((float) $customer->sales_sum_total_amount, 2),
-                ]);
+                ],
+                    escape: '\\');
             }
         }
     }
@@ -357,23 +365,23 @@ final readonly class ReportController
                 ->with(['purchases' => fn ($q) => $q->orderByDesc('purchase_date')])
                 ->findOrFail($supplierId);
 
-            fputcsv($handle, ['Supplier Details']);
-            fputcsv($handle, ['ID', $supplier->id]);
-            fputcsv($handle, ['Name', $supplier->name]);
-            fputcsv($handle, ['Email', $supplier->email ?? '']);
-            fputcsv($handle, ['Phone', $supplier->phone ?? '']);
-            fputcsv($handle, ['Address', $supplier->address ?? '']);
-            fputcsv($handle, []);
+            fputcsv($handle, ['Supplier Details'], escape: '\\');
+            fputcsv($handle, ['ID', $supplier->id], escape: '\\');
+            fputcsv($handle, ['Name', $supplier->name], escape: '\\');
+            fputcsv($handle, ['Email', $supplier->email ?? ''], escape: '\\');
+            fputcsv($handle, ['Phone', $supplier->phone ?? ''], escape: '\\');
+            fputcsv($handle, ['Address', $supplier->address ?? ''], escape: '\\');
+            fputcsv($handle, [], escape: '\\');
 
-            fputcsv($handle, ['Summary']);
-            fputcsv($handle, ['Total Purchases', $supplier->purchases()->count()]);
-            fputcsv($handle, ['Total Cost', number_format($supplier->purchases()->sum('total_cost'), 2)]);
-            fputcsv($handle, ['Total Quantity (kg)', number_format($supplier->purchases()->sum('quantity_kg'), 2)]);
-            fputcsv($handle, ['Remaining Stock (kg)', number_format((float) $supplier->remaining_stock, 2)]);
-            fputcsv($handle, []);
+            fputcsv($handle, ['Summary'], escape: '\\');
+            fputcsv($handle, ['Total Purchases', $supplier->purchases()->count()], escape: '\\');
+            fputcsv($handle, ['Total Cost', number_format($supplier->purchases()->sum('total_cost'), 2)], escape: '\\');
+            fputcsv($handle, ['Total Quantity (kg)', number_format($supplier->purchases()->sum('quantity_kg'), 2)], escape: '\\');
+            fputcsv($handle, ['Remaining Stock (kg)', number_format((float) $supplier->remaining_stock, 2)], escape: '\\');
+            fputcsv($handle, [], escape: '\\');
 
-            fputcsv($handle, ['Purchase History']);
-            fputcsv($handle, ['Purchase ID', 'Date', 'Quantity (kg)', 'Price per kg', 'Total Cost']);
+            fputcsv($handle, ['Purchase History'], escape: '\\');
+            fputcsv($handle, ['Purchase ID', 'Date', 'Quantity (kg)', 'Price per kg', 'Total Cost'], escape: '\\');
 
             foreach ($supplier->purchases as $purchase) {
                 fputcsv($handle, [
@@ -382,7 +390,8 @@ final readonly class ReportController
                     number_format((float) $purchase->quantity_kg, 2),
                     number_format((float) $purchase->price_per_kg, 2),
                     number_format((float) $purchase->total_cost, 2),
-                ]);
+                ],
+                    escape: '\\');
             }
         } else {
             $suppliers = Supplier::query()
@@ -391,7 +400,7 @@ final readonly class ReportController
                 ->orderBy('name')
                 ->get();
 
-            fputcsv($handle, ['Supplier ID', 'Name', 'Email', 'Phone', 'Total Purchases', 'Total Cost', 'Remaining Stock (kg)']);
+            fputcsv($handle, ['Supplier ID', 'Name', 'Email', 'Phone', 'Total Purchases', 'Total Cost', 'Remaining Stock (kg)'], escape: '\\');
 
             foreach ($suppliers as $supplier) {
                 fputcsv($handle, [
@@ -402,7 +411,8 @@ final readonly class ReportController
                     $supplier->purchases_count,
                     number_format((float) $supplier->purchases_sum_total_cost, 2),
                     number_format((float) $supplier->remaining_stock, 2),
-                ]);
+                ],
+                    escape: '\\');
             }
         }
     }

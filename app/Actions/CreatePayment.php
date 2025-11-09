@@ -16,4 +16,3 @@ final readonly class CreatePayment
         return Payment::query()->create($attributes);
     }
 }
-

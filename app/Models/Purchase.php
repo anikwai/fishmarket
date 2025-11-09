@@ -66,19 +66,28 @@ final class Purchase extends Model
         return $this->hasMany(Expense::class);
     }
 
-    public function getTotalExpensesAttribute(): float
+    protected static function booted(): void
+    {
+        self::saving(function (Purchase $purchase): void {
+            if ($purchase->isDirty(['quantity_kg', 'price_per_kg'])) {
+                $purchase->total_cost = $purchase->quantity_kg * $purchase->price_per_kg;
+            }
+        });
+    }
+
+    protected function getTotalExpensesAttribute(): float
     {
         return (float) $this->expenses()->sum('amount');
     }
 
-    public function getProfitAttribute(): float
+    protected function getProfitAttribute(): float
     {
         // Use already loaded relationship if available, otherwise query with pivot
         $sales = $this->relationLoaded('sales')
             ? $this->sales
             : $this->sales()->withPivot('quantity_kg')->get();
 
-        $revenue = $sales->sum(function (Sale $sale) {
+        $revenue = $sales->sum(function (Sale $sale): float {
             // Calculate revenue from this purchase: (sale price per kg - purchase price per kg) * quantity from this purchase
             $quantityFromThisPurchase = (float) ($sale->pivot->quantity_kg ?? 0);
             if ($quantityFromThisPurchase <= 0) {
@@ -97,14 +106,14 @@ final class Purchase extends Model
         return $revenue - (float) $expenses;
     }
 
-    public function getTotalRevenueAttribute(): float
+    protected function getTotalRevenueAttribute(): float
     {
         // Use already loaded relationship if available, otherwise query with pivot
         $sales = $this->relationLoaded('sales')
             ? $this->sales
             : $this->sales()->withPivot('quantity_kg')->get();
 
-        return $sales->sum(function (Sale $sale) {
+        return $sales->sum(function (Sale $sale): float {
             $quantityFromThisPurchase = (float) ($sale->pivot->quantity_kg ?? 0);
             if ($quantityFromThisPurchase <= 0) {
                 return 0.0;
@@ -115,22 +124,13 @@ final class Purchase extends Model
         });
     }
 
-    public function getSoldQuantityAttribute(): float
+    protected function getSoldQuantityAttribute(): float
     {
         return (float) $this->sales()->sum('purchase_sale.quantity_kg');
     }
 
-    public function getRemainingQuantityAttribute(): float
+    protected function getRemainingQuantityAttribute(): float
     {
         return $this->quantity_kg - $this->sold_quantity;
-    }
-
-    protected static function booted(): void
-    {
-        self::saving(function (Purchase $purchase): void {
-            if ($purchase->isDirty(['quantity_kg', 'price_per_kg'])) {
-                $purchase->total_cost = $purchase->quantity_kg * $purchase->price_per_kg;
-            }
-        });
     }
 }

@@ -42,13 +42,13 @@ final readonly class GenerateSalesSummaryReportAction
                 'credit_sales' => $sales->where('is_credit', true)->sum('total_amount'),
                 'cash_sales' => $sales->where('is_credit', false)->sum('total_amount'),
             ],
-            'daily_data' => $dailyData->map(fn ($item) => [
+            'daily_data' => $dailyData->map(fn ($item): array => [
                 'date' => $item->date,
                 'revenue' => (float) $item->revenue,
                 'quantity' => (float) $item->quantity,
                 'count' => (int) $item->count,
             ]),
-            'recent_sales' => $sales->take(10)->map(fn ($sale) => [
+            'recent_sales' => $sales->take(10)->map(fn ($sale): array => [
                 'id' => $sale->id,
                 'date' => $sale->sale_date->format('Y-m-d'),
                 'customer' => $sale->customer->name,

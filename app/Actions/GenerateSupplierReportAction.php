@@ -20,7 +20,7 @@ final readonly class GenerateSupplierReportAction
                     ->withSum('purchases', 'total_cost')
                     ->orderBy('name')
                     ->get()
-                    ->map(fn ($supplier) => [
+                    ->map(fn ($supplier): array => [
                         'id' => $supplier->id,
                         'name' => $supplier->name,
                         'email' => $supplier->email,
@@ -53,7 +53,7 @@ final readonly class GenerateSupplierReportAction
                     ? $supplier->purchases()->sum('total_cost') / $supplier->purchases()->sum('quantity_kg')
                     : 0,
             ],
-            'recent_purchases' => $supplier->purchases->map(fn ($purchase) => [
+            'recent_purchases' => $supplier->purchases->map(fn ($purchase): array => [
                 'id' => $purchase->id,
                 'date' => $purchase->purchase_date->format('Y-m-d'),
                 'quantity' => $purchase->quantity_kg,

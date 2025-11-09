@@ -65,20 +65,20 @@ final readonly class PaymentController
     {
         $action->handle($request->validated());
 
-        return redirect()->back()->with('success', 'Payment created successfully.');
+        return back()->with('success', 'Payment created successfully.');
     }
 
     public function update(UpdatePaymentRequest $request, Payment $payment, UpdatePayment $action): RedirectResponse
     {
         $action->handle($payment, $request->validated());
 
-        return redirect()->back()->with('success', 'Payment updated successfully.');
+        return back()->with('success', 'Payment updated successfully.');
     }
 
     public function destroy(Payment $payment, DeletePayment $action): RedirectResponse
     {
         $action->handle($payment);
 
-        return redirect()->back()->with('success', 'Payment deleted successfully.');
+        return back()->with('success', 'Payment deleted successfully.');
     }
 }

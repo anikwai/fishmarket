@@ -25,7 +25,7 @@ final readonly class GenerateSalesByCustomerReportAction
             ->get();
 
         return [
-            'customers' => $data->map(fn ($item) => [
+            'customers' => $data->map(fn ($item): array => [
                 'id' => $item->id,
                 'name' => $item->name,
                 'total_revenue' => (float) $item->total_revenue,

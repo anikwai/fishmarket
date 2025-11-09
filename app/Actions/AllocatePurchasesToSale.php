@@ -24,7 +24,7 @@ final readonly class AllocatePurchasesToSale
             ->leftJoin('purchase_sale', 'purchases.id', '=', 'purchase_sale.purchase_id')
             ->groupBy('purchases.id', 'purchases.supplier_id', 'purchases.purchase_date', 'purchases.quantity_kg', 'purchases.price_per_kg', 'purchases.total_cost', 'purchases.notes', 'purchases.created_at', 'purchases.updated_at')
             ->havingRaw('purchases.quantity_kg > COALESCE(SUM(purchase_sale.quantity_kg), 0)')
-            ->orderBy('purchases.purchase_date')
+            ->oldest('purchases.purchase_date')
             ->orderBy('purchases.id')
             ->get();
 

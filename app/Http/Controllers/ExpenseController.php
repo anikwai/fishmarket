@@ -53,7 +53,7 @@ final readonly class ExpenseController
 
         $purchases = Purchase::query()
             ->with('supplier')
-            ->orderBy('purchase_date', 'desc')
+            ->latest('purchase_date')
             ->orderBy('id', 'desc')
             ->get();
 
@@ -66,7 +66,7 @@ final readonly class ExpenseController
 
     public function store(StoreExpenseRequest $request, CreateExpense $action): RedirectResponse
     {
-        $expense = $action->handle($request->validated());
+        $action->handle($request->validated());
 
         $count = isset($request->validated()['expenses'])
             ? count($request->validated()['expenses'])
@@ -76,20 +76,20 @@ final readonly class ExpenseController
             ? 'Expense created successfully.'
             : "{$count} expenses created successfully.";
 
-        return redirect()->back()->with('success', $message);
+        return back()->with('success', $message);
     }
 
     public function update(UpdateExpenseRequest $request, Expense $expense, UpdateExpense $action): RedirectResponse
     {
         $action->handle($expense, $request->validated());
 
-        return redirect()->back()->with('success', 'Expense updated successfully.');
+        return back()->with('success', 'Expense updated successfully.');
     }
 
     public function destroy(Expense $expense, DeleteExpense $action): RedirectResponse
     {
         $action->handle($expense);
 
-        return redirect()->back()->with('success', 'Expense deleted successfully.');
+        return back()->with('success', 'Expense deleted successfully.');
     }
 }

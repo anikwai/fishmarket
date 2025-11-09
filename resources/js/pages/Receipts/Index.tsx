@@ -1,4 +1,5 @@
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
     Dialog,
     DialogContent,
@@ -7,6 +8,21 @@ import {
     DialogHeader,
     DialogTitle,
 } from '@/components/ui/dialog';
+import {
+    DropdownMenu,
+    DropdownMenuCheckboxItem,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import {
+    Empty,
+    EmptyDescription,
+    EmptyHeader,
+    EmptyMedia,
+    EmptyTitle,
+} from '@/components/ui/empty';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
@@ -24,55 +40,37 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
-import {
-    Empty,
-    EmptyContent,
-    EmptyDescription,
-    EmptyHeader,
-    EmptyMedia,
-    EmptyTitle,
-} from '@/components/ui/empty';
-import {
-    DropdownMenu,
-    DropdownMenuCheckboxItem,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuSeparator,
-    DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { Checkbox } from '@/components/ui/checkbox';
 import { Textarea } from '@/components/ui/textarea';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Head, router, useForm } from '@inertiajs/react';
-import { 
-    DownloadIcon, 
-    MailIcon, 
-    ArrowUpDown,
-    ChevronDown,
-    Columns,
-    ChevronsLeft,
-    ChevronsRight,
-    ChevronLeft,
-    ChevronRight,
-    MoreHorizontal,
-    Search,
-    XCircle,
-    RefreshCw,
-    FileText,
-} from 'lucide-react';
-import { useState, useMemo, useEffect, useCallback, useRef } from 'react';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import {
     ColumnDef,
     flexRender,
     getCoreRowModel,
     getSortedRowModel,
-    SortingState,
     RowSelectionState,
-    VisibilityState,
+    SortingState,
     useReactTable,
+    VisibilityState,
 } from '@tanstack/react-table';
+import {
+    ArrowUpDown,
+    ChevronDown,
+    ChevronLeft,
+    ChevronRight,
+    ChevronsLeft,
+    ChevronsRight,
+    Columns,
+    DownloadIcon,
+    FileText,
+    MailIcon,
+    MoreHorizontal,
+    RefreshCw,
+    Search,
+    XCircle,
+} from 'lucide-react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { toast } from 'sonner';
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -120,14 +118,21 @@ interface ReceiptsProps {
     };
 }
 
-export default function ReceiptsIndex({ receipts, filters = {} }: ReceiptsProps) {
+export default function ReceiptsIndex({
+    receipts,
+    filters = {},
+}: ReceiptsProps) {
     const [sorting, setSorting] = useState<SortingState>([]);
     const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
-    const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
+    const [columnVisibility, setColumnVisibility] = useState<VisibilityState>(
+        {},
+    );
     const [searchValue, setSearchValue] = useState(filters.search || '');
     const [statusFilter, setStatusFilter] = useState(filters.status || 'all');
     const [voidOpen, setVoidOpen] = useState(false);
-    const [selectedReceipt, setSelectedReceipt] = useState<Receipt | null>(null);
+    const [selectedReceipt, setSelectedReceipt] = useState<Receipt | null>(
+        null,
+    );
     const isInitialMount = useRef(true);
 
     const voidForm = useForm({
@@ -135,24 +140,21 @@ export default function ReceiptsIndex({ receipts, filters = {} }: ReceiptsProps)
     });
 
     // Debounced search function
-    const performSearch = useCallback(
-        (search: string, status: string) => {
-            router.get(
-                '/receipts',
-                {
-                    search: search || undefined,
-                    status: status === 'all' ? undefined : status,
-                },
-                {
-                    preserveState: true,
-                    preserveScroll: true,
-                    replace: true,
-                    only: ['receipts', 'filters'],
-                }
-            );
-        },
-        []
-    );
+    const performSearch = useCallback((search: string, status: string) => {
+        router.get(
+            '/receipts',
+            {
+                search: search || undefined,
+                status: status === 'all' ? undefined : status,
+            },
+            {
+                preserveState: true,
+                preserveScroll: true,
+                replace: true,
+                only: ['receipts', 'filters'],
+            },
+        );
+    }, []);
 
     // Debounce search input
     useEffect(() => {
@@ -174,10 +176,13 @@ export default function ReceiptsIndex({ receipts, filters = {} }: ReceiptsProps)
             return;
         }
 
-        const sortParam = sorting.length > 0 ? {
-            sort_by: sorting[0].id,
-            sort_dir: sorting[0].desc ? 'desc' : 'asc',
-        } : {};
+        const sortParam =
+            sorting.length > 0
+                ? {
+                      sort_by: sorting[0].id,
+                      sort_dir: sorting[0].desc ? 'desc' : 'asc',
+                  }
+                : {};
 
         router.get(
             '/receipts',
@@ -191,7 +196,7 @@ export default function ReceiptsIndex({ receipts, filters = {} }: ReceiptsProps)
                 preserveScroll: true,
                 replace: true,
                 only: ['receipts', 'filters'],
-            }
+            },
         );
     }, [sorting, searchValue, statusFilter]);
 
@@ -208,16 +213,20 @@ export default function ReceiptsIndex({ receipts, filters = {} }: ReceiptsProps)
     };
 
     const handleSendEmail = (receiptId: number) => {
-        router.post(`/receipts/${receiptId}/email`, {}, {
-            preserveState: true,
-            preserveScroll: true,
-            onSuccess: () => {
-                toast.success('Receipt email sent successfully.');
+        router.post(
+            `/receipts/${receiptId}/email`,
+            {},
+            {
+                preserveState: true,
+                preserveScroll: true,
+                onSuccess: () => {
+                    toast.success('Receipt email sent successfully.');
+                },
+                onError: () => {
+                    toast.error('Failed to send receipt email.');
+                },
             },
-            onError: () => {
-                toast.error('Failed to send receipt email.');
-            },
-        });
+        );
     };
 
     const handleVoid = () => {
@@ -239,17 +248,23 @@ export default function ReceiptsIndex({ receipts, filters = {} }: ReceiptsProps)
     };
 
     const handleReissue = (receiptId: number) => {
-        router.post(`/receipts/${receiptId}/reissue`, {}, {
-            preserveState: true,
-            preserveScroll: true,
-            onSuccess: (page) => {
-                const message = page.props.flash?.success || 'Receipt reissued successfully.';
-                toast.success(message);
+        router.post(
+            `/receipts/${receiptId}/reissue`,
+            {},
+            {
+                preserveState: true,
+                preserveScroll: true,
+                onSuccess: (page) => {
+                    const message =
+                        page.props.flash?.success ||
+                        'Receipt reissued successfully.';
+                    toast.success(message);
+                },
+                onError: () => {
+                    toast.error('Failed to reissue receipt.');
+                },
             },
-            onError: () => {
-                toast.error('Failed to reissue receipt.');
-            },
-        });
+        );
     };
 
     const getStatusBadge = (status: string) => {
@@ -285,9 +300,12 @@ export default function ReceiptsIndex({ receipts, filters = {} }: ReceiptsProps)
                     <Checkbox
                         checked={
                             table.getIsAllPageRowsSelected() ||
-                            (table.getIsSomePageRowsSelected() && 'indeterminate')
+                            (table.getIsSomePageRowsSelected() &&
+                                'indeterminate')
                         }
-                        onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+                        onCheckedChange={(value) =>
+                            table.toggleAllPageRowsSelected(!!value)
+                        }
                         aria-label="Select all"
                     />
                 ),
@@ -307,7 +325,11 @@ export default function ReceiptsIndex({ receipts, filters = {} }: ReceiptsProps)
                     return (
                         <Button
                             variant="ghost"
-                            onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+                            onClick={() =>
+                                column.toggleSorting(
+                                    column.getIsSorted() === 'asc',
+                                )
+                            }
                             className="-ml-3 h-8 data-[state=open]:bg-accent"
                         >
                             Receipt Number
@@ -316,15 +338,15 @@ export default function ReceiptsIndex({ receipts, filters = {} }: ReceiptsProps)
                     );
                 },
                 cell: ({ row }) => (
-                    <div className="font-medium">{row.original.receipt_number}</div>
+                    <div className="font-medium">
+                        {row.original.receipt_number}
+                    </div>
                 ),
             },
             {
                 accessorKey: 'sale.customer.name',
                 header: 'Customer',
-                cell: ({ row }) => (
-                    <div>{row.original.sale.customer.name}</div>
-                ),
+                cell: ({ row }) => <div>{row.original.sale.customer.name}</div>,
             },
             {
                 accessorKey: 'issued_at',
@@ -332,7 +354,11 @@ export default function ReceiptsIndex({ receipts, filters = {} }: ReceiptsProps)
                     return (
                         <Button
                             variant="ghost"
-                            onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+                            onClick={() =>
+                                column.toggleSorting(
+                                    column.getIsSorted() === 'asc',
+                                )
+                            }
                             className="-ml-3 h-8 data-[state=open]:bg-accent"
                         >
                             Issued Date
@@ -341,7 +367,9 @@ export default function ReceiptsIndex({ receipts, filters = {} }: ReceiptsProps)
                     );
                 },
                 cell: ({ row }) => (
-                    <div>{new Date(row.original.issued_at).toLocaleDateString()}</div>
+                    <div>
+                        {new Date(row.original.issued_at).toLocaleDateString()}
+                    </div>
                 ),
             },
             {
@@ -359,7 +387,11 @@ export default function ReceiptsIndex({ receipts, filters = {} }: ReceiptsProps)
                     return (
                         <Button
                             variant="ghost"
-                            onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+                            onClick={() =>
+                                column.toggleSorting(
+                                    column.getIsSorted() === 'asc',
+                                )
+                            }
                             className="-ml-3 h-8 data-[state=open]:bg-accent"
                         >
                             Status
@@ -383,20 +415,26 @@ export default function ReceiptsIndex({ receipts, filters = {} }: ReceiptsProps)
                                         className="h-8 w-8 p-0"
                                         size="icon"
                                     >
-                                        <span className="sr-only">Open menu</span>
+                                        <span className="sr-only">
+                                            Open menu
+                                        </span>
                                         <MoreHorizontal className="h-4 w-4" />
                                     </Button>
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end">
                                     <DropdownMenuItem
-                                        onClick={() => handleDownload(receipt.id)}
+                                        onClick={() =>
+                                            handleDownload(receipt.id)
+                                        }
                                     >
                                         <DownloadIcon className="mr-2 h-4 w-4" />
                                         Download
                                     </DropdownMenuItem>
                                     {receipt.sale.customer && (
                                         <DropdownMenuItem
-                                            onClick={() => handleSendEmail(receipt.id)}
+                                            onClick={() =>
+                                                handleSendEmail(receipt.id)
+                                            }
                                         >
                                             <MailIcon className="mr-2 h-4 w-4" />
                                             Email Receipt
@@ -406,7 +444,9 @@ export default function ReceiptsIndex({ receipts, filters = {} }: ReceiptsProps)
                                         <>
                                             <DropdownMenuSeparator />
                                             <DropdownMenuItem
-                                                onClick={() => handleReissue(receipt.id)}
+                                                onClick={() =>
+                                                    handleReissue(receipt.id)
+                                                }
                                             >
                                                 <RefreshCw className="mr-2 h-4 w-4" />
                                                 Reissue
@@ -430,7 +470,7 @@ export default function ReceiptsIndex({ receipts, filters = {} }: ReceiptsProps)
                 },
             },
         ],
-        []
+        [],
     );
 
     const table = useReactTable({
@@ -455,7 +495,9 @@ export default function ReceiptsIndex({ receipts, filters = {} }: ReceiptsProps)
             <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
                 <div className="flex items-center justify-between">
                     <div>
-                        <h1 className="text-2xl font-bold tracking-tight">Receipts</h1>
+                        <h1 className="text-2xl font-bold tracking-tight">
+                            Receipts
+                        </h1>
                         <p className="text-muted-foreground">
                             Manage and track all receipts issued for sales.
                         </p>
@@ -464,9 +506,9 @@ export default function ReceiptsIndex({ receipts, filters = {} }: ReceiptsProps)
 
                 {/* Filters and Table Controls */}
                 <div className="flex items-center justify-between gap-4">
-                    <div className="flex items-center gap-4 flex-1">
-                        <div className="relative flex-1 max-w-sm">
-                            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                    <div className="flex flex-1 items-center gap-4">
+                        <div className="relative max-w-sm flex-1">
+                            <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                             <Input
                                 placeholder="Search by receipt number or customer..."
                                 value={searchValue}
@@ -474,15 +516,22 @@ export default function ReceiptsIndex({ receipts, filters = {} }: ReceiptsProps)
                                 className="pl-9"
                             />
                         </div>
-                        <Select value={statusFilter} onValueChange={handleStatusFilter}>
+                        <Select
+                            value={statusFilter}
+                            onValueChange={handleStatusFilter}
+                        >
                             <SelectTrigger className="w-[180px]">
                                 <SelectValue placeholder="All Statuses" />
                             </SelectTrigger>
                             <SelectContent>
-                                <SelectItem value="all">All Statuses</SelectItem>
+                                <SelectItem value="all">
+                                    All Statuses
+                                </SelectItem>
                                 <SelectItem value="active">Active</SelectItem>
                                 <SelectItem value="void">Void</SelectItem>
-                                <SelectItem value="reissued">Reissued</SelectItem>
+                                <SelectItem value="reissued">
+                                    Reissued
+                                </SelectItem>
                             </SelectContent>
                         </Select>
                     </div>
@@ -528,8 +577,9 @@ export default function ReceiptsIndex({ receipts, filters = {} }: ReceiptsProps)
                                                 {header.isPlaceholder
                                                     ? null
                                                     : flexRender(
-                                                          header.column.columnDef.header,
-                                                          header.getContext()
+                                                          header.column
+                                                              .columnDef.header,
+                                                          header.getContext(),
                                                       )}
                                             </TableHead>
                                         );
@@ -542,13 +592,15 @@ export default function ReceiptsIndex({ receipts, filters = {} }: ReceiptsProps)
                                 table.getRowModel().rows.map((row) => (
                                     <TableRow
                                         key={row.id}
-                                        data-state={row.getIsSelected() && 'selected'}
+                                        data-state={
+                                            row.getIsSelected() && 'selected'
+                                        }
                                     >
                                         {row.getVisibleCells().map((cell) => (
                                             <TableCell key={cell.id}>
                                                 {flexRender(
                                                     cell.column.columnDef.cell,
-                                                    cell.getContext()
+                                                    cell.getContext(),
                                                 )}
                                             </TableCell>
                                         ))}
@@ -565,9 +617,12 @@ export default function ReceiptsIndex({ receipts, filters = {} }: ReceiptsProps)
                                                 <FileText className="size-8" />
                                             </EmptyMedia>
                                             <EmptyHeader>
-                                                <EmptyTitle>No receipts found</EmptyTitle>
+                                                <EmptyTitle>
+                                                    No receipts found
+                                                </EmptyTitle>
                                                 <EmptyDescription>
-                                                    {searchValue || statusFilter !== 'all'
+                                                    {searchValue ||
+                                                    statusFilter !== 'all'
                                                         ? 'Try adjusting your search or filter criteria.'
                                                         : 'Receipts will appear here once sales are created. Each sale automatically generates a receipt.'}
                                                 </EmptyDescription>
@@ -593,7 +648,10 @@ export default function ReceiptsIndex({ receipts, filters = {} }: ReceiptsProps)
                     {receipts.last_page > 1 && (
                         <div className="flex items-center gap-2">
                             <div className="flex items-center gap-2">
-                                <Label htmlFor="rows-per-page" className="text-sm font-medium">
+                                <Label
+                                    htmlFor="rows-per-page"
+                                    className="text-sm font-medium"
+                                >
                                     Rows per page
                                 </Label>
                                 <Select
@@ -603,7 +661,8 @@ export default function ReceiptsIndex({ receipts, filters = {} }: ReceiptsProps)
                                             '/receipts',
                                             {
                                                 status: filters.status,
-                                                search: searchValue || undefined,
+                                                search:
+                                                    searchValue || undefined,
                                                 per_page: value,
                                             },
                                             {
@@ -611,25 +670,33 @@ export default function ReceiptsIndex({ receipts, filters = {} }: ReceiptsProps)
                                                 preserveScroll: true,
                                                 replace: true,
                                                 only: ['receipts', 'filters'],
-                                            }
+                                            },
                                         );
                                     }}
                                 >
                                     <SelectTrigger className="h-8 w-[70px]">
-                                        <SelectValue placeholder={receipts.per_page} />
+                                        <SelectValue
+                                            placeholder={receipts.per_page}
+                                        />
                                     </SelectTrigger>
                                     <SelectContent side="top">
-                                        {[10, 15, 20, 25, 50].map((pageSize) => (
-                                            <SelectItem key={pageSize} value={pageSize.toString()}>
-                                                {pageSize}
-                                            </SelectItem>
-                                        ))}
+                                        {[10, 15, 20, 25, 50].map(
+                                            (pageSize) => (
+                                                <SelectItem
+                                                    key={pageSize}
+                                                    value={pageSize.toString()}
+                                                >
+                                                    {pageSize}
+                                                </SelectItem>
+                                            ),
+                                        )}
                                     </SelectContent>
                                 </Select>
                             </div>
                             <div className="flex items-center gap-2">
                                 <div className="flex w-[100px] items-center justify-center text-sm font-medium">
-                                    Page {receipts.current_page} of {receipts.last_page}
+                                    Page {receipts.current_page} of{' '}
+                                    {receipts.last_page}
                                 </div>
                                 <div className="flex items-center gap-1">
                                     <Button
@@ -640,20 +707,27 @@ export default function ReceiptsIndex({ receipts, filters = {} }: ReceiptsProps)
                                                 '/receipts',
                                                 {
                                                     status: filters.status,
-                                                    search: searchValue || undefined,
+                                                    search:
+                                                        searchValue ||
+                                                        undefined,
                                                     page: 1,
                                                 },
                                                 {
                                                     preserveState: true,
                                                     preserveScroll: true,
                                                     replace: true,
-                                                    only: ['receipts', 'filters'],
-                                                }
+                                                    only: [
+                                                        'receipts',
+                                                        'filters',
+                                                    ],
+                                                },
                                             );
                                         }}
                                         disabled={receipts.current_page === 1}
                                     >
-                                        <span className="sr-only">Go to first page</span>
+                                        <span className="sr-only">
+                                            Go to first page
+                                        </span>
                                         <ChevronsLeft className="h-4 w-4" />
                                     </Button>
                                     <Button
@@ -664,20 +738,29 @@ export default function ReceiptsIndex({ receipts, filters = {} }: ReceiptsProps)
                                                 '/receipts',
                                                 {
                                                     status: filters.status,
-                                                    search: searchValue || undefined,
-                                                    page: receipts.current_page - 1,
+                                                    search:
+                                                        searchValue ||
+                                                        undefined,
+                                                    page:
+                                                        receipts.current_page -
+                                                        1,
                                                 },
                                                 {
                                                     preserveState: true,
                                                     preserveScroll: true,
                                                     replace: true,
-                                                    only: ['receipts', 'filters'],
-                                                }
+                                                    only: [
+                                                        'receipts',
+                                                        'filters',
+                                                    ],
+                                                },
                                             );
                                         }}
                                         disabled={receipts.current_page === 1}
                                     >
-                                        <span className="sr-only">Go to previous page</span>
+                                        <span className="sr-only">
+                                            Go to previous page
+                                        </span>
                                         <ChevronLeft className="h-4 w-4" />
                                     </Button>
                                     <Button
@@ -688,20 +771,32 @@ export default function ReceiptsIndex({ receipts, filters = {} }: ReceiptsProps)
                                                 '/receipts',
                                                 {
                                                     status: filters.status,
-                                                    search: searchValue || undefined,
-                                                    page: receipts.current_page + 1,
+                                                    search:
+                                                        searchValue ||
+                                                        undefined,
+                                                    page:
+                                                        receipts.current_page +
+                                                        1,
                                                 },
                                                 {
                                                     preserveState: true,
                                                     preserveScroll: true,
                                                     replace: true,
-                                                    only: ['receipts', 'filters'],
-                                                }
+                                                    only: [
+                                                        'receipts',
+                                                        'filters',
+                                                    ],
+                                                },
                                             );
                                         }}
-                                        disabled={receipts.current_page === receipts.last_page}
+                                        disabled={
+                                            receipts.current_page ===
+                                            receipts.last_page
+                                        }
                                     >
-                                        <span className="sr-only">Go to next page</span>
+                                        <span className="sr-only">
+                                            Go to next page
+                                        </span>
                                         <ChevronRight className="h-4 w-4" />
                                     </Button>
                                     <Button
@@ -712,20 +807,30 @@ export default function ReceiptsIndex({ receipts, filters = {} }: ReceiptsProps)
                                                 '/receipts',
                                                 {
                                                     status: filters.status,
-                                                    search: searchValue || undefined,
+                                                    search:
+                                                        searchValue ||
+                                                        undefined,
                                                     page: receipts.last_page,
                                                 },
                                                 {
                                                     preserveState: true,
                                                     preserveScroll: true,
                                                     replace: true,
-                                                    only: ['receipts', 'filters'],
-                                                }
+                                                    only: [
+                                                        'receipts',
+                                                        'filters',
+                                                    ],
+                                                },
                                             );
                                         }}
-                                        disabled={receipts.current_page === receipts.last_page}
+                                        disabled={
+                                            receipts.current_page ===
+                                            receipts.last_page
+                                        }
                                     >
-                                        <span className="sr-only">Go to last page</span>
+                                        <span className="sr-only">
+                                            Go to last page
+                                        </span>
                                         <ChevronsRight className="h-4 w-4" />
                                     </Button>
                                 </div>
@@ -741,18 +846,27 @@ export default function ReceiptsIndex({ receipts, filters = {} }: ReceiptsProps)
                             <DialogTitle>Void Receipt</DialogTitle>
                             <DialogDescription>
                                 Are you sure you want to void receipt{' '}
-                                <strong>{selectedReceipt?.receipt_number}</strong>? This action
-                                cannot be undone.
+                                <strong>
+                                    {selectedReceipt?.receipt_number}
+                                </strong>
+                                ? This action cannot be undone.
                             </DialogDescription>
                         </DialogHeader>
                         <div className="space-y-4 py-4">
                             <div className="space-y-2">
-                                <Label htmlFor="reason">Reason for voiding</Label>
+                                <Label htmlFor="reason">
+                                    Reason for voiding
+                                </Label>
                                 <Textarea
                                     id="reason"
                                     placeholder="Enter reason for voiding this receipt..."
                                     value={voidForm.data.reason}
-                                    onChange={(e) => voidForm.setData('reason', e.target.value)}
+                                    onChange={(e) =>
+                                        voidForm.setData(
+                                            'reason',
+                                            e.target.value,
+                                        )
+                                    }
                                     rows={4}
                                 />
                                 {voidForm.errors.reason && (
@@ -776,9 +890,14 @@ export default function ReceiptsIndex({ receipts, filters = {} }: ReceiptsProps)
                             <Button
                                 variant="destructive"
                                 onClick={handleVoid}
-                                disabled={voidForm.processing || !voidForm.data.reason.trim()}
+                                disabled={
+                                    voidForm.processing ||
+                                    !voidForm.data.reason.trim()
+                                }
                             >
-                                {voidForm.processing ? 'Voiding...' : 'Void Receipt'}
+                                {voidForm.processing
+                                    ? 'Voiding...'
+                                    : 'Void Receipt'}
                             </Button>
                         </DialogFooter>
                     </DialogContent>
@@ -787,4 +906,3 @@ export default function ReceiptsIndex({ receipts, filters = {} }: ReceiptsProps)
         </AppLayout>
     );
 }
-

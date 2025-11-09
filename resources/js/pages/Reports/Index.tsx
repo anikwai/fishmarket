@@ -1,7 +1,21 @@
 'use client';
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { DatePicker } from '@/components/date-picker';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import {
+    Card,
+    CardContent,
+    CardDescription,
+    CardHeader,
+    CardTitle,
+} from '@/components/ui/card';
+import {
+    ChartConfig,
+    ChartContainer,
+    ChartTooltip,
+    ChartTooltipContent,
+} from '@/components/ui/chart';
 import { Label } from '@/components/ui/label';
 import {
     Select,
@@ -10,7 +24,6 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
     Table,
     TableBody,
@@ -19,42 +32,31 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
-import {
-    ChartConfig,
-    ChartContainer,
-    ChartTooltip,
-    ChartTooltipContent,
-} from '@/components/ui/chart';
-import { Badge } from '@/components/ui/badge';
-import { DatePicker } from '@/components/date-picker';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Head, router } from '@inertiajs/react';
-import { 
-    Bar, 
-    BarChart, 
-    CartesianGrid, 
-    Cell,
-    Line, 
-    LineChart, 
-    XAxis, 
-    YAxis 
-} from 'recharts';
-import { 
-    BarChart3,
-    DollarSign,
-    TrendingUp,
-    TrendingDown,
-    Users,
-    ShoppingCart,
-    Package,
+import {
     CreditCard,
-    FileText,
-    Calendar,
-    Filter,
+    DollarSign,
     Download,
+    FileText,
+    Filter,
+    Package,
+    ShoppingCart,
+    TrendingUp,
+    Users,
 } from 'lucide-react';
-import { useState, useMemo } from 'react';
+import { useState } from 'react';
+import {
+    Bar,
+    BarChart,
+    CartesianGrid,
+    Cell,
+    Line,
+    LineChart,
+    XAxis,
+    YAxis,
+} from 'recharts';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -67,13 +69,188 @@ const reportTypes = [
     { value: 'sales-summary', label: 'Sales Summary', icon: DollarSign },
     { value: 'sales-by-customer', label: 'Sales by Customer', icon: Users },
     { value: 'profit-loss', label: 'Profit & Loss', icon: TrendingUp },
-    { value: 'outstanding-credits', label: 'Outstanding Credits', icon: CreditCard },
+    {
+        value: 'outstanding-credits',
+        label: 'Outstanding Credits',
+        icon: CreditCard,
+    },
     { value: 'expense-report', label: 'Expense Report', icon: FileText },
     { value: 'purchase-report', label: 'Purchase Report', icon: ShoppingCart },
     { value: 'stock-report', label: 'Stock Report', icon: Package },
     { value: 'customer-report', label: 'Customer Report', icon: Users },
     { value: 'supplier-report', label: 'Supplier Report', icon: Users },
 ];
+
+interface SaleSummary {
+    id: number;
+    date: string;
+    customer: string;
+    quantity: number | string;
+    amount: number | string;
+    is_credit: boolean;
+}
+
+interface SalesSummaryData {
+    summary?: {
+        total_revenue?: number | string;
+        total_quantity?: number | string;
+        total_sales?: number;
+        average_sale?: number | string;
+    };
+    daily_data?: Array<{ date: string; revenue: number | string }>;
+    recent_sales?: SaleSummary[];
+}
+
+interface CustomerSummary {
+    id: number;
+    name: string;
+    total_revenue: number | string;
+    total_quantity: number | string;
+    sale_count: number;
+    average_sale: number | string;
+}
+
+interface SalesByCustomerData {
+    customers?: CustomerSummary[];
+    summary?: {
+        total_customers?: number;
+        total_revenue?: number | string;
+    };
+}
+
+interface ProfitLossData {
+    revenue?: number | string;
+    costs?: number | string;
+    expenses?: number | string;
+    profit?: number | string;
+    profit_margin?: number | string;
+    expense_breakdown?: Array<{ type: string; total: number | string }>;
+}
+
+interface CreditSummary {
+    sale_id: number;
+    date: string;
+    customer: string;
+    total: number | string;
+    paid: number | string;
+    outstanding: number | string;
+    days_outstanding: number;
+}
+
+interface OutstandingCreditsData {
+    credits?: CreditSummary[];
+    summary?: {
+        total_outstanding?: number | string;
+        count?: number;
+        average_days?: number;
+    };
+}
+
+interface ExpenseItem {
+    id: number;
+    date: string;
+    type: string;
+    description: string;
+    supplier?: string | null;
+    amount: number | string;
+}
+
+interface ExpenseReportData {
+    summary?: {
+        total?: number | string;
+        count?: number;
+    };
+    daily_data?: Array<{ date: string; total: number | string }>;
+    expenses?: ExpenseItem[];
+}
+
+interface PurchaseItem {
+    id: number;
+    date: string;
+    supplier: string;
+    quantity: number | string;
+    price_per_kg: number | string;
+    total_cost: number | string;
+}
+
+interface SupplierSummary {
+    id: number;
+    name: string;
+    total_cost: number | string;
+    total_quantity: number | string;
+    purchase_count: number;
+    average_price: number | string;
+}
+
+interface PurchaseReportData {
+    summary?: {
+        total_cost?: number | string;
+        total_quantity?: number | string;
+        count?: number;
+    };
+    by_supplier?: SupplierSummary[];
+    purchases?: PurchaseItem[];
+}
+
+interface StockReportData {
+    current_stock?: number | string;
+    by_supplier?: Array<{
+        id: number;
+        name: string;
+        remaining_stock: number | string;
+    }>;
+}
+
+interface CustomerDetail {
+    id: number;
+    name: string;
+    email?: string | null;
+    phone?: string | null;
+    type: string;
+}
+
+interface CustomerReportData {
+    customer?: CustomerDetail;
+    customers?: CustomerDetail[];
+    summary?: {
+        total_sales?: number;
+        total_revenue?: number | string;
+        outstanding_credits?: number | string;
+        credit_count?: number;
+    };
+    recent_sales?: SaleSummary[];
+}
+
+interface SupplierDetail {
+    id: number;
+    name: string;
+    email?: string | null;
+    phone?: string | null;
+    address?: string | null;
+}
+
+interface SupplierReportData {
+    supplier?: SupplierDetail;
+    suppliers?: SupplierDetail[];
+    summary?: {
+        total_purchases?: number;
+        total_cost?: number | string;
+        total_quantity?: number | string;
+        remaining_stock?: number | string;
+    };
+    recent_purchases?: PurchaseItem[];
+}
+
+type ReportData =
+    | SalesSummaryData
+    | SalesByCustomerData
+    | ProfitLossData
+    | OutstandingCreditsData
+    | ExpenseReportData
+    | PurchaseReportData
+    | StockReportData
+    | CustomerReportData
+    | SupplierReportData;
 
 interface ReportsProps {
     reportType: string;
@@ -83,7 +260,7 @@ interface ReportsProps {
     supplierId?: string | null;
     customers: Array<{ id: number; name: string }>;
     suppliers: Array<{ id: number; name: string }>;
-    reportData: any;
+    reportData: ReportData;
 }
 
 const salesConfig = {
@@ -121,10 +298,12 @@ export default function ReportsIndex({
     const [reportType, setReportType] = useState(initialReportType);
     const [startDate, setStartDate] = useState(initialStartDate);
     const [endDate, setEndDate] = useState(initialEndDate);
-    const [customerId, setCustomerId] = useState<string | null>(initialCustomerId || null);
-    const [supplierId, setSupplierId] = useState<string | null>(initialSupplierId || null);
-
-    const currentReport = reportTypes.find(r => r.value === reportType);
+    const [customerId, setCustomerId] = useState<string | null>(
+        initialCustomerId || null,
+    );
+    const [supplierId, setSupplierId] = useState<string | null>(
+        initialSupplierId || null,
+    );
 
     const handleFilterChange = () => {
         const params: Record<string, string> = {
@@ -132,7 +311,7 @@ export default function ReportsIndex({
             start_date: startDate,
             end_date: endDate,
         };
-        
+
         if (customerId && customerId !== 'all') {
             params.customer_id = customerId;
         }
@@ -152,7 +331,7 @@ export default function ReportsIndex({
             start_date: startDate,
             end_date: endDate,
         };
-        
+
         if (customerId && customerId !== 'all') {
             params.customer_id = customerId;
         }
@@ -194,8 +373,10 @@ export default function ReportsIndex({
             <Head title="Reports" />
             <div className="flex h-full flex-1 flex-col gap-6 overflow-x-auto rounded-xl p-4">
                 <div>
-                    <h1 className="text-3xl font-bold tracking-tight">Reports</h1>
-                    <p className="text-muted-foreground mt-1">
+                    <h1 className="text-3xl font-bold tracking-tight">
+                        Reports
+                    </h1>
+                    <p className="mt-1 text-muted-foreground">
                         Generate and view business reports
                     </p>
                 </div>
@@ -208,7 +389,8 @@ export default function ReportsIndex({
                             Report Filters
                         </CardTitle>
                         <CardDescription>
-                            Select report type and date range to generate reports
+                            Select report type and date range to generate
+                            reports
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
@@ -216,13 +398,19 @@ export default function ReportsIndex({
                             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                                 <div className="space-y-2">
                                     <Label>Report Type</Label>
-                                    <Select value={reportType} onValueChange={setReportType}>
+                                    <Select
+                                        value={reportType}
+                                        onValueChange={setReportType}
+                                    >
                                         <SelectTrigger>
                                             <SelectValue />
                                         </SelectTrigger>
                                         <SelectContent>
                                             {reportTypes.map((type) => (
-                                                <SelectItem key={type.value} value={type.value}>
+                                                <SelectItem
+                                                    key={type.value}
+                                                    value={type.value}
+                                                >
                                                     <div className="flex items-center gap-2">
                                                         <type.icon className="h-4 w-4" />
                                                         {type.label}
@@ -237,7 +425,9 @@ export default function ReportsIndex({
                                     <Label>Start Date</Label>
                                     <DatePicker
                                         value={startDate}
-                                        onChange={(value) => setStartDate(value || '')}
+                                        onChange={(value) =>
+                                            setStartDate(value || '')
+                                        }
                                         placeholder="Select start date"
                                     />
                                 </div>
@@ -246,53 +436,94 @@ export default function ReportsIndex({
                                     <Label>End Date</Label>
                                     <DatePicker
                                         value={endDate}
-                                        onChange={(value) => setEndDate(value || '')}
+                                        onChange={(value) =>
+                                            setEndDate(value || '')
+                                        }
                                         placeholder="Select end date"
                                     />
                                 </div>
                             </div>
 
-                            {(reportType === 'sales-summary' || reportType === 'customer-report' || reportType === 'purchase-report' || reportType === 'supplier-report') && (
+                            {(reportType === 'sales-summary' ||
+                                reportType === 'customer-report' ||
+                                reportType === 'purchase-report' ||
+                                reportType === 'supplier-report') && (
                                 <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                                    {(reportType === 'sales-summary' || reportType === 'customer-report') && (
+                                    {(reportType === 'sales-summary' ||
+                                        reportType === 'customer-report') && (
                                         <div className="space-y-2">
                                             <Label>Customer</Label>
-                                            <Select 
-                                                value={customerId || 'all'} 
-                                                onValueChange={(value) => setCustomerId(value === 'all' ? null : value)}
+                                            <Select
+                                                value={customerId || 'all'}
+                                                onValueChange={(value) =>
+                                                    setCustomerId(
+                                                        value === 'all'
+                                                            ? null
+                                                            : value,
+                                                    )
+                                                }
                                             >
                                                 <SelectTrigger>
                                                     <SelectValue placeholder="All customers" />
                                                 </SelectTrigger>
                                                 <SelectContent>
-                                                    <SelectItem value="all">All customers</SelectItem>
-                                                    {customers.map((customer) => (
-                                                        <SelectItem key={customer.id} value={String(customer.id)}>
-                                                            {customer.name}
-                                                        </SelectItem>
-                                                    ))}
+                                                    <SelectItem value="all">
+                                                        All customers
+                                                    </SelectItem>
+                                                    {customers.map(
+                                                        (customer) => (
+                                                            <SelectItem
+                                                                key={
+                                                                    customer.id
+                                                                }
+                                                                value={String(
+                                                                    customer.id,
+                                                                )}
+                                                            >
+                                                                {customer.name}
+                                                            </SelectItem>
+                                                        ),
+                                                    )}
                                                 </SelectContent>
                                             </Select>
                                         </div>
                                     )}
 
-                                    {(reportType === 'purchase-report' || reportType === 'supplier-report') && (
+                                    {(reportType === 'purchase-report' ||
+                                        reportType === 'supplier-report') && (
                                         <div className="space-y-2">
                                             <Label>Supplier</Label>
-                                            <Select 
-                                                value={supplierId || 'all'} 
-                                                onValueChange={(value) => setSupplierId(value === 'all' ? null : value)}
+                                            <Select
+                                                value={supplierId || 'all'}
+                                                onValueChange={(value) =>
+                                                    setSupplierId(
+                                                        value === 'all'
+                                                            ? null
+                                                            : value,
+                                                    )
+                                                }
                                             >
                                                 <SelectTrigger>
                                                     <SelectValue placeholder="All suppliers" />
                                                 </SelectTrigger>
                                                 <SelectContent>
-                                                    <SelectItem value="all">All suppliers</SelectItem>
-                                                    {suppliers.map((supplier) => (
-                                                        <SelectItem key={supplier.id} value={String(supplier.id)}>
-                                                            {supplier.name}
-                                                        </SelectItem>
-                                                    ))}
+                                                    <SelectItem value="all">
+                                                        All suppliers
+                                                    </SelectItem>
+                                                    {suppliers.map(
+                                                        (supplier) => (
+                                                            <SelectItem
+                                                                key={
+                                                                    supplier.id
+                                                                }
+                                                                value={String(
+                                                                    supplier.id,
+                                                                )}
+                                                            >
+                                                                {supplier.name}
+                                                            </SelectItem>
+                                                        ),
+                                                    )}
                                                 </SelectContent>
                                             </Select>
                                         </div>
@@ -300,12 +531,12 @@ export default function ReportsIndex({
                                 </div>
                             )}
 
-                            <div className="flex flex-wrap items-center gap-3 pt-2 border-t">
+                            <div className="flex flex-wrap items-center gap-3 border-t pt-2">
                                 <Button onClick={handleFilterChange} size="lg">
                                     Generate Report
                                 </Button>
-                                <Button 
-                                    onClick={handleExportCSV} 
+                                <Button
+                                    onClick={handleExportCSV}
                                     variant="outline"
                                     size="lg"
                                     className="flex items-center gap-2"
@@ -326,7 +557,7 @@ export default function ReportsIndex({
 }
 
 // Sales Summary Report Component
-function SalesSummaryReport({ data }: { data: any }) {
+function SalesSummaryReport({ data }: { data: SalesSummaryData }) {
     if (!data) return null;
 
     return (
@@ -334,30 +565,51 @@ function SalesSummaryReport({ data }: { data: any }) {
             <Card>
                 <CardHeader>
                     <CardTitle>Sales Summary</CardTitle>
-                    <CardDescription>Overview of sales performance</CardDescription>
+                    <CardDescription>
+                        Overview of sales performance
+                    </CardDescription>
                 </CardHeader>
                 <CardContent>
                     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
                         <div>
-                            <div className="text-sm text-muted-foreground">Total Revenue</div>
+                            <div className="text-sm text-muted-foreground">
+                                Total Revenue
+                            </div>
                             <div className="text-2xl font-bold">
-                                SBD {Number(data.summary?.total_revenue || 0).toFixed(2)}
+                                SBD{' '}
+                                {Number(
+                                    data.summary?.total_revenue || 0,
+                                ).toFixed(2)}
                             </div>
                         </div>
                         <div>
-                            <div className="text-sm text-muted-foreground">Total Quantity</div>
+                            <div className="text-sm text-muted-foreground">
+                                Total Quantity
+                            </div>
                             <div className="text-2xl font-bold">
-                                {Number(data.summary?.total_quantity || 0).toFixed(2)} kg
+                                {Number(
+                                    data.summary?.total_quantity || 0,
+                                ).toFixed(2)}{' '}
+                                kg
                             </div>
                         </div>
                         <div>
-                            <div className="text-sm text-muted-foreground">Total Sales</div>
-                            <div className="text-2xl font-bold">{data.summary?.total_sales || 0}</div>
+                            <div className="text-sm text-muted-foreground">
+                                Total Sales
+                            </div>
+                            <div className="text-2xl font-bold">
+                                {data.summary?.total_sales || 0}
+                            </div>
                         </div>
                         <div>
-                            <div className="text-sm text-muted-foreground">Average Sale</div>
+                            <div className="text-sm text-muted-foreground">
+                                Average Sale
+                            </div>
                             <div className="text-2xl font-bold">
-                                SBD {Number(data.summary?.average_sale || 0).toFixed(2)}
+                                SBD{' '}
+                                {Number(
+                                    data.summary?.average_sale || 0,
+                                ).toFixed(2)}
                             </div>
                         </div>
                     </div>
@@ -370,8 +622,14 @@ function SalesSummaryReport({ data }: { data: any }) {
                         <CardTitle>Daily Sales Trend</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <ChartContainer config={salesConfig} className="h-[300px] w-full">
-                            <LineChart accessibilityLayer data={data.daily_data}>
+                        <ChartContainer
+                            config={salesConfig}
+                            className="h-[300px] w-full"
+                        >
+                            <LineChart
+                                accessibilityLayer
+                                data={data.daily_data}
+                            >
                                 <CartesianGrid vertical={false} />
                                 <XAxis
                                     dataKey="date"
@@ -380,7 +638,10 @@ function SalesSummaryReport({ data }: { data: any }) {
                                     axisLine={false}
                                     tickFormatter={(value) => {
                                         const date = new Date(value);
-                                        return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                                        return date.toLocaleDateString(
+                                            'en-US',
+                                            { month: 'short', day: 'numeric' },
+                                        );
                                     }}
                                 />
                                 <YAxis
@@ -389,14 +650,19 @@ function SalesSummaryReport({ data }: { data: any }) {
                                     tickMargin={8}
                                     width={60}
                                     tickFormatter={(value) => {
-                                        if (value >= 1000) return `SBD ${(value / 1000).toFixed(1)}k`;
+                                        if (value >= 1000)
+                                            return `SBD ${(value / 1000).toFixed(1)}k`;
                                         return `SBD ${Math.round(value)}`;
                                     }}
                                 />
-                                <ChartTooltip 
-                                    content={<ChartTooltipContent 
-                                        formatter={(value) => `SBD ${Number(value).toFixed(2)}`}
-                                    />}
+                                <ChartTooltip
+                                    content={
+                                        <ChartTooltipContent
+                                            formatter={(value) =>
+                                                `SBD ${Number(value).toFixed(2)}`
+                                            }
+                                        />
+                                    }
                                 />
                                 <Line
                                     type="monotone"
@@ -424,22 +690,37 @@ function SalesSummaryReport({ data }: { data: any }) {
                                     <TableHead>Date</TableHead>
                                     <TableHead>Customer</TableHead>
                                     <TableHead>Quantity</TableHead>
-                                    <TableHead className="text-right">Amount</TableHead>
+                                    <TableHead className="text-right">
+                                        Amount
+                                    </TableHead>
                                     <TableHead>Type</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {data.recent_sales.map((sale: any) => (
+                                {data.recent_sales.map((sale) => (
                                     <TableRow key={sale.id}>
                                         <TableCell>{sale.date}</TableCell>
-                                        <TableCell className="font-medium">{sale.customer}</TableCell>
-                                        <TableCell>{Number(sale.quantity).toFixed(2)} kg</TableCell>
+                                        <TableCell className="font-medium">
+                                            {sale.customer}
+                                        </TableCell>
+                                        <TableCell>
+                                            {Number(sale.quantity).toFixed(2)}{' '}
+                                            kg
+                                        </TableCell>
                                         <TableCell className="text-right font-semibold">
                                             SBD {Number(sale.amount).toFixed(2)}
                                         </TableCell>
                                         <TableCell>
-                                            <Badge variant={sale.is_credit ? 'destructive' : 'default'}>
-                                                {sale.is_credit ? 'Credit' : 'Cash'}
+                                            <Badge
+                                                variant={
+                                                    sale.is_credit
+                                                        ? 'destructive'
+                                                        : 'default'
+                                                }
+                                            >
+                                                {sale.is_credit
+                                                    ? 'Credit'
+                                                    : 'Cash'}
                                             </Badge>
                                         </TableCell>
                                     </TableRow>
@@ -454,7 +735,7 @@ function SalesSummaryReport({ data }: { data: any }) {
 }
 
 // Sales by Customer Report Component
-function SalesByCustomerReport({ data }: { data: any }) {
+function SalesByCustomerReport({ data }: { data: SalesByCustomerData }) {
     if (!data || !data.customers) return null;
 
     return (
@@ -463,8 +744,9 @@ function SalesByCustomerReport({ data }: { data: any }) {
                 <CardHeader>
                     <CardTitle>Sales by Customer</CardTitle>
                     <CardDescription>
-                        Total customers: {data.summary?.total_customers || 0} | 
-                        Total Revenue: SBD {Number(data.summary?.total_revenue || 0).toFixed(2)}
+                        Total customers: {data.summary?.total_customers || 0} |
+                        Total Revenue: SBD{' '}
+                        {Number(data.summary?.total_revenue || 0).toFixed(2)}
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -472,25 +754,46 @@ function SalesByCustomerReport({ data }: { data: any }) {
                         <TableHeader>
                             <TableRow>
                                 <TableHead>Customer</TableHead>
-                                <TableHead className="text-right">Total Revenue</TableHead>
-                                <TableHead className="text-right">Total Quantity</TableHead>
-                                <TableHead className="text-right">Sales Count</TableHead>
-                                <TableHead className="text-right">Average Sale</TableHead>
+                                <TableHead className="text-right">
+                                    Total Revenue
+                                </TableHead>
+                                <TableHead className="text-right">
+                                    Total Quantity
+                                </TableHead>
+                                <TableHead className="text-right">
+                                    Sales Count
+                                </TableHead>
+                                <TableHead className="text-right">
+                                    Average Sale
+                                </TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {data.customers.map((customer: any) => (
+                            {data.customers.map((customer) => (
                                 <TableRow key={customer.id}>
-                                    <TableCell className="font-medium">{customer.name}</TableCell>
+                                    <TableCell className="font-medium">
+                                        {customer.name}
+                                    </TableCell>
                                     <TableCell className="text-right font-semibold">
-                                        SBD {Number(customer.total_revenue).toFixed(2)}
+                                        SBD{' '}
+                                        {Number(customer.total_revenue).toFixed(
+                                            2,
+                                        )}
                                     </TableCell>
                                     <TableCell className="text-right">
-                                        {Number(customer.total_quantity).toFixed(2)} kg
+                                        {Number(
+                                            customer.total_quantity,
+                                        ).toFixed(2)}{' '}
+                                        kg
                                     </TableCell>
-                                    <TableCell className="text-right">{customer.sale_count}</TableCell>
                                     <TableCell className="text-right">
-                                        SBD {Number(customer.average_sale).toFixed(2)}
+                                        {customer.sale_count}
+                                    </TableCell>
+                                    <TableCell className="text-right">
+                                        SBD{' '}
+                                        {Number(customer.average_sale).toFixed(
+                                            2,
+                                        )}
                                     </TableCell>
                                 </TableRow>
                             ))}
@@ -503,7 +806,7 @@ function SalesByCustomerReport({ data }: { data: any }) {
 }
 
 // Profit & Loss Report Component
-function ProfitLossReport({ data }: { data: any }) {
+function ProfitLossReport({ data }: { data: ProfitLossData }) {
     if (!data) return null;
 
     const profit = Number(data.profit || 0);
@@ -519,70 +822,110 @@ function ProfitLossReport({ data }: { data: any }) {
                     <div className="space-y-4">
                         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
                             <div>
-                                <div className="text-sm text-muted-foreground">Total Revenue</div>
+                                <div className="text-sm text-muted-foreground">
+                                    Total Revenue
+                                </div>
                                 <div className="text-2xl font-bold">
                                     SBD {Number(data.revenue || 0).toFixed(2)}
                                 </div>
                             </div>
                             <div>
-                                <div className="text-sm text-muted-foreground">Total Costs</div>
+                                <div className="text-sm text-muted-foreground">
+                                    Total Costs
+                                </div>
                                 <div className="text-2xl font-bold text-red-600">
                                     SBD {Number(data.costs || 0).toFixed(2)}
                                 </div>
                             </div>
                             <div>
-                                <div className="text-sm text-muted-foreground">Total Expenses</div>
+                                <div className="text-sm text-muted-foreground">
+                                    Total Expenses
+                                </div>
                                 <div className="text-2xl font-bold text-red-600">
                                     SBD {Number(data.expenses || 0).toFixed(2)}
                                 </div>
                             </div>
                             <div>
-                                <div className="text-sm text-muted-foreground">Net Profit</div>
-                                <div className={`text-2xl font-bold ${isProfit ? 'text-green-600' : 'text-red-600'}`}>
-                                    {isProfit ? '+' : ''}SBD {Math.abs(profit).toFixed(2)}
+                                <div className="text-sm text-muted-foreground">
+                                    Net Profit
                                 </div>
-                                <div className="text-xs text-muted-foreground mt-1">
-                                    Margin: {Number(data.profit_margin || 0).toFixed(1)}%
+                                <div
+                                    className={`text-2xl font-bold ${isProfit ? 'text-green-600' : 'text-red-600'}`}
+                                >
+                                    {isProfit ? '+' : ''}SBD{' '}
+                                    {Math.abs(profit).toFixed(2)}
+                                </div>
+                                <div className="mt-1 text-xs text-muted-foreground">
+                                    Margin:{' '}
+                                    {Number(data.profit_margin || 0).toFixed(1)}
+                                    %
                                 </div>
                             </div>
                         </div>
 
-                        {data.expense_breakdown && data.expense_breakdown.length > 0 && (
-                            <div>
-                                <h3 className="text-sm font-semibold mb-2">Expense Breakdown</h3>
-                                <ChartContainer config={expenseConfig} className="h-[250px] w-full">
-                                    <BarChart accessibilityLayer data={data.expense_breakdown}>
-                                        <CartesianGrid vertical={false} />
-                                        <XAxis
-                                            dataKey="type"
-                                            tickLine={false}
-                                            tickMargin={10}
-                                            axisLine={false}
-                                        />
-                                        <YAxis
-                                            tickLine={false}
-                                            axisLine={false}
-                                            tickMargin={8}
-                                            width={60}
-                                            tickFormatter={(value) => {
-                                                if (value >= 1000) return `SBD ${(value / 1000).toFixed(1)}k`;
-                                                return `SBD ${Math.round(value)}`;
-                                            }}
-                                        />
-                                        <ChartTooltip content={<ChartTooltipContent 
-                                            formatter={(value) => `SBD ${Number(value).toFixed(2)}`}
-                                        />} />
-                                        <Bar dataKey="total" radius={4}>
-                                            {data.expense_breakdown.map((entry: any, index: number) => {
-                                                const type = entry.type as keyof typeof expenseConfig;
-                                                const color = expenseConfig[type]?.color || '#8b5cf6';
-                                                return <Cell key={`cell-${index}`} fill={color} />;
-                                            })}
-                                        </Bar>
-                                    </BarChart>
-                                </ChartContainer>
-                            </div>
-                        )}
+                        {data.expense_breakdown &&
+                            data.expense_breakdown.length > 0 && (
+                                <div>
+                                    <h3 className="mb-2 text-sm font-semibold">
+                                        Expense Breakdown
+                                    </h3>
+                                    <ChartContainer
+                                        config={expenseConfig}
+                                        className="h-[250px] w-full"
+                                    >
+                                        <BarChart
+                                            accessibilityLayer
+                                            data={data.expense_breakdown}
+                                        >
+                                            <CartesianGrid vertical={false} />
+                                            <XAxis
+                                                dataKey="type"
+                                                tickLine={false}
+                                                tickMargin={10}
+                                                axisLine={false}
+                                            />
+                                            <YAxis
+                                                tickLine={false}
+                                                axisLine={false}
+                                                tickMargin={8}
+                                                width={60}
+                                                tickFormatter={(value) => {
+                                                    if (value >= 1000)
+                                                        return `SBD ${(value / 1000).toFixed(1)}k`;
+                                                    return `SBD ${Math.round(value)}`;
+                                                }}
+                                            />
+                                            <ChartTooltip
+                                                content={
+                                                    <ChartTooltipContent
+                                                        formatter={(value) =>
+                                                            `SBD ${Number(value).toFixed(2)}`
+                                                        }
+                                                    />
+                                                }
+                                            />
+                                            <Bar dataKey="total" radius={4}>
+                                                {data.expense_breakdown.map(
+                                                    (entry, index: number) => {
+                                                        const type =
+                                                            entry.type as keyof typeof expenseConfig;
+                                                        const color =
+                                                            expenseConfig[type]
+                                                                ?.color ||
+                                                            '#8b5cf6';
+                                                        return (
+                                                            <Cell
+                                                                key={`cell-${index}`}
+                                                                fill={color}
+                                                            />
+                                                        );
+                                                    },
+                                                )}
+                                            </Bar>
+                                        </BarChart>
+                                    </ChartContainer>
+                                </div>
+                            )}
                     </div>
                 </CardContent>
             </Card>
@@ -591,7 +934,7 @@ function ProfitLossReport({ data }: { data: any }) {
 }
 
 // Outstanding Credits Report Component
-function OutstandingCreditsReport({ data }: { data: any }) {
+function OutstandingCreditsReport({ data }: { data: OutstandingCreditsData }) {
     if (!data || !data.credits) return null;
 
     return (
@@ -600,9 +943,12 @@ function OutstandingCreditsReport({ data }: { data: any }) {
                 <CardHeader>
                     <CardTitle>Outstanding Credits</CardTitle>
                     <CardDescription>
-                        Total Outstanding: SBD {Number(data.summary?.total_outstanding || 0).toFixed(2)} | 
-                        Count: {data.summary?.count || 0} | 
-                        Avg Days: {data.summary?.average_days || 0}
+                        Total Outstanding: SBD{' '}
+                        {Number(data.summary?.total_outstanding || 0).toFixed(
+                            2,
+                        )}{' '}
+                        | Count: {data.summary?.count || 0} | Avg Days:{' '}
+                        {data.summary?.average_days || 0}
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -612,16 +958,26 @@ function OutstandingCreditsReport({ data }: { data: any }) {
                                 <TableHead>Sale ID</TableHead>
                                 <TableHead>Date</TableHead>
                                 <TableHead>Customer</TableHead>
-                                <TableHead className="text-right">Total</TableHead>
-                                <TableHead className="text-right">Paid</TableHead>
-                                <TableHead className="text-right">Outstanding</TableHead>
-                                <TableHead className="text-right">Days</TableHead>
+                                <TableHead className="text-right">
+                                    Total
+                                </TableHead>
+                                <TableHead className="text-right">
+                                    Paid
+                                </TableHead>
+                                <TableHead className="text-right">
+                                    Outstanding
+                                </TableHead>
+                                <TableHead className="text-right">
+                                    Days
+                                </TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {data.credits.map((credit: any) => (
+                            {data.credits.map((credit) => (
                                 <TableRow key={credit.sale_id}>
-                                    <TableCell className="font-medium">#{credit.sale_id}</TableCell>
+                                    <TableCell className="font-medium">
+                                        #{credit.sale_id}
+                                    </TableCell>
                                     <TableCell>{credit.date}</TableCell>
                                     <TableCell>{credit.customer}</TableCell>
                                     <TableCell className="text-right">
@@ -631,10 +987,17 @@ function OutstandingCreditsReport({ data }: { data: any }) {
                                         SBD {Number(credit.paid).toFixed(2)}
                                     </TableCell>
                                     <TableCell className="text-right font-semibold text-destructive">
-                                        SBD {Number(credit.outstanding).toFixed(2)}
+                                        SBD{' '}
+                                        {Number(credit.outstanding).toFixed(2)}
                                     </TableCell>
                                     <TableCell className="text-right">
-                                        <Badge variant={credit.days_outstanding > 30 ? 'destructive' : 'default'}>
+                                        <Badge
+                                            variant={
+                                                credit.days_outstanding > 30
+                                                    ? 'destructive'
+                                                    : 'default'
+                                            }
+                                        >
                                             {credit.days_outstanding} days
                                         </Badge>
                                     </TableCell>
@@ -649,7 +1012,7 @@ function OutstandingCreditsReport({ data }: { data: any }) {
 }
 
 // Expense Report Component
-function ExpenseReport({ data }: { data: any }) {
+function ExpenseReport({ data }: { data: ExpenseReportData }) {
     if (!data) return null;
 
     return (
@@ -658,15 +1021,21 @@ function ExpenseReport({ data }: { data: any }) {
                 <CardHeader>
                     <CardTitle>Expense Report</CardTitle>
                     <CardDescription>
-                        Total: SBD {Number(data.summary?.total || 0).toFixed(2)} | 
-                        Count: {data.summary?.count || 0}
+                        Total: SBD {Number(data.summary?.total || 0).toFixed(2)}{' '}
+                        | Count: {data.summary?.count || 0}
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
                     {data.daily_data && data.daily_data.length > 0 && (
                         <div className="mb-6">
-                            <ChartContainer config={expenseConfig} className="h-[250px] w-full">
-                                <LineChart accessibilityLayer data={data.daily_data}>
+                            <ChartContainer
+                                config={expenseConfig}
+                                className="h-[250px] w-full"
+                            >
+                                <LineChart
+                                    accessibilityLayer
+                                    data={data.daily_data}
+                                >
                                     <CartesianGrid vertical={false} />
                                     <XAxis
                                         dataKey="date"
@@ -675,7 +1044,13 @@ function ExpenseReport({ data }: { data: any }) {
                                         axisLine={false}
                                         tickFormatter={(value) => {
                                             const date = new Date(value);
-                                            return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                                            return date.toLocaleDateString(
+                                                'en-US',
+                                                {
+                                                    month: 'short',
+                                                    day: 'numeric',
+                                                },
+                                            );
                                         }}
                                     />
                                     <YAxis
@@ -684,13 +1059,20 @@ function ExpenseReport({ data }: { data: any }) {
                                         tickMargin={8}
                                         width={60}
                                         tickFormatter={(value) => {
-                                            if (value >= 1000) return `SBD ${(value / 1000).toFixed(1)}k`;
+                                            if (value >= 1000)
+                                                return `SBD ${(value / 1000).toFixed(1)}k`;
                                             return `SBD ${Math.round(value)}`;
                                         }}
                                     />
-                                    <ChartTooltip content={<ChartTooltipContent 
-                                        formatter={(value) => `SBD ${Number(value).toFixed(2)}`}
-                                    />} />
+                                    <ChartTooltip
+                                        content={
+                                            <ChartTooltipContent
+                                                formatter={(value) =>
+                                                    `SBD ${Number(value).toFixed(2)}`
+                                                }
+                                            />
+                                        }
+                                    />
                                     <Line
                                         type="monotone"
                                         dataKey="total"
@@ -712,20 +1094,29 @@ function ExpenseReport({ data }: { data: any }) {
                                     <TableHead>Type</TableHead>
                                     <TableHead>Description</TableHead>
                                     <TableHead>Supplier</TableHead>
-                                    <TableHead className="text-right">Amount</TableHead>
+                                    <TableHead className="text-right">
+                                        Amount
+                                    </TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {data.expenses.map((expense: any) => (
+                                {data.expenses.map((expense) => (
                                     <TableRow key={expense.id}>
                                         <TableCell>{expense.date}</TableCell>
                                         <TableCell>
-                                            <Badge variant="outline">{expense.type}</Badge>
+                                            <Badge variant="outline">
+                                                {expense.type}
+                                            </Badge>
                                         </TableCell>
-                                        <TableCell>{expense.description}</TableCell>
-                                        <TableCell>{expense.supplier || '-'}</TableCell>
+                                        <TableCell>
+                                            {expense.description}
+                                        </TableCell>
+                                        <TableCell>
+                                            {expense.supplier || '-'}
+                                        </TableCell>
                                         <TableCell className="text-right font-semibold">
-                                            SBD {Number(expense.amount).toFixed(2)}
+                                            SBD{' '}
+                                            {Number(expense.amount).toFixed(2)}
                                         </TableCell>
                                     </TableRow>
                                 ))}
@@ -739,7 +1130,7 @@ function ExpenseReport({ data }: { data: any }) {
 }
 
 // Purchase Report Component
-function PurchaseReport({ data }: { data: any }) {
+function PurchaseReport({ data }: { data: PurchaseReportData }) {
     if (!data) return null;
 
     return (
@@ -748,38 +1139,63 @@ function PurchaseReport({ data }: { data: any }) {
                 <CardHeader>
                     <CardTitle>Purchase Report</CardTitle>
                     <CardDescription>
-                        Total Cost: SBD {Number(data.summary?.total_cost || 0).toFixed(2)} | 
-                        Total Quantity: {Number(data.summary?.total_quantity || 0).toFixed(2)} kg | 
-                        Count: {data.summary?.count || 0}
+                        Total Cost: SBD{' '}
+                        {Number(data.summary?.total_cost || 0).toFixed(2)} |
+                        Total Quantity:{' '}
+                        {Number(data.summary?.total_quantity || 0).toFixed(2)}{' '}
+                        kg | Count: {data.summary?.count || 0}
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
                     {data.by_supplier && data.by_supplier.length > 0 && (
                         <div className="mb-6">
-                            <h3 className="text-sm font-semibold mb-4">Purchases by Supplier</h3>
+                            <h3 className="mb-4 text-sm font-semibold">
+                                Purchases by Supplier
+                            </h3>
                             <Table>
                                 <TableHeader>
                                     <TableRow>
                                         <TableHead>Supplier</TableHead>
-                                        <TableHead className="text-right">Total Cost</TableHead>
-                                        <TableHead className="text-right">Total Quantity</TableHead>
-                                        <TableHead className="text-right">Purchase Count</TableHead>
-                                        <TableHead className="text-right">Avg Price/kg</TableHead>
+                                        <TableHead className="text-right">
+                                            Total Cost
+                                        </TableHead>
+                                        <TableHead className="text-right">
+                                            Total Quantity
+                                        </TableHead>
+                                        <TableHead className="text-right">
+                                            Purchase Count
+                                        </TableHead>
+                                        <TableHead className="text-right">
+                                            Avg Price/kg
+                                        </TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
-                                    {data.by_supplier.map((supplier: any) => (
+                                    {data.by_supplier.map((supplier) => (
                                         <TableRow key={supplier.id}>
-                                            <TableCell className="font-medium">{supplier.name}</TableCell>
+                                            <TableCell className="font-medium">
+                                                {supplier.name}
+                                            </TableCell>
                                             <TableCell className="text-right font-semibold">
-                                                SBD {Number(supplier.total_cost).toFixed(2)}
+                                                SBD{' '}
+                                                {Number(
+                                                    supplier.total_cost,
+                                                ).toFixed(2)}
                                             </TableCell>
                                             <TableCell className="text-right">
-                                                {Number(supplier.total_quantity).toFixed(2)} kg
+                                                {Number(
+                                                    supplier.total_quantity,
+                                                ).toFixed(2)}{' '}
+                                                kg
                                             </TableCell>
-                                            <TableCell className="text-right">{supplier.purchase_count}</TableCell>
                                             <TableCell className="text-right">
-                                                SBD {Number(supplier.average_price).toFixed(2)}
+                                                {supplier.purchase_count}
+                                            </TableCell>
+                                            <TableCell className="text-right">
+                                                SBD{' '}
+                                                {Number(
+                                                    supplier.average_price,
+                                                ).toFixed(2)}
                                             </TableCell>
                                         </TableRow>
                                     ))}
@@ -790,30 +1206,51 @@ function PurchaseReport({ data }: { data: any }) {
 
                     {data.purchases && data.purchases.length > 0 && (
                         <div>
-                            <h3 className="text-sm font-semibold mb-4">Recent Purchases</h3>
+                            <h3 className="mb-4 text-sm font-semibold">
+                                Recent Purchases
+                            </h3>
                             <Table>
                                 <TableHeader>
                                     <TableRow>
                                         <TableHead>Date</TableHead>
                                         <TableHead>Supplier</TableHead>
-                                        <TableHead className="text-right">Quantity</TableHead>
-                                        <TableHead className="text-right">Price/kg</TableHead>
-                                        <TableHead className="text-right">Total Cost</TableHead>
+                                        <TableHead className="text-right">
+                                            Quantity
+                                        </TableHead>
+                                        <TableHead className="text-right">
+                                            Price/kg
+                                        </TableHead>
+                                        <TableHead className="text-right">
+                                            Total Cost
+                                        </TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
-                                    {data.purchases.map((purchase: any) => (
+                                    {data.purchases.map((purchase) => (
                                         <TableRow key={purchase.id}>
-                                            <TableCell>{purchase.date}</TableCell>
-                                            <TableCell className="font-medium">{purchase.supplier}</TableCell>
-                                            <TableCell className="text-right">
-                                                {Number(purchase.quantity).toFixed(2)} kg
+                                            <TableCell>
+                                                {purchase.date}
+                                            </TableCell>
+                                            <TableCell className="font-medium">
+                                                {purchase.supplier}
                                             </TableCell>
                                             <TableCell className="text-right">
-                                                SBD {Number(purchase.price_per_kg).toFixed(2)}
+                                                {Number(
+                                                    purchase.quantity,
+                                                ).toFixed(2)}{' '}
+                                                kg
+                                            </TableCell>
+                                            <TableCell className="text-right">
+                                                SBD{' '}
+                                                {Number(
+                                                    purchase.price_per_kg,
+                                                ).toFixed(2)}
                                             </TableCell>
                                             <TableCell className="text-right font-semibold">
-                                                SBD {Number(purchase.total_cost).toFixed(2)}
+                                                SBD{' '}
+                                                {Number(
+                                                    purchase.total_cost,
+                                                ).toFixed(2)}
                                             </TableCell>
                                         </TableRow>
                                     ))}
@@ -828,7 +1265,7 @@ function PurchaseReport({ data }: { data: any }) {
 }
 
 // Stock Report Component
-function StockReport({ data }: { data: any }) {
+function StockReport({ data }: { data: StockReportData }) {
     if (!data) return null;
 
     return (
@@ -837,7 +1274,8 @@ function StockReport({ data }: { data: any }) {
                 <CardHeader>
                     <CardTitle>Stock Report</CardTitle>
                     <CardDescription>
-                        Current Stock: {Number(data.current_stock || 0).toFixed(2)} kg
+                        Current Stock:{' '}
+                        {Number(data.current_stock || 0).toFixed(2)} kg
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -845,22 +1283,32 @@ function StockReport({ data }: { data: any }) {
                         <TableHeader>
                             <TableRow>
                                 <TableHead>Supplier</TableHead>
-                                <TableHead className="text-right">Remaining Stock</TableHead>
+                                <TableHead className="text-right">
+                                    Remaining Stock
+                                </TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
                             {data.by_supplier && data.by_supplier.length > 0 ? (
-                                data.by_supplier.map((supplier: any) => (
+                                data.by_supplier.map((supplier) => (
                                     <TableRow key={supplier.id}>
-                                        <TableCell className="font-medium">{supplier.name}</TableCell>
+                                        <TableCell className="font-medium">
+                                            {supplier.name}
+                                        </TableCell>
                                         <TableCell className="text-right font-semibold">
-                                            {Number(supplier.remaining_stock).toFixed(2)} kg
+                                            {Number(
+                                                supplier.remaining_stock,
+                                            ).toFixed(2)}{' '}
+                                            kg
                                         </TableCell>
                                     </TableRow>
                                 ))
                             ) : (
                                 <TableRow>
-                                    <TableCell colSpan={2} className="text-center text-muted-foreground">
+                                    <TableCell
+                                        colSpan={2}
+                                        className="text-center text-muted-foreground"
+                                    >
                                         No stock data available
                                     </TableCell>
                                 </TableRow>
@@ -874,7 +1322,7 @@ function StockReport({ data }: { data: any }) {
 }
 
 // Customer Report Component
-function CustomerReport({ data }: { data: any }) {
+function CustomerReport({ data }: { data: CustomerReportData }) {
     if (!data) return null;
 
     if (data.customer) {
@@ -888,19 +1336,33 @@ function CustomerReport({ data }: { data: any }) {
                     <CardContent>
                         <div className="grid gap-4 md:grid-cols-2">
                             <div>
-                                <div className="text-sm text-muted-foreground">Name</div>
-                                <div className="text-lg font-semibold">{data.customer.name}</div>
+                                <div className="text-sm text-muted-foreground">
+                                    Name
+                                </div>
+                                <div className="text-lg font-semibold">
+                                    {data.customer.name}
+                                </div>
                             </div>
                             <div>
-                                <div className="text-sm text-muted-foreground">Email</div>
-                                <div className="text-lg">{data.customer.email || '-'}</div>
+                                <div className="text-sm text-muted-foreground">
+                                    Email
+                                </div>
+                                <div className="text-lg">
+                                    {data.customer.email || '-'}
+                                </div>
                             </div>
                             <div>
-                                <div className="text-sm text-muted-foreground">Phone</div>
-                                <div className="text-lg">{data.customer.phone || '-'}</div>
+                                <div className="text-sm text-muted-foreground">
+                                    Phone
+                                </div>
+                                <div className="text-lg">
+                                    {data.customer.phone || '-'}
+                                </div>
                             </div>
                             <div>
-                                <div className="text-sm text-muted-foreground">Type</div>
+                                <div className="text-sm text-muted-foreground">
+                                    Type
+                                </div>
                                 <div className="text-lg">
                                     <Badge>{data.customer.type}</Badge>
                                 </div>
@@ -916,24 +1378,42 @@ function CustomerReport({ data }: { data: any }) {
                     <CardContent>
                         <div className="grid gap-4 md:grid-cols-4">
                             <div>
-                                <div className="text-sm text-muted-foreground">Total Sales</div>
-                                <div className="text-2xl font-bold">{data.summary?.total_sales || 0}</div>
-                            </div>
-                            <div>
-                                <div className="text-sm text-muted-foreground">Total Revenue</div>
+                                <div className="text-sm text-muted-foreground">
+                                    Total Sales
+                                </div>
                                 <div className="text-2xl font-bold">
-                                    SBD {Number(data.summary?.total_revenue || 0).toFixed(2)}
+                                    {data.summary?.total_sales || 0}
                                 </div>
                             </div>
                             <div>
-                                <div className="text-sm text-muted-foreground">Outstanding Credits</div>
+                                <div className="text-sm text-muted-foreground">
+                                    Total Revenue
+                                </div>
+                                <div className="text-2xl font-bold">
+                                    SBD{' '}
+                                    {Number(
+                                        data.summary?.total_revenue || 0,
+                                    ).toFixed(2)}
+                                </div>
+                            </div>
+                            <div>
+                                <div className="text-sm text-muted-foreground">
+                                    Outstanding Credits
+                                </div>
                                 <div className="text-2xl font-bold text-destructive">
-                                    SBD {Number(data.summary?.outstanding_credits || 0).toFixed(2)}
+                                    SBD{' '}
+                                    {Number(
+                                        data.summary?.outstanding_credits || 0,
+                                    ).toFixed(2)}
                                 </div>
                             </div>
                             <div>
-                                <div className="text-sm text-muted-foreground">Credit Sales</div>
-                                <div className="text-2xl font-bold">{data.summary?.credit_count || 0}</div>
+                                <div className="text-sm text-muted-foreground">
+                                    Credit Sales
+                                </div>
+                                <div className="text-2xl font-bold">
+                                    {data.summary?.credit_count || 0}
+                                </div>
                             </div>
                         </div>
                     </CardContent>
@@ -949,31 +1429,52 @@ function CustomerReport({ data }: { data: any }) {
                                 <TableHeader>
                                     <TableRow>
                                         <TableHead>Date</TableHead>
-                                        <TableHead className="text-right">Amount</TableHead>
-                                        <TableHead className="text-right">Quantity</TableHead>
+                                        <TableHead className="text-right">
+                                            Amount
+                                        </TableHead>
+                                        <TableHead className="text-right">
+                                            Quantity
+                                        </TableHead>
                                         <TableHead>Type</TableHead>
-                                        <TableHead className="text-right">Outstanding</TableHead>
+                                        <TableHead className="text-right">
+                                            Outstanding
+                                        </TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
-                                    {data.recent_sales.map((sale: any) => (
+                                    {data.recent_sales.map((sale) => (
                                         <TableRow key={sale.id}>
                                             <TableCell>{sale.date}</TableCell>
                                             <TableCell className="text-right font-semibold">
-                                                SBD {Number(sale.amount).toFixed(2)}
+                                                SBD{' '}
+                                                {Number(sale.amount).toFixed(2)}
                                             </TableCell>
                                             <TableCell className="text-right">
-                                                {Number(sale.quantity).toFixed(2)} kg
+                                                {Number(sale.quantity).toFixed(
+                                                    2,
+                                                )}{' '}
+                                                kg
                                             </TableCell>
                                             <TableCell>
-                                                <Badge variant={sale.is_credit ? 'destructive' : 'default'}>
-                                                    {sale.is_credit ? 'Credit' : 'Cash'}
+                                                <Badge
+                                                    variant={
+                                                        sale.is_credit
+                                                            ? 'destructive'
+                                                            : 'default'
+                                                    }
+                                                >
+                                                    {sale.is_credit
+                                                        ? 'Credit'
+                                                        : 'Cash'}
                                                 </Badge>
                                             </TableCell>
                                             <TableCell className="text-right">
                                                 {sale.outstanding > 0 ? (
-                                                    <span className="text-destructive font-semibold">
-                                                        SBD {Number(sale.outstanding).toFixed(2)}
+                                                    <span className="font-semibold text-destructive">
+                                                        SBD{' '}
+                                                        {Number(
+                                                            sale.outstanding,
+                                                        ).toFixed(2)}
                                                     </span>
                                                 ) : (
                                                     '-'
@@ -1004,29 +1505,49 @@ function CustomerReport({ data }: { data: any }) {
                             <TableHead>Email</TableHead>
                             <TableHead>Phone</TableHead>
                             <TableHead>Type</TableHead>
-                            <TableHead className="text-right">Total Sales</TableHead>
-                            <TableHead className="text-right">Total Revenue</TableHead>
+                            <TableHead className="text-right">
+                                Total Sales
+                            </TableHead>
+                            <TableHead className="text-right">
+                                Total Revenue
+                            </TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
                         {data.customers && data.customers.length > 0 ? (
-                            data.customers.map((customer: any) => (
+                            data.customers.map((customer) => (
                                 <TableRow key={customer.id}>
-                                    <TableCell className="font-medium">{customer.name}</TableCell>
-                                    <TableCell>{customer.email || '-'}</TableCell>
-                                    <TableCell>{customer.phone || '-'}</TableCell>
-                                    <TableCell>
-                                        <Badge variant="outline">{customer.type}</Badge>
+                                    <TableCell className="font-medium">
+                                        {customer.name}
                                     </TableCell>
-                                    <TableCell className="text-right">{customer.total_sales}</TableCell>
+                                    <TableCell>
+                                        {customer.email || '-'}
+                                    </TableCell>
+                                    <TableCell>
+                                        {customer.phone || '-'}
+                                    </TableCell>
+                                    <TableCell>
+                                        <Badge variant="outline">
+                                            {customer.type}
+                                        </Badge>
+                                    </TableCell>
+                                    <TableCell className="text-right">
+                                        {customer.total_sales}
+                                    </TableCell>
                                     <TableCell className="text-right font-semibold">
-                                        SBD {Number(customer.total_revenue).toFixed(2)}
+                                        SBD{' '}
+                                        {Number(customer.total_revenue).toFixed(
+                                            2,
+                                        )}
                                     </TableCell>
                                 </TableRow>
                             ))
                         ) : (
                             <TableRow>
-                                <TableCell colSpan={6} className="text-center text-muted-foreground">
+                                <TableCell
+                                    colSpan={6}
+                                    className="text-center text-muted-foreground"
+                                >
                                     No customers found
                                 </TableCell>
                             </TableRow>
@@ -1039,7 +1560,7 @@ function CustomerReport({ data }: { data: any }) {
 }
 
 // Supplier Report Component
-function SupplierReport({ data }: { data: any }) {
+function SupplierReport({ data }: { data: SupplierReportData }) {
     if (!data) return null;
 
     if (data.supplier) {
@@ -1053,20 +1574,36 @@ function SupplierReport({ data }: { data: any }) {
                     <CardContent>
                         <div className="grid gap-4 md:grid-cols-2">
                             <div>
-                                <div className="text-sm text-muted-foreground">Name</div>
-                                <div className="text-lg font-semibold">{data.supplier.name}</div>
+                                <div className="text-sm text-muted-foreground">
+                                    Name
+                                </div>
+                                <div className="text-lg font-semibold">
+                                    {data.supplier.name}
+                                </div>
                             </div>
                             <div>
-                                <div className="text-sm text-muted-foreground">Email</div>
-                                <div className="text-lg">{data.supplier.email || '-'}</div>
+                                <div className="text-sm text-muted-foreground">
+                                    Email
+                                </div>
+                                <div className="text-lg">
+                                    {data.supplier.email || '-'}
+                                </div>
                             </div>
                             <div>
-                                <div className="text-sm text-muted-foreground">Phone</div>
-                                <div className="text-lg">{data.supplier.phone || '-'}</div>
+                                <div className="text-sm text-muted-foreground">
+                                    Phone
+                                </div>
+                                <div className="text-lg">
+                                    {data.supplier.phone || '-'}
+                                </div>
                             </div>
                             <div>
-                                <div className="text-sm text-muted-foreground">Address</div>
-                                <div className="text-lg">{data.supplier.address || '-'}</div>
+                                <div className="text-sm text-muted-foreground">
+                                    Address
+                                </div>
+                                <div className="text-lg">
+                                    {data.supplier.address || '-'}
+                                </div>
                             </div>
                         </div>
                     </CardContent>
@@ -1079,25 +1616,44 @@ function SupplierReport({ data }: { data: any }) {
                     <CardContent>
                         <div className="grid gap-4 md:grid-cols-4">
                             <div>
-                                <div className="text-sm text-muted-foreground">Total Purchases</div>
-                                <div className="text-2xl font-bold">{data.summary?.total_purchases || 0}</div>
-                            </div>
-                            <div>
-                                <div className="text-sm text-muted-foreground">Total Cost</div>
+                                <div className="text-sm text-muted-foreground">
+                                    Total Purchases
+                                </div>
                                 <div className="text-2xl font-bold">
-                                    SBD {Number(data.summary?.total_cost || 0).toFixed(2)}
+                                    {data.summary?.total_purchases || 0}
                                 </div>
                             </div>
                             <div>
-                                <div className="text-sm text-muted-foreground">Total Quantity</div>
+                                <div className="text-sm text-muted-foreground">
+                                    Total Cost
+                                </div>
                                 <div className="text-2xl font-bold">
-                                    {Number(data.summary?.total_quantity || 0).toFixed(2)} kg
+                                    SBD{' '}
+                                    {Number(
+                                        data.summary?.total_cost || 0,
+                                    ).toFixed(2)}
                                 </div>
                             </div>
                             <div>
-                                <div className="text-sm text-muted-foreground">Remaining Stock</div>
+                                <div className="text-sm text-muted-foreground">
+                                    Total Quantity
+                                </div>
                                 <div className="text-2xl font-bold">
-                                    {Number(data.summary?.remaining_stock || 0).toFixed(2)} kg
+                                    {Number(
+                                        data.summary?.total_quantity || 0,
+                                    ).toFixed(2)}{' '}
+                                    kg
+                                </div>
+                            </div>
+                            <div>
+                                <div className="text-sm text-muted-foreground">
+                                    Remaining Stock
+                                </div>
+                                <div className="text-2xl font-bold">
+                                    {Number(
+                                        data.summary?.remaining_stock || 0,
+                                    ).toFixed(2)}{' '}
+                                    kg
                                 </div>
                             </div>
                         </div>
@@ -1114,23 +1670,40 @@ function SupplierReport({ data }: { data: any }) {
                                 <TableHeader>
                                     <TableRow>
                                         <TableHead>Date</TableHead>
-                                        <TableHead className="text-right">Quantity</TableHead>
-                                        <TableHead className="text-right">Price/kg</TableHead>
-                                        <TableHead className="text-right">Total Cost</TableHead>
+                                        <TableHead className="text-right">
+                                            Quantity
+                                        </TableHead>
+                                        <TableHead className="text-right">
+                                            Price/kg
+                                        </TableHead>
+                                        <TableHead className="text-right">
+                                            Total Cost
+                                        </TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
-                                    {data.recent_purchases.map((purchase: any) => (
+                                    {data.recent_purchases.map((purchase) => (
                                         <TableRow key={purchase.id}>
-                                            <TableCell>{purchase.date}</TableCell>
-                                            <TableCell className="text-right">
-                                                {Number(purchase.quantity).toFixed(2)} kg
+                                            <TableCell>
+                                                {purchase.date}
                                             </TableCell>
                                             <TableCell className="text-right">
-                                                SBD {Number(purchase.price_per_kg).toFixed(2)}
+                                                {Number(
+                                                    purchase.quantity,
+                                                ).toFixed(2)}{' '}
+                                                kg
+                                            </TableCell>
+                                            <TableCell className="text-right">
+                                                SBD{' '}
+                                                {Number(
+                                                    purchase.price_per_kg,
+                                                ).toFixed(2)}
                                             </TableCell>
                                             <TableCell className="text-right font-semibold">
-                                                SBD {Number(purchase.total_cost).toFixed(2)}
+                                                SBD{' '}
+                                                {Number(
+                                                    purchase.total_cost,
+                                                ).toFixed(2)}
                                             </TableCell>
                                         </TableRow>
                                     ))}
@@ -1156,30 +1729,51 @@ function SupplierReport({ data }: { data: any }) {
                             <TableHead>Name</TableHead>
                             <TableHead>Email</TableHead>
                             <TableHead>Phone</TableHead>
-                            <TableHead className="text-right">Total Purchases</TableHead>
-                            <TableHead className="text-right">Total Cost</TableHead>
-                            <TableHead className="text-right">Remaining Stock</TableHead>
+                            <TableHead className="text-right">
+                                Total Purchases
+                            </TableHead>
+                            <TableHead className="text-right">
+                                Total Cost
+                            </TableHead>
+                            <TableHead className="text-right">
+                                Remaining Stock
+                            </TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
                         {data.suppliers && data.suppliers.length > 0 ? (
-                            data.suppliers.map((supplier: any) => (
+                            data.suppliers.map((supplier) => (
                                 <TableRow key={supplier.id}>
-                                    <TableCell className="font-medium">{supplier.name}</TableCell>
-                                    <TableCell>{supplier.email || '-'}</TableCell>
-                                    <TableCell>{supplier.phone || '-'}</TableCell>
-                                    <TableCell className="text-right">{supplier.total_purchases}</TableCell>
-                                    <TableCell className="text-right font-semibold">
-                                        SBD {Number(supplier.total_cost).toFixed(2)}
+                                    <TableCell className="font-medium">
+                                        {supplier.name}
+                                    </TableCell>
+                                    <TableCell>
+                                        {supplier.email || '-'}
+                                    </TableCell>
+                                    <TableCell>
+                                        {supplier.phone || '-'}
                                     </TableCell>
                                     <TableCell className="text-right">
-                                        {Number(supplier.remaining_stock).toFixed(2)} kg
+                                        {supplier.total_purchases}
+                                    </TableCell>
+                                    <TableCell className="text-right font-semibold">
+                                        SBD{' '}
+                                        {Number(supplier.total_cost).toFixed(2)}
+                                    </TableCell>
+                                    <TableCell className="text-right">
+                                        {Number(
+                                            supplier.remaining_stock,
+                                        ).toFixed(2)}{' '}
+                                        kg
                                     </TableCell>
                                 </TableRow>
                             ))
                         ) : (
                             <TableRow>
-                                <TableCell colSpan={6} className="text-center text-muted-foreground">
+                                <TableCell
+                                    colSpan={6}
+                                    className="text-center text-muted-foreground"
+                                >
                                     No suppliers found
                                 </TableCell>
                             </TableRow>
@@ -1190,4 +1784,3 @@ function SupplierReport({ data }: { data: any }) {
         </Card>
     );
 }
-

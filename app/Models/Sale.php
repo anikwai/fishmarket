@@ -88,11 +88,21 @@ final class Sale extends Model
         return $this->hasOne(Receipt::class)->where('status', 'active')->latestOfMany();
     }
 
-    public function getProfitAttribute(): float
+    protected static function booted(): void
+    {
+        self::saving(function (Sale $sale): void {
+            if ($sale->isDirty(['quantity_kg', 'price_per_kg', 'discount_percentage', 'delivery_fee'])) {
+                $sale->subtotal = $sale->quantity_kg * $sale->price_per_kg * (1 - ($sale->discount_percentage / 100));
+                $sale->total_amount = $sale->subtotal + $sale->delivery_fee;
+            }
+        });
+    }
+
+    protected function getProfitAttribute(): float
     {
         return $this->purchases()
             ->get()
-            ->sum(function (Purchase $purchase) {
+            ->sum(function (Purchase $purchase): float {
                 $quantityFromThisPurchase = (float) ($purchase->pivot->quantity_kg ?? 0);
                 if ($quantityFromThisPurchase <= 0) {
                     return 0.0;
@@ -103,7 +113,7 @@ final class Sale extends Model
             });
     }
 
-    public function getOutstandingBalanceAttribute(): float
+    protected function getOutstandingBalanceAttribute(): float
     {
         if (! $this->is_credit) {
             return 0.0;
@@ -112,15 +122,5 @@ final class Sale extends Model
         $paidAmount = $this->payments()->sum('amount');
 
         return max(0, $this->total_amount - $paidAmount);
-    }
-
-    protected static function booted(): void
-    {
-        self::saving(function (Sale $sale): void {
-            if ($sale->isDirty(['quantity_kg', 'price_per_kg', 'discount_percentage', 'delivery_fee'])) {
-                $sale->subtotal = $sale->quantity_kg * $sale->price_per_kg * (1 - ($sale->discount_percentage / 100));
-                $sale->total_amount = $sale->subtotal + $sale->delivery_fee;
-            }
-        });
     }
 }

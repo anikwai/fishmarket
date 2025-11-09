@@ -18,7 +18,7 @@ final class SaleReceipt extends Mailable
         public Sale $sale,
         public ?Receipt $receipt = null
     ) {
-        if (! $this->receipt) {
+        if (! $this->receipt instanceof Receipt) {
             $this->receipt = $sale->activeReceipt;
         }
     }
@@ -58,7 +58,7 @@ final class SaleReceipt extends Mailable
         $receiptNumber = $receipt->receipt_number ?? 'receipt-'.$this->sale->id;
 
         return [
-            Attachment::fromData(fn () => $pdf->output(), $receiptNumber.'.pdf')
+            Attachment::fromData(fn (): string => $pdf->output(), $receiptNumber.'.pdf')
                 ->withMime('application/pdf'),
         ];
     }

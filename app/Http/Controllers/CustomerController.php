@@ -54,20 +54,20 @@ final readonly class CustomerController
     {
         $action->handle($request->validated());
 
-        return redirect()->back()->with('success', 'Customer created successfully.');
+        return back()->with('success', 'Customer created successfully.');
     }
 
     public function update(UpdateCustomerRequest $request, Customer $customer, UpdateCustomer $action): RedirectResponse
     {
         $action->handle($customer, $request->validated());
 
-        return redirect()->back()->with('success', 'Customer updated successfully.');
+        return back()->with('success', 'Customer updated successfully.');
     }
 
     public function destroy(Customer $customer, DeleteCustomer $action): RedirectResponse
     {
         $action->handle($customer);
 
-        return redirect()->back()->with('success', 'Customer deleted successfully.');
+        return back()->with('success', 'Customer deleted successfully.');
     }
 }

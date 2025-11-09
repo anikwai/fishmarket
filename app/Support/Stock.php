@@ -11,8 +11,8 @@ final class Stock
 {
     public static function current(): float
     {
-        $totalPurchased = Purchase::sum('quantity_kg');
-        $totalSold = Sale::sum('quantity_kg');
+        $totalPurchased = Purchase::query()->sum('quantity_kg');
+        $totalSold = Sale::query()->sum('quantity_kg');
 
         return max(0, $totalPurchased - $totalSold);
     }
@@ -22,4 +22,3 @@ final class Stock
         return self::current();
     }
 }
-

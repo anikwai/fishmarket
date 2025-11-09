@@ -17,14 +17,14 @@ final readonly class GetCreditSalesForPaymentAction
             ->where('is_credit', true)
             ->with('customer', 'payments')
             ->get()
-            ->filter(fn (Sale $sale) => $sale->outstanding_balance > 0)
-            ->map(fn (Sale $sale) => [
+            ->filter(fn (Sale $sale): bool => $sale->outstanding_balance > 0)
+            ->map(fn (Sale $sale): array => [
                 'id' => $sale->id,
                 'customer_name' => $sale->customer->name,
                 'total_amount' => $sale->total_amount,
                 'outstanding_balance' => $sale->outstanding_balance,
             ])
             ->values()
-            ->toArray();
+            ->all();
     }
 }

@@ -21,7 +21,7 @@ final readonly class GenerateCustomerReportAction
                     ->withSum('sales', 'total_amount')
                     ->orderBy('name')
                     ->get()
-                    ->map(fn ($customer) => [
+                    ->map(fn ($customer): array => [
                         'id' => $customer->id,
                         'name' => $customer->name,
                         'email' => $customer->email,
@@ -41,7 +41,7 @@ final readonly class GenerateCustomerReportAction
             ->where('is_credit', true)
             ->with('payments')
             ->get()
-            ->filter(fn (Sale $sale) => $sale->outstanding_balance > 0);
+            ->filter(fn (Sale $sale): bool => $sale->outstanding_balance > 0);
 
         return [
             'customer' => [
@@ -58,7 +58,7 @@ final readonly class GenerateCustomerReportAction
                 'outstanding_credits' => $outstandingCredits->sum('outstanding_balance'),
                 'credit_count' => $outstandingCredits->count(),
             ],
-            'recent_sales' => $customer->sales->map(fn ($sale) => [
+            'recent_sales' => $customer->sales->map(fn ($sale): array => [
                 'id' => $sale->id,
                 'date' => $sale->sale_date->format('Y-m-d'),
                 'amount' => $sale->total_amount,
@@ -66,7 +66,7 @@ final readonly class GenerateCustomerReportAction
                 'is_credit' => $sale->is_credit,
                 'outstanding' => $sale->is_credit ? $sale->outstanding_balance : 0,
             ]),
-            'outstanding_credits' => $outstandingCredits->map(fn ($sale) => [
+            'outstanding_credits' => $outstandingCredits->map(fn ($sale): array => [
                 'sale_id' => $sale->id,
                 'date' => $sale->sale_date->format('Y-m-d'),
                 'total' => $sale->total_amount,

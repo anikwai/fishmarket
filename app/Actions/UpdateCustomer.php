@@ -16,4 +16,3 @@ final readonly class UpdateCustomer
         $customer->update($attributes);
     }
 }
-

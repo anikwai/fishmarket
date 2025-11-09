@@ -1,49 +1,72 @@
 'use client';
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Badge } from '@/components/ui/badge';
+import {
+    Card,
+    CardContent,
+    CardDescription,
+    CardHeader,
+    CardTitle,
+} from '@/components/ui/card';
 import {
     ChartConfig,
     ChartContainer,
     ChartTooltip,
     ChartTooltipContent,
 } from '@/components/ui/chart';
-import { Badge } from '@/components/ui/badge';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '@/components/ui/empty';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import {
+    Empty,
+    EmptyDescription,
+    EmptyHeader,
+    EmptyMedia,
+    EmptyTitle,
+} from '@/components/ui/empty';
 import { Progress } from '@/components/ui/progress';
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from '@/components/ui/table';
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipTrigger,
+} from '@/components/ui/tooltip';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Head } from '@inertiajs/react';
-import { 
-    Bar, 
-    BarChart, 
-    CartesianGrid, 
-    Cell, 
+import {
+    Activity,
+    AlertCircle,
+    BarChart3,
+    CreditCard,
+    DollarSign,
+    Info,
+    Package,
+    PieChart,
+    ShoppingCart,
+    TrendingDown,
+    TrendingUp,
+    Users,
+} from 'lucide-react';
+import {
+    Bar,
+    BarChart,
+    CartesianGrid,
+    Cell,
     Label,
-    Line, 
-    LineChart, 
+    Line,
+    LineChart,
     PolarRadiusAxis,
     RadialBar,
     RadialBarChart,
-    XAxis, 
-    YAxis 
+    XAxis,
+    YAxis,
 } from 'recharts';
-import { 
-    TrendingUp, 
-    TrendingDown, 
-    DollarSign, 
-    ShoppingCart, 
-    Package, 
-    Users, 
-    CreditCard,
-    AlertCircle,
-    Info,
-    BarChart3,
-    PieChart,
-    Activity
-} from 'lucide-react';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -177,27 +200,34 @@ export default function Dashboard({
     },
 }: DashboardProps) {
     const totalOutstandingCredits = outstandingCredits.reduce(
-        (sum, credit) => sum + Number(credit.outstanding), 
-        0
+        (sum, credit) => sum + Number(credit.outstanding),
+        0,
     );
-    
+
     const netProfitValue = Number(summary.netProfit);
     const thisMonthProfitValue = Number(summary.thisMonthProfit);
     const totalRevenueValue = Number(summary.totalRevenue);
     const thisMonthRevenueValue = Number(summary.thisMonthRevenue);
 
     // Transform supplier stock data for radial chart
-    const radialChartData = supplierStockData.length > 0
-        ? [supplierStockData.reduce((acc, item, index) => {
-              acc[`supplier_${index}`] = item.value;
-              return acc;
-          }, {} as Record<string, number>)]
-        : [];
+    const radialChartData =
+        supplierStockData.length > 0
+            ? [
+                  supplierStockData.reduce(
+                      (acc, item, index) => {
+                          acc[`supplier_${index}`] = item.value;
+                          return acc;
+                      },
+                      {} as Record<string, number>,
+                  ),
+              ]
+            : [];
 
     // Calculate profit margin percentage
-    const profitMargin = totalRevenueValue > 0 
-        ? ((netProfitValue / totalRevenueValue) * 100).toFixed(1)
-        : '0.0';
+    const profitMargin =
+        totalRevenueValue > 0
+            ? ((netProfitValue / totalRevenueValue) * 100).toFixed(1)
+            : '0.0';
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -206,8 +236,10 @@ export default function Dashboard({
                 {/* Page Header */}
                 <div className="flex items-center justify-between">
                     <div>
-                        <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
-                        <p className="text-muted-foreground mt-1">
+                        <h1 className="text-3xl font-bold tracking-tight">
+                            Dashboard
+                        </h1>
+                        <p className="mt-1 text-muted-foreground">
                             Overview of your fish shop business performance
                         </p>
                     </div>
@@ -216,7 +248,8 @@ export default function Dashboard({
                             <AlertCircle className="h-4 w-4" />
                             <AlertTitle>Outstanding Credits</AlertTitle>
                             <AlertDescription>
-                                SBD {totalOutstandingCredits.toFixed(2)} requires attention
+                                SBD {totalOutstandingCredits.toFixed(2)}{' '}
+                                requires attention
                             </AlertDescription>
                         </Alert>
                     )}
@@ -224,24 +257,31 @@ export default function Dashboard({
 
                 {/* Key Financial Metrics */}
                 <div>
-                    <div className="flex items-center justify-between mb-4">
-                        <h2 className="text-lg font-semibold">Financial Overview</h2>
+                    <div className="mb-4 flex items-center justify-between">
+                        <h2 className="text-lg font-semibold">
+                            Financial Overview
+                        </h2>
                         <Tooltip>
                             <TooltipTrigger asChild>
-                                <Info className="h-4 w-4 text-muted-foreground cursor-help" />
+                                <Info className="h-4 w-4 cursor-help text-muted-foreground" />
                             </TooltipTrigger>
                             <TooltipContent>
-                                <p>Financial metrics calculated from all-time sales, costs, and expenses</p>
+                                <p>
+                                    Financial metrics calculated from all-time
+                                    sales, costs, and expenses
+                                </p>
                             </TooltipContent>
                         </Tooltip>
                     </div>
                     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
                         <Card>
                             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
+                                <CardTitle className="text-sm font-medium">
+                                    Total Revenue
+                                </CardTitle>
                                 <Tooltip>
                                     <TooltipTrigger asChild>
-                                        <DollarSign className="h-4 w-4 text-muted-foreground cursor-help" />
+                                        <DollarSign className="h-4 w-4 cursor-help text-muted-foreground" />
                                     </TooltipTrigger>
                                     <TooltipContent>
                                         <p>All-time cumulative sales revenue</p>
@@ -252,11 +292,14 @@ export default function Dashboard({
                                 <div className="text-2xl font-bold">
                                     SBD {totalRevenueValue.toFixed(2)}
                                 </div>
-                                <div className="flex items-center gap-2 mt-1">
+                                <div className="mt-1 flex items-center gap-2">
                                     <p className="text-xs text-muted-foreground">
                                         All-time sales revenue
                                     </p>
-                                    <Badge variant="outline" className="text-xs">
+                                    <Badge
+                                        variant="outline"
+                                        className="text-xs"
+                                    >
                                         {profitMargin}% margin
                                     </Badge>
                                 </div>
@@ -265,40 +308,57 @@ export default function Dashboard({
 
                         <Card>
                             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                <CardTitle className="text-sm font-medium">Net Profit</CardTitle>
+                                <CardTitle className="text-sm font-medium">
+                                    Net Profit
+                                </CardTitle>
                                 {netProfitValue >= 0 ? (
                                     <Tooltip>
                                         <TooltipTrigger asChild>
-                                            <TrendingUp className="h-4 w-4 text-green-600 cursor-help" />
+                                            <TrendingUp className="h-4 w-4 cursor-help text-green-600" />
                                         </TooltipTrigger>
                                         <TooltipContent>
-                                            <p>Total profit after costs and expenses</p>
+                                            <p>
+                                                Total profit after costs and
+                                                expenses
+                                            </p>
                                         </TooltipContent>
                                     </Tooltip>
                                 ) : (
                                     <Tooltip>
                                         <TooltipTrigger asChild>
-                                            <TrendingDown className="h-4 w-4 text-red-600 cursor-help" />
+                                            <TrendingDown className="h-4 w-4 cursor-help text-red-600" />
                                         </TooltipTrigger>
                                         <TooltipContent>
-                                            <p>Total loss after costs and expenses</p>
+                                            <p>
+                                                Total loss after costs and
+                                                expenses
+                                            </p>
                                         </TooltipContent>
                                     </Tooltip>
                                 )}
                             </CardHeader>
                             <CardContent>
-                                <div className={`text-2xl font-bold ${netProfitValue >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                                    {netProfitValue >= 0 ? '+' : ''}SBD {Math.abs(netProfitValue).toFixed(2)}
+                                <div
+                                    className={`text-2xl font-bold ${netProfitValue >= 0 ? 'text-green-600' : 'text-red-600'}`}
+                                >
+                                    {netProfitValue >= 0 ? '+' : ''}SBD{' '}
+                                    {Math.abs(netProfitValue).toFixed(2)}
                                 </div>
-                                <div className="flex items-center gap-2 mt-1">
+                                <div className="mt-1 flex items-center gap-2">
                                     <p className="text-xs text-muted-foreground">
                                         Revenue - Costs - Expenses
                                     </p>
-                                    <Badge 
-                                        variant={netProfitValue >= 0 ? "default" : "destructive"}
+                                    <Badge
+                                        variant={
+                                            netProfitValue >= 0
+                                                ? 'default'
+                                                : 'destructive'
+                                        }
                                         className="text-xs"
                                     >
-                                        {netProfitValue >= 0 ? 'Profit' : 'Loss'}
+                                        {netProfitValue >= 0
+                                            ? 'Profit'
+                                            : 'Loss'}
                                     </Badge>
                                 </div>
                             </CardContent>
@@ -306,13 +366,17 @@ export default function Dashboard({
 
                         <Card>
                             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                <CardTitle className="text-sm font-medium">This Month Revenue</CardTitle>
+                                <CardTitle className="text-sm font-medium">
+                                    This Month Revenue
+                                </CardTitle>
                                 <Tooltip>
                                     <TooltipTrigger asChild>
-                                        <DollarSign className="h-4 w-4 text-muted-foreground cursor-help" />
+                                        <DollarSign className="h-4 w-4 cursor-help text-muted-foreground" />
                                     </TooltipTrigger>
                                     <TooltipContent>
-                                        <p>Sales revenue for the current month</p>
+                                        <p>
+                                            Sales revenue for the current month
+                                        </p>
                                     </TooltipContent>
                                 </Tooltip>
                             </CardHeader>
@@ -320,7 +384,7 @@ export default function Dashboard({
                                 <div className="text-2xl font-bold">
                                     SBD {thisMonthRevenueValue.toFixed(2)}
                                 </div>
-                                <p className="text-xs text-muted-foreground mt-1">
+                                <p className="mt-1 text-xs text-muted-foreground">
                                     Current month sales
                                 </p>
                             </CardContent>
@@ -328,11 +392,13 @@ export default function Dashboard({
 
                         <Card>
                             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                <CardTitle className="text-sm font-medium">This Month Profit</CardTitle>
+                                <CardTitle className="text-sm font-medium">
+                                    This Month Profit
+                                </CardTitle>
                                 {thisMonthProfitValue >= 0 ? (
                                     <Tooltip>
                                         <TooltipTrigger asChild>
-                                            <TrendingUp className="h-4 w-4 text-green-600 cursor-help" />
+                                            <TrendingUp className="h-4 w-4 cursor-help text-green-600" />
                                         </TooltipTrigger>
                                         <TooltipContent>
                                             <p>Profit for the current month</p>
@@ -341,7 +407,7 @@ export default function Dashboard({
                                 ) : (
                                     <Tooltip>
                                         <TooltipTrigger asChild>
-                                            <TrendingDown className="h-4 w-4 text-red-600 cursor-help" />
+                                            <TrendingDown className="h-4 w-4 cursor-help text-red-600" />
                                         </TooltipTrigger>
                                         <TooltipContent>
                                             <p>Loss for the current month</p>
@@ -350,18 +416,27 @@ export default function Dashboard({
                                 )}
                             </CardHeader>
                             <CardContent>
-                                <div className={`text-2xl font-bold ${thisMonthProfitValue >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                                    {thisMonthProfitValue >= 0 ? '+' : ''}SBD {Math.abs(thisMonthProfitValue).toFixed(2)}
+                                <div
+                                    className={`text-2xl font-bold ${thisMonthProfitValue >= 0 ? 'text-green-600' : 'text-red-600'}`}
+                                >
+                                    {thisMonthProfitValue >= 0 ? '+' : ''}SBD{' '}
+                                    {Math.abs(thisMonthProfitValue).toFixed(2)}
                                 </div>
-                                <div className="flex items-center gap-2 mt-1">
+                                <div className="mt-1 flex items-center gap-2">
                                     <p className="text-xs text-muted-foreground">
                                         Current month performance
                                     </p>
-                                    <Badge 
-                                        variant={thisMonthProfitValue >= 0 ? "default" : "destructive"}
+                                    <Badge
+                                        variant={
+                                            thisMonthProfitValue >= 0
+                                                ? 'default'
+                                                : 'destructive'
+                                        }
                                         className="text-xs"
                                     >
-                                        {thisMonthProfitValue >= 0 ? 'Profit' : 'Loss'}
+                                        {thisMonthProfitValue >= 0
+                                            ? 'Profit'
+                                            : 'Loss'}
                                     </Badge>
                                 </div>
                             </CardContent>
@@ -371,18 +446,22 @@ export default function Dashboard({
 
                 {/* Operational Metrics */}
                 <div>
-                    <h2 className="text-lg font-semibold mb-4">Operational Overview</h2>
+                    <h2 className="mb-4 text-lg font-semibold">
+                        Operational Overview
+                    </h2>
                     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
                         <Card>
                             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                <CardTitle className="text-sm font-medium">Current Stock</CardTitle>
+                                <CardTitle className="text-sm font-medium">
+                                    Current Stock
+                                </CardTitle>
                                 <Package className="h-4 w-4 text-muted-foreground" />
                             </CardHeader>
                             <CardContent>
                                 <div className="text-2xl font-bold">
                                     {Number(currentStock).toFixed(2)} kg
                                 </div>
-                                <p className="text-xs text-muted-foreground mt-1">
+                                <p className="mt-1 text-xs text-muted-foreground">
                                     Available fish stock
                                 </p>
                             </CardContent>
@@ -390,14 +469,16 @@ export default function Dashboard({
 
                         <Card>
                             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                <CardTitle className="text-sm font-medium">Total Sales</CardTitle>
+                                <CardTitle className="text-sm font-medium">
+                                    Total Sales
+                                </CardTitle>
                                 <ShoppingCart className="h-4 w-4 text-muted-foreground" />
                             </CardHeader>
                             <CardContent>
                                 <div className="text-2xl font-bold">
                                     {summary.totalSales}
                                 </div>
-                                <p className="text-xs text-muted-foreground mt-1">
+                                <p className="mt-1 text-xs text-muted-foreground">
                                     All-time transactions
                                 </p>
                             </CardContent>
@@ -405,29 +486,34 @@ export default function Dashboard({
 
                         <Card>
                             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                <CardTitle className="text-sm font-medium">Outstanding Credits</CardTitle>
+                                <CardTitle className="text-sm font-medium">
+                                    Outstanding Credits
+                                </CardTitle>
                                 <CreditCard className="h-4 w-4 text-muted-foreground" />
                             </CardHeader>
                             <CardContent>
                                 <div className="text-2xl font-bold text-destructive">
                                     SBD {totalOutstandingCredits.toFixed(2)}
                                 </div>
-                                <p className="text-xs text-muted-foreground mt-1">
-                                    {outstandingCredits.length} unpaid sale{outstandingCredits.length !== 1 ? 's' : ''}
+                                <p className="mt-1 text-xs text-muted-foreground">
+                                    {outstandingCredits.length} unpaid sale
+                                    {outstandingCredits.length !== 1 ? 's' : ''}
                                 </p>
                             </CardContent>
                         </Card>
 
                         <Card>
                             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                <CardTitle className="text-sm font-medium">Total Customers</CardTitle>
+                                <CardTitle className="text-sm font-medium">
+                                    Total Customers
+                                </CardTitle>
                                 <Users className="h-4 w-4 text-muted-foreground" />
                             </CardHeader>
                             <CardContent>
                                 <div className="text-2xl font-bold">
                                     {summary.totalCustomers}
                                 </div>
-                                <p className="text-xs text-muted-foreground mt-1">
+                                <p className="mt-1 text-xs text-muted-foreground">
                                     {summary.totalSuppliers} suppliers
                                 </p>
                             </CardContent>
@@ -437,15 +523,17 @@ export default function Dashboard({
 
                 {/* Charts Section */}
                 <div>
-                    <div className="flex items-center justify-between mb-4">
-                        <h2 className="text-lg font-semibold">Analytics & Trends</h2>
+                    <div className="mb-4 flex items-center justify-between">
+                        <h2 className="text-lg font-semibold">
+                            Analytics & Trends
+                        </h2>
                     </div>
                     <div className="grid gap-4 md:grid-cols-1 lg:grid-cols-3 lg:items-stretch">
                         {/* Sales Section */}
                         <div className="flex flex-col gap-4">
-                            <Card className="flex flex-col flex-1">
+                            <Card className="flex flex-1 flex-col">
                                 <CardHeader className="pb-3">
-                                    <CardTitle className="text-base flex items-center gap-2">
+                                    <CardTitle className="flex items-center gap-2 text-base">
                                         <Activity className="h-4 w-4" />
                                         Daily Sales Revenue
                                     </CardTitle>
@@ -455,17 +543,33 @@ export default function Dashboard({
                                 </CardHeader>
                                 <CardContent>
                                     {dailySalesData.length > 0 ? (
-                                        <ChartContainer config={salesConfig} className="h-[250px] w-full">
-                                            <LineChart accessibilityLayer data={dailySalesData}>
-                                                <CartesianGrid vertical={false} />
+                                        <ChartContainer
+                                            config={salesConfig}
+                                            className="h-[250px] w-full"
+                                        >
+                                            <LineChart
+                                                accessibilityLayer
+                                                data={dailySalesData}
+                                            >
+                                                <CartesianGrid
+                                                    vertical={false}
+                                                />
                                                 <XAxis
                                                     dataKey="date"
                                                     tickLine={false}
                                                     tickMargin={10}
                                                     axisLine={false}
                                                     tickFormatter={(value) => {
-                                                        const date = new Date(value);
-                                                        return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                                                        const date = new Date(
+                                                            value,
+                                                        );
+                                                        return date.toLocaleDateString(
+                                                            'en-US',
+                                                            {
+                                                                month: 'short',
+                                                                day: 'numeric',
+                                                            },
+                                                        );
                                                     }}
                                                 />
                                                 <YAxis
@@ -474,28 +578,44 @@ export default function Dashboard({
                                                     tickMargin={8}
                                                     width={60}
                                                     tickFormatter={(value) => {
-                                                        if (value == null || isNaN(value)) return 'SBD 0';
+                                                        if (
+                                                            value == null ||
+                                                            isNaN(value)
+                                                        )
+                                                            return 'SBD 0';
                                                         if (value >= 1000) {
                                                             return `SBD ${(value / 1000).toFixed(1)}k`;
                                                         }
                                                         return `SBD ${Math.round(value)}`;
                                                     }}
                                                 />
-                                                <ChartTooltip 
-                                                    content={<ChartTooltipContent 
-                                                        formatter={(value) => {
-                                                            const numValue = Number(value);
-                                                            return `SBD ${numValue.toFixed(2)}`;
-                                                        }}
-                                                    />}
+                                                <ChartTooltip
+                                                    content={
+                                                        <ChartTooltipContent
+                                                            formatter={(
+                                                                value,
+                                                            ) => {
+                                                                const numValue =
+                                                                    Number(
+                                                                        value,
+                                                                    );
+                                                                return `SBD ${numValue.toFixed(2)}`;
+                                                            }}
+                                                        />
+                                                    }
                                                     labelFormatter={(value) => {
-                                                        const date = new Date(value);
-                                                        return date.toLocaleDateString('en-US', { 
-                                                            weekday: 'long',
-                                                            month: 'long', 
-                                                            day: 'numeric',
-                                                            year: 'numeric'
-                                                        });
+                                                        const date = new Date(
+                                                            value,
+                                                        );
+                                                        return date.toLocaleDateString(
+                                                            'en-US',
+                                                            {
+                                                                weekday: 'long',
+                                                                month: 'long',
+                                                                day: 'numeric',
+                                                                year: 'numeric',
+                                                            },
+                                                        );
                                                     }}
                                                 />
                                                 <Line
@@ -514,9 +634,12 @@ export default function Dashboard({
                                                 <BarChart3 className="h-6 w-6" />
                                             </EmptyMedia>
                                             <EmptyHeader>
-                                                <EmptyTitle className="text-sm">No Sales Data</EmptyTitle>
+                                                <EmptyTitle className="text-sm">
+                                                    No Sales Data
+                                                </EmptyTitle>
                                                 <EmptyDescription className="text-xs">
-                                                    No sales data available for the last 30 days
+                                                    No sales data available for
+                                                    the last 30 days
                                                 </EmptyDescription>
                                             </EmptyHeader>
                                         </Empty>
@@ -525,17 +648,27 @@ export default function Dashboard({
                             </Card>
 
                             {monthlyComparison.length > 0 && (
-                                <Card className="flex flex-col flex-1">
+                                <Card className="flex flex-1 flex-col">
                                     <CardHeader className="pb-3">
-                                        <CardTitle className="text-base">Monthly Revenue vs Costs</CardTitle>
+                                        <CardTitle className="text-base">
+                                            Monthly Revenue vs Costs
+                                        </CardTitle>
                                         <CardDescription className="text-xs">
                                             Compare revenue and costs over time
                                         </CardDescription>
                                     </CardHeader>
                                     <CardContent>
-                                        <ChartContainer config={revenueCostConfig} className="h-[250px] w-full">
-                                            <BarChart accessibilityLayer data={monthlyComparison}>
-                                                <CartesianGrid vertical={false} />
+                                        <ChartContainer
+                                            config={revenueCostConfig}
+                                            className="h-[250px] w-full"
+                                        >
+                                            <BarChart
+                                                accessibilityLayer
+                                                data={monthlyComparison}
+                                            >
+                                                <CartesianGrid
+                                                    vertical={false}
+                                                />
                                                 <XAxis
                                                     dataKey="month"
                                                     tickLine={false}
@@ -548,28 +681,54 @@ export default function Dashboard({
                                                     tickMargin={8}
                                                     width={60}
                                                     tickFormatter={(value) => {
-                                                        if (value == null || isNaN(value)) return 'SBD 0';
+                                                        if (
+                                                            value == null ||
+                                                            isNaN(value)
+                                                        )
+                                                            return 'SBD 0';
                                                         if (value >= 1000) {
                                                             return `SBD ${(value / 1000).toFixed(1)}k`;
                                                         }
                                                         return `SBD ${Math.round(value)}`;
                                                     }}
                                                 />
-                                                <ChartTooltip content={<ChartTooltipContent 
-                                                    formatter={(value) => {
-                                                        const numValue = Number(value);
-                                                        return `SBD ${numValue.toFixed(2)}`;
-                                                    }}
-                                                />} />
-                                                <Bar dataKey="revenue" radius={4}>
-                                                    {monthlyComparison.map((entry, index) => (
-                                                        <Cell key={`revenue-cell-${index}`} fill="#22c55e" />
-                                                    ))}
+                                                <ChartTooltip
+                                                    content={
+                                                        <ChartTooltipContent
+                                                            formatter={(
+                                                                value,
+                                                            ) => {
+                                                                const numValue =
+                                                                    Number(
+                                                                        value,
+                                                                    );
+                                                                return `SBD ${numValue.toFixed(2)}`;
+                                                            }}
+                                                        />
+                                                    }
+                                                />
+                                                <Bar
+                                                    dataKey="revenue"
+                                                    radius={4}
+                                                >
+                                                    {monthlyComparison.map(
+                                                        (entry, index) => (
+                                                            <Cell
+                                                                key={`revenue-cell-${index}`}
+                                                                fill="#22c55e"
+                                                            />
+                                                        ),
+                                                    )}
                                                 </Bar>
                                                 <Bar dataKey="cost" radius={4}>
-                                                    {monthlyComparison.map((entry, index) => (
-                                                        <Cell key={`cost-cell-${index}`} fill="#ef4444" />
-                                                    ))}
+                                                    {monthlyComparison.map(
+                                                        (entry, index) => (
+                                                            <Cell
+                                                                key={`cost-cell-${index}`}
+                                                                fill="#ef4444"
+                                                            />
+                                                        ),
+                                                    )}
                                                 </Bar>
                                             </BarChart>
                                         </ChartContainer>
@@ -581,9 +740,9 @@ export default function Dashboard({
                         {/* Expenses Section */}
                         <div className="flex flex-col">
                             {expenseBreakdown.length > 0 ? (
-                                <Card className="flex flex-col h-full">
+                                <Card className="flex h-full flex-col">
                                     <CardHeader className="pb-3">
-                                        <CardTitle className="text-base flex items-center gap-2">
+                                        <CardTitle className="flex items-center gap-2 text-base">
                                             <BarChart3 className="h-4 w-4" />
                                             Expense Breakdown
                                         </CardTitle>
@@ -591,10 +750,18 @@ export default function Dashboard({
                                             Spending by category
                                         </CardDescription>
                                     </CardHeader>
-                                    <CardContent className="flex-1 flex items-center">
-                                        <ChartContainer config={expenseConfig} className="h-[250px] w-full">
-                                            <BarChart accessibilityLayer data={expenseBreakdown}>
-                                                <CartesianGrid vertical={false} />
+                                    <CardContent className="flex flex-1 items-center">
+                                        <ChartContainer
+                                            config={expenseConfig}
+                                            className="h-[250px] w-full"
+                                        >
+                                            <BarChart
+                                                accessibilityLayer
+                                                data={expenseBreakdown}
+                                            >
+                                                <CartesianGrid
+                                                    vertical={false}
+                                                />
                                                 <XAxis
                                                     dataKey="type"
                                                     tickLine={false}
@@ -607,41 +774,69 @@ export default function Dashboard({
                                                     tickMargin={8}
                                                     width={60}
                                                     tickFormatter={(value) => {
-                                                        if (value == null || isNaN(value)) return 'SBD 0';
+                                                        if (
+                                                            value == null ||
+                                                            isNaN(value)
+                                                        )
+                                                            return 'SBD 0';
                                                         if (value >= 1000) {
                                                             return `SBD ${(value / 1000).toFixed(1)}k`;
                                                         }
                                                         return `SBD ${Math.round(value)}`;
                                                     }}
                                                 />
-                                                <ChartTooltip content={<ChartTooltipContent 
-                                                    formatter={(value) => {
-                                                        const numValue = Number(value);
-                                                        return `SBD ${numValue.toFixed(2)}`;
-                                                    }}
-                                                />} />
+                                                <ChartTooltip
+                                                    content={
+                                                        <ChartTooltipContent
+                                                            formatter={(
+                                                                value,
+                                                            ) => {
+                                                                const numValue =
+                                                                    Number(
+                                                                        value,
+                                                                    );
+                                                                return `SBD ${numValue.toFixed(2)}`;
+                                                            }}
+                                                        />
+                                                    }
+                                                />
                                                 <Bar dataKey="total" radius={4}>
-                                                    {expenseBreakdown.map((entry, index) => {
-                                                        const type = entry.type as keyof typeof expenseConfig;
-                                                        const color = expenseConfig[type]?.color || '#8b5cf6';
-                                                        return <Cell key={`cell-${index}`} fill={color} />;
-                                                    })}
+                                                    {expenseBreakdown.map(
+                                                        (entry, index) => {
+                                                            const type =
+                                                                entry.type as keyof typeof expenseConfig;
+                                                            const color =
+                                                                expenseConfig[
+                                                                    type
+                                                                ]?.color ||
+                                                                '#8b5cf6';
+                                                            return (
+                                                                <Cell
+                                                                    key={`cell-${index}`}
+                                                                    fill={color}
+                                                                />
+                                                            );
+                                                        },
+                                                    )}
                                                 </Bar>
                                             </BarChart>
                                         </ChartContainer>
                                     </CardContent>
                                 </Card>
                             ) : (
-                                <Card className="flex flex-col h-full">
-                                    <CardContent className="pt-6 flex-1 flex items-center justify-center">
+                                <Card className="flex h-full flex-col">
+                                    <CardContent className="flex flex-1 items-center justify-center pt-6">
                                         <Empty className="h-[200px]">
                                             <EmptyMedia variant="icon">
                                                 <BarChart3 className="h-6 w-6" />
                                             </EmptyMedia>
                                             <EmptyHeader>
-                                                <EmptyTitle className="text-sm">No Expense Data</EmptyTitle>
+                                                <EmptyTitle className="text-sm">
+                                                    No Expense Data
+                                                </EmptyTitle>
                                                 <EmptyDescription className="text-xs">
-                                                    No expense data available to display
+                                                    No expense data available to
+                                                    display
                                                 </EmptyDescription>
                                             </EmptyHeader>
                                         </Empty>
@@ -653,9 +848,9 @@ export default function Dashboard({
                         {/* Stock Section */}
                         <div className="flex flex-col">
                             {supplierStockData.length > 0 ? (
-                                <Card className="flex flex-col h-full">
+                                <Card className="flex h-full flex-col">
                                     <CardHeader className="items-center pb-2">
-                                        <CardTitle className="text-base flex items-center gap-2">
+                                        <CardTitle className="flex items-center gap-2 text-base">
                                             <PieChart className="h-4 w-4" />
                                             Stock by Supplier
                                         </CardTitle>
@@ -663,7 +858,7 @@ export default function Dashboard({
                                             Remaining stock distribution
                                         </CardDescription>
                                     </CardHeader>
-                                    <CardContent className="flex-1 flex items-center justify-center pb-2">
+                                    <CardContent className="flex flex-1 items-center justify-center pb-2">
                                         <ChartContainer
                                             config={{}}
                                             className="mx-auto aspect-square w-full max-w-[250px]"
@@ -676,34 +871,80 @@ export default function Dashboard({
                                             >
                                                 <ChartTooltip
                                                     cursor={false}
-                                                    content={<ChartTooltipContent
-                                                        hideLabel
-                                                        formatter={(value) => {
-                                                            const numValue = Number(value);
-                                                            return `${numValue.toFixed(2)} kg`;
-                                                        }}
-                                                    />}
+                                                    content={
+                                                        <ChartTooltipContent
+                                                            hideLabel
+                                                            formatter={(
+                                                                value,
+                                                            ) => {
+                                                                const numValue =
+                                                                    Number(
+                                                                        value,
+                                                                    );
+                                                                return `${numValue.toFixed(2)} kg`;
+                                                            }}
+                                                        />
+                                                    }
                                                 />
-                                                <PolarRadiusAxis tick={false} tickLine={false} axisLine={false}>
+                                                <PolarRadiusAxis
+                                                    tick={false}
+                                                    tickLine={false}
+                                                    axisLine={false}
+                                                >
                                                     <Label
-                                                        content={({ viewBox }) => {
-                                                            if (viewBox && 'cx' in viewBox && 'cy' in viewBox) {
-                                                                const totalStock = supplierStockData.reduce(
-                                                                    (sum, item) => sum + item.value,
-                                                                    0
-                                                                );
+                                                        content={({
+                                                            viewBox,
+                                                        }) => {
+                                                            if (
+                                                                viewBox &&
+                                                                'cx' in
+                                                                    viewBox &&
+                                                                'cy' in viewBox
+                                                            ) {
+                                                                const totalStock =
+                                                                    supplierStockData.reduce(
+                                                                        (
+                                                                            sum,
+                                                                            item,
+                                                                        ) =>
+                                                                            sum +
+                                                                            item.value,
+                                                                        0,
+                                                                    );
                                                                 return (
-                                                                    <text x={viewBox.cx} y={viewBox.cy} textAnchor="middle">
+                                                                    <text
+                                                                        x={
+                                                                            viewBox.cx
+                                                                        }
+                                                                        y={
+                                                                            viewBox.cy
+                                                                        }
+                                                                        textAnchor="middle"
+                                                                    >
                                                                         <tspan
-                                                                            x={viewBox.cx}
-                                                                            y={(viewBox.cy || 0) - 12}
+                                                                            x={
+                                                                                viewBox.cx
+                                                                            }
+                                                                            y={
+                                                                                (viewBox.cy ||
+                                                                                    0) -
+                                                                                12
+                                                                            }
                                                                             className="fill-foreground text-xl font-bold"
                                                                         >
-                                                                            {totalStock.toFixed(2)}
+                                                                            {totalStock.toFixed(
+                                                                                2,
+                                                                            )}
                                                                         </tspan>
                                                                         <tspan
-                                                                            x={viewBox.cx}
-                                                                            y={(viewBox.cy || 0) + 4}
+                                                                            x={
+                                                                                viewBox.cx
+                                                                            }
+                                                                            y={
+                                                                                (viewBox.cy ||
+                                                                                    0) +
+                                                                                4
+                                                                            }
                                                                             className="fill-muted-foreground text-xs"
                                                                         >
                                                                             kg
@@ -714,57 +955,94 @@ export default function Dashboard({
                                                         }}
                                                     />
                                                 </PolarRadiusAxis>
-                                                {supplierStockData.map((entry, index) => {
-                                                    const colors = generateSupplierColors(supplierStockData.length);
-                                                    return (
-                                                        <RadialBar
-                                                            key={`radial-${index}`}
-                                                            dataKey={`supplier_${index}`}
-                                                            stackId="a"
-                                                            cornerRadius={5}
-                                                            fill={colors[index]}
-                                                            className="stroke-transparent stroke-2"
-                                                        />
-                                                    );
-                                                })}
+                                                {supplierStockData.map(
+                                                    (entry, index) => {
+                                                        const colors =
+                                                            generateSupplierColors(
+                                                                supplierStockData.length,
+                                                            );
+                                                        return (
+                                                            <RadialBar
+                                                                key={`radial-${index}`}
+                                                                dataKey={`supplier_${index}`}
+                                                                stackId="a"
+                                                                cornerRadius={5}
+                                                                fill={
+                                                                    colors[
+                                                                        index
+                                                                    ]
+                                                                }
+                                                                className="stroke-transparent stroke-2"
+                                                            />
+                                                        );
+                                                    },
+                                                )}
                                             </RadialBarChart>
                                         </ChartContainer>
                                     </CardContent>
                                     <CardContent className="pt-2">
                                         <div className="flex flex-wrap justify-center gap-3 text-xs">
-                                            {supplierStockData.map((entry, index) => {
-                                                const colors = generateSupplierColors(supplierStockData.length);
-                                                const totalStock = supplierStockData.reduce(
-                                                    (sum, item) => sum + item.value,
-                                                    0
-                                                );
-                                                const percentage = ((entry.value / totalStock) * 100).toFixed(1);
-                                                return (
-                                                    <div key={`legend-${index}`} className="flex items-center gap-1.5">
+                                            {supplierStockData.map(
+                                                (entry, index) => {
+                                                    const colors =
+                                                        generateSupplierColors(
+                                                            supplierStockData.length,
+                                                        );
+                                                    const totalStock =
+                                                        supplierStockData.reduce(
+                                                            (sum, item) =>
+                                                                sum +
+                                                                item.value,
+                                                            0,
+                                                        );
+                                                    const percentage = (
+                                                        (entry.value /
+                                                            totalStock) *
+                                                        100
+                                                    ).toFixed(1);
+                                                    return (
                                                         <div
-                                                            className="h-2.5 w-2.5 rounded-sm"
-                                                            style={{ backgroundColor: colors[index] }}
-                                                        />
-                                                        <span className="text-muted-foreground">
-                                                            {entry.name}: {entry.value.toFixed(2)} kg ({percentage}%)
-                                                        </span>
-                                                    </div>
-                                                );
-                                            })}
+                                                            key={`legend-${index}`}
+                                                            className="flex items-center gap-1.5"
+                                                        >
+                                                            <div
+                                                                className="h-2.5 w-2.5 rounded-sm"
+                                                                style={{
+                                                                    backgroundColor:
+                                                                        colors[
+                                                                            index
+                                                                        ],
+                                                                }}
+                                                            />
+                                                            <span className="text-muted-foreground">
+                                                                {entry.name}:{' '}
+                                                                {entry.value.toFixed(
+                                                                    2,
+                                                                )}{' '}
+                                                                kg ({percentage}
+                                                                %)
+                                                            </span>
+                                                        </div>
+                                                    );
+                                                },
+                                            )}
                                         </div>
                                     </CardContent>
                                 </Card>
                             ) : (
-                                <Card className="flex flex-col h-full">
-                                    <CardContent className="pt-6 flex-1 flex items-center justify-center">
+                                <Card className="flex h-full flex-col">
+                                    <CardContent className="flex flex-1 items-center justify-center pt-6">
                                         <Empty className="h-[200px]">
                                             <EmptyMedia variant="icon">
                                                 <PieChart className="h-6 w-6" />
                                             </EmptyMedia>
                                             <EmptyHeader>
-                                                <EmptyTitle className="text-sm">No Stock Data</EmptyTitle>
+                                                <EmptyTitle className="text-sm">
+                                                    No Stock Data
+                                                </EmptyTitle>
                                                 <EmptyDescription className="text-xs">
-                                                    No supplier stock data available to display
+                                                    No supplier stock data
+                                                    available to display
                                                 </EmptyDescription>
                                             </EmptyHeader>
                                         </Empty>
@@ -777,13 +1055,16 @@ export default function Dashboard({
 
                 {/* Recent Activity with Tables */}
                 <div>
-                    <h2 className="text-lg font-semibold mb-4">Recent Activity</h2>
+                    <h2 className="mb-4 text-lg font-semibold">
+                        Recent Activity
+                    </h2>
                     <div className="grid gap-4 md:grid-cols-2">
                         <Card>
                             <CardHeader>
                                 <CardTitle>Recent Sales</CardTitle>
                                 <CardDescription>
-                                    Latest {recentSales.length} sales transactions
+                                    Latest {recentSales.length} sales
+                                    transactions
                                 </CardDescription>
                             </CardHeader>
                             <CardContent>
@@ -793,7 +1074,9 @@ export default function Dashboard({
                                             <TableRow>
                                                 <TableHead>Customer</TableHead>
                                                 <TableHead>Date</TableHead>
-                                                <TableHead className="text-right">Amount</TableHead>
+                                                <TableHead className="text-right">
+                                                    Amount
+                                                </TableHead>
                                             </TableRow>
                                         </TableHeader>
                                         <TableBody>
@@ -806,14 +1089,22 @@ export default function Dashboard({
                                                         </div>
                                                     </TableCell>
                                                     <TableCell>
-                                                        {new Date(sale.sale_date).toLocaleDateString('en-US', {
-                                                            month: 'short',
-                                                            day: 'numeric',
-                                                            year: 'numeric'
-                                                        })}
+                                                        {new Date(
+                                                            sale.sale_date,
+                                                        ).toLocaleDateString(
+                                                            'en-US',
+                                                            {
+                                                                month: 'short',
+                                                                day: 'numeric',
+                                                                year: 'numeric',
+                                                            },
+                                                        )}
                                                     </TableCell>
                                                     <TableCell className="text-right font-semibold">
-                                                        SBD {Number(sale.total_amount).toFixed(2)}
+                                                        SBD{' '}
+                                                        {Number(
+                                                            sale.total_amount,
+                                                        ).toFixed(2)}
                                                     </TableCell>
                                                 </TableRow>
                                             ))}
@@ -825,9 +1116,12 @@ export default function Dashboard({
                                             <ShoppingCart className="h-8 w-8" />
                                         </EmptyMedia>
                                         <EmptyHeader>
-                                            <EmptyTitle>No Recent Sales</EmptyTitle>
+                                            <EmptyTitle>
+                                                No Recent Sales
+                                            </EmptyTitle>
                                             <EmptyDescription>
-                                                No recent sales transactions to display
+                                                No recent sales transactions to
+                                                display
                                             </EmptyDescription>
                                         </EmptyHeader>
                                     </Empty>
@@ -839,7 +1133,7 @@ export default function Dashboard({
                             <CardHeader>
                                 <CardTitle>Outstanding Credits</CardTitle>
                                 <CardDescription>
-                                    {outstandingCredits.length > 0 
+                                    {outstandingCredits.length > 0
                                         ? `${outstandingCredits.length} unpaid sale${outstandingCredits.length !== 1 ? 's' : ''} requiring attention`
                                         : 'All sales have been paid'}
                                 </CardDescription>
@@ -851,46 +1145,85 @@ export default function Dashboard({
                                             <TableRow>
                                                 <TableHead>Customer</TableHead>
                                                 <TableHead>Progress</TableHead>
-                                                <TableHead className="text-right">Outstanding</TableHead>
+                                                <TableHead className="text-right">
+                                                    Outstanding
+                                                </TableHead>
                                             </TableRow>
                                         </TableHeader>
                                         <TableBody>
-                                            {outstandingCredits.map((credit) => {
-                                                const total = Number(credit.total);
-                                                const paid = Number(credit.paid);
-                                                const outstanding = Number(credit.outstanding);
-                                                const progress = total > 0 ? (paid / total) * 100 : 0;
-                                                
-                                                return (
-                                                    <TableRow key={credit.sale_id}>
-                                                        <TableCell className="font-medium">
-                                                            <div className="flex items-center gap-2">
-                                                                <AlertCircle className="h-4 w-4 text-destructive" />
-                                                                {credit.customer}
-                                                            </div>
-                                                            <div className="text-xs text-muted-foreground mt-1">
-                                                                Sale #{credit.sale_id}
-                                                            </div>
-                                                        </TableCell>
-                                                        <TableCell>
-                                                            <div className="space-y-1">
-                                                                <Progress value={progress} className="h-2 w-24" />
-                                                                <div className="text-xs text-muted-foreground">
-                                                                    SBD {paid.toFixed(2)} / SBD {total.toFixed(2)}
+                                            {outstandingCredits.map(
+                                                (credit) => {
+                                                    const total = Number(
+                                                        credit.total,
+                                                    );
+                                                    const paid = Number(
+                                                        credit.paid,
+                                                    );
+                                                    const outstanding = Number(
+                                                        credit.outstanding,
+                                                    );
+                                                    const progress =
+                                                        total > 0
+                                                            ? (paid / total) *
+                                                              100
+                                                            : 0;
+
+                                                    return (
+                                                        <TableRow
+                                                            key={credit.sale_id}
+                                                        >
+                                                            <TableCell className="font-medium">
+                                                                <div className="flex items-center gap-2">
+                                                                    <AlertCircle className="h-4 w-4 text-destructive" />
+                                                                    {
+                                                                        credit.customer
+                                                                    }
                                                                 </div>
-                                                            </div>
-                                                        </TableCell>
-                                                        <TableCell className="text-right">
-                                                            <div className="font-semibold text-destructive">
-                                                                SBD {outstanding.toFixed(2)}
-                                                            </div>
-                                                            <Badge variant="destructive" className="text-xs mt-1">
-                                                                Outstanding
-                                                            </Badge>
-                                                        </TableCell>
-                                                    </TableRow>
-                                                );
-                                            })}
+                                                                <div className="mt-1 text-xs text-muted-foreground">
+                                                                    Sale #
+                                                                    {
+                                                                        credit.sale_id
+                                                                    }
+                                                                </div>
+                                                            </TableCell>
+                                                            <TableCell>
+                                                                <div className="space-y-1">
+                                                                    <Progress
+                                                                        value={
+                                                                            progress
+                                                                        }
+                                                                        className="h-2 w-24"
+                                                                    />
+                                                                    <div className="text-xs text-muted-foreground">
+                                                                        SBD{' '}
+                                                                        {paid.toFixed(
+                                                                            2,
+                                                                        )}{' '}
+                                                                        / SBD{' '}
+                                                                        {total.toFixed(
+                                                                            2,
+                                                                        )}
+                                                                    </div>
+                                                                </div>
+                                                            </TableCell>
+                                                            <TableCell className="text-right">
+                                                                <div className="font-semibold text-destructive">
+                                                                    SBD{' '}
+                                                                    {outstanding.toFixed(
+                                                                        2,
+                                                                    )}
+                                                                </div>
+                                                                <Badge
+                                                                    variant="destructive"
+                                                                    className="mt-1 text-xs"
+                                                                >
+                                                                    Outstanding
+                                                                </Badge>
+                                                            </TableCell>
+                                                        </TableRow>
+                                                    );
+                                                },
+                                            )}
                                         </TableBody>
                                     </Table>
                                 ) : (
@@ -899,7 +1232,9 @@ export default function Dashboard({
                                             <CreditCard className="h-8 w-8" />
                                         </EmptyMedia>
                                         <EmptyHeader>
-                                            <EmptyTitle>No Outstanding Credits</EmptyTitle>
+                                            <EmptyTitle>
+                                                No Outstanding Credits
+                                            </EmptyTitle>
                                             <EmptyDescription>
                                                 All sales have been paid in full
                                             </EmptyDescription>

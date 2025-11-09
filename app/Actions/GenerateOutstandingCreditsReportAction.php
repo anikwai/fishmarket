@@ -17,8 +17,8 @@ final readonly class GenerateOutstandingCreditsReportAction
             ->where('is_credit', true)
             ->with('customer', 'payments')
             ->get()
-            ->filter(fn (Sale $sale) => $sale->outstanding_balance > 0)
-            ->map(fn (Sale $sale) => [
+            ->filter(fn (Sale $sale): bool => $sale->outstanding_balance > 0)
+            ->map(fn (Sale $sale): array => [
                 'sale_id' => $sale->id,
                 'date' => $sale->sale_date->format('Y-m-d'),
                 'customer' => $sale->customer->name,

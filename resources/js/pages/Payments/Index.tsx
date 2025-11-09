@@ -1,4 +1,7 @@
+import { DatePicker } from '@/components/date-picker';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
     Dialog,
     DialogContent,
@@ -7,6 +10,22 @@ import {
     DialogHeader,
     DialogTitle,
 } from '@/components/ui/dialog';
+import {
+    DropdownMenu,
+    DropdownMenuCheckboxItem,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import {
+    Empty,
+    EmptyContent,
+    EmptyDescription,
+    EmptyHeader,
+    EmptyMedia,
+    EmptyTitle,
+} from '@/components/ui/empty';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
@@ -24,56 +43,37 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
-import {
-    Empty,
-    EmptyContent,
-    EmptyDescription,
-    EmptyHeader,
-    EmptyMedia,
-    EmptyTitle,
-} from '@/components/ui/empty';
-import {
-    DropdownMenu,
-    DropdownMenuCheckboxItem,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuSeparator,
-    DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { Checkbox } from '@/components/ui/checkbox';
-import { DatePicker } from '@/components/date-picker';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Head, router, useForm } from '@inertiajs/react';
-import { 
-    PencilIcon, 
-    PlusIcon, 
-    TrashIcon, 
-    EyeIcon, 
-    InfoIcon, 
-    CreditCard,
-    ArrowUpDown,
-    ChevronDown,
-    Columns,
-    ChevronsLeft,
-    ChevronsRight,
-    ChevronLeft,
-    ChevronRight,
-    MoreHorizontal,
-    Search,
-} from 'lucide-react';
-import { useState, useMemo, useEffect, useCallback, useRef } from 'react';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import {
     ColumnDef,
     flexRender,
     getCoreRowModel,
     getSortedRowModel,
-    SortingState,
     RowSelectionState,
-    VisibilityState,
+    SortingState,
     useReactTable,
+    VisibilityState,
 } from '@tanstack/react-table';
+import {
+    ArrowUpDown,
+    ChevronDown,
+    ChevronLeft,
+    ChevronRight,
+    ChevronsLeft,
+    ChevronsRight,
+    Columns,
+    CreditCard,
+    EyeIcon,
+    InfoIcon,
+    MoreHorizontal,
+    PencilIcon,
+    PlusIcon,
+    Search,
+    TrashIcon,
+} from 'lucide-react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -132,33 +132,34 @@ export default function PaymentsIndex({
     const [editOpen, setEditOpen] = useState(false);
     const [showOpen, setShowOpen] = useState(false);
     const [deleteOpen, setDeleteOpen] = useState(false);
-    const [selectedPayment, setSelectedPayment] = useState<Payment | null>(null);
+    const [selectedPayment, setSelectedPayment] = useState<Payment | null>(
+        null,
+    );
     const [sorting, setSorting] = useState<SortingState>([]);
     const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
-    const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
+    const [columnVisibility, setColumnVisibility] = useState<VisibilityState>(
+        {},
+    );
     const [searchValue, setSearchValue] = useState(filters.search || '');
     const [saleFilter, setSaleFilter] = useState(filters.sale_id || 'all');
     const isInitialMount = useRef(true);
 
     // Debounced search function
-    const performSearch = useCallback(
-        (search: string, saleId: string) => {
-            router.get(
-                '/payments',
-                {
-                    search: search || undefined,
-                    sale_id: saleId === 'all' ? undefined : saleId,
-                },
-                {
-                    preserveState: true,
-                    preserveScroll: true,
-                    replace: true,
-                    only: ['payments', 'filters'],
-                }
-            );
-        },
-        []
-    );
+    const performSearch = useCallback((search: string, saleId: string) => {
+        router.get(
+            '/payments',
+            {
+                search: search || undefined,
+                sale_id: saleId === 'all' ? undefined : saleId,
+            },
+            {
+                preserveState: true,
+                preserveScroll: true,
+                replace: true,
+                only: ['payments', 'filters'],
+            },
+        );
+    }, []);
 
     // Debounce search input
     useEffect(() => {
@@ -181,10 +182,13 @@ export default function PaymentsIndex({
             return;
         }
 
-        const sortParam = sorting.length > 0 ? {
-            sort_by: sorting[0].id,
-            sort_dir: sorting[0].desc ? 'desc' : 'asc',
-        } : {};
+        const sortParam =
+            sorting.length > 0
+                ? {
+                      sort_by: sorting[0].id,
+                      sort_dir: sorting[0].desc ? 'desc' : 'asc',
+                  }
+                : {};
 
         router.get(
             '/payments',
@@ -198,7 +202,7 @@ export default function PaymentsIndex({
                 preserveScroll: true,
                 replace: true,
                 only: ['payments', 'filters'],
-            }
+            },
         );
     }, [sorting, searchValue, saleFilter]);
 
@@ -229,7 +233,7 @@ export default function PaymentsIndex({
                 preserveScroll: true,
                 replace: true,
                 only: ['payments', 'filters'],
-            }
+            },
         );
     };
 
@@ -260,16 +264,19 @@ export default function PaymentsIndex({
         });
     };
 
-    const handleEdit = (payment: Payment) => {
-        setSelectedPayment(payment);
-        editForm.setData({
-            sale_id: payment.sale.id.toString(),
-            payment_date: payment.payment_date,
-            amount: payment.amount.toString(),
-            notes: payment.notes || '',
-        });
-        setEditOpen(true);
-    };
+    const handleEdit = useCallback(
+        (payment: Payment) => {
+            setSelectedPayment(payment);
+            editForm.setData({
+                sale_id: payment.sale.id.toString(),
+                payment_date: payment.payment_date,
+                amount: payment.amount.toString(),
+                notes: payment.notes || '',
+            });
+            setEditOpen(true);
+        },
+        [editForm],
+    );
 
     const handleUpdate = () => {
         if (!selectedPayment) return;
@@ -302,9 +309,12 @@ export default function PaymentsIndex({
                         <Checkbox
                             checked={
                                 table.getIsAllPageRowsSelected() ||
-                                (table.getIsSomePageRowsSelected() && 'indeterminate')
+                                (table.getIsSomePageRowsSelected() &&
+                                    'indeterminate')
                             }
-                            onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+                            onCheckedChange={(value) =>
+                                table.toggleAllPageRowsSelected(!!value)
+                            }
                             aria-label="Select all"
                         />
                     </div>
@@ -313,7 +323,9 @@ export default function PaymentsIndex({
                     <div className="flex items-center justify-center">
                         <Checkbox
                             checked={row.getIsSelected()}
-                            onCheckedChange={(value) => row.toggleSelected(!!value)}
+                            onCheckedChange={(value) =>
+                                row.toggleSelected(!!value)
+                            }
                             aria-label="Select row"
                         />
                     </div>
@@ -327,7 +339,11 @@ export default function PaymentsIndex({
                     return (
                         <Button
                             variant="ghost"
-                            onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+                            onClick={() =>
+                                column.toggleSorting(
+                                    column.getIsSorted() === 'asc',
+                                )
+                            }
                             className="h-8 px-2 lg:px-3"
                         >
                             Date
@@ -337,7 +353,9 @@ export default function PaymentsIndex({
                 },
                 cell: ({ row }) => (
                     <div>
-                        {new Date(row.getValue('payment_date')).toLocaleDateString()}
+                        {new Date(
+                            row.getValue('payment_date'),
+                        ).toLocaleDateString()}
                     </div>
                 ),
             },
@@ -345,7 +363,9 @@ export default function PaymentsIndex({
                 id: 'customer',
                 header: 'Customer',
                 cell: ({ row }) => (
-                    <div className="font-medium">{row.original.sale.customer.name}</div>
+                    <div className="font-medium">
+                        {row.original.sale.customer.name}
+                    </div>
                 ),
             },
             {
@@ -354,7 +374,11 @@ export default function PaymentsIndex({
                     return (
                         <Button
                             variant="ghost"
-                            onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+                            onClick={() =>
+                                column.toggleSorting(
+                                    column.getIsSorted() === 'asc',
+                                )
+                            }
                             className="h-8 px-2 lg:px-3"
                         >
                             Sale ID
@@ -363,9 +387,7 @@ export default function PaymentsIndex({
                     );
                 },
                 accessorFn: (row) => row.sale.id,
-                cell: ({ row }) => (
-                    <div>#{row.original.sale.id}</div>
-                ),
+                cell: ({ row }) => <div>#{row.original.sale.id}</div>,
             },
             {
                 accessorKey: 'amount',
@@ -373,7 +395,11 @@ export default function PaymentsIndex({
                     return (
                         <Button
                             variant="ghost"
-                            onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+                            onClick={() =>
+                                column.toggleSorting(
+                                    column.getIsSorted() === 'asc',
+                                )
+                            }
                             className="h-8 px-2 lg:px-3"
                         >
                             Amount
@@ -401,7 +427,9 @@ export default function PaymentsIndex({
                                         className="h-8 w-8 p-0"
                                         size="icon"
                                     >
-                                        <span className="sr-only">Open menu</span>
+                                        <span className="sr-only">
+                                            Open menu
+                                        </span>
                                         <MoreHorizontal className="h-4 w-4" />
                                     </Button>
                                 </DropdownMenuTrigger>
@@ -439,7 +467,7 @@ export default function PaymentsIndex({
                 },
             },
         ],
-        []
+        [handleEdit],
     );
 
     const table = useReactTable({
@@ -476,17 +504,21 @@ export default function PaymentsIndex({
                     <InfoIcon />
                     <AlertTitle>About Payments</AlertTitle>
                     <AlertDescription>
-                        Record payments for credit sales here. Only credit sales (sales marked as "Credit") will appear in the dropdown. 
-                        You can make multiple payments for the same sale until the full amount is paid. The system automatically tracks outstanding balances 
-                        and updates them as payments are recorded. Check the Sales page to see which sales have outstanding balances.
+                        Record payments for credit sales here. Only credit sales
+                        (sales marked as "Credit") will appear in the dropdown.
+                        You can make multiple payments for the same sale until
+                        the full amount is paid. The system automatically tracks
+                        outstanding balances and updates them as payments are
+                        recorded. Check the Sales page to see which sales have
+                        outstanding balances.
                     </AlertDescription>
                 </Alert>
 
                 {/* Filters and Table Controls */}
                 <div className="flex items-center justify-between gap-4">
-                    <div className="flex items-center gap-4 flex-1">
-                        <div className="relative flex-1 max-w-sm">
-                            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                    <div className="flex flex-1 items-center gap-4">
+                        <div className="relative max-w-sm flex-1">
+                            <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                             <Input
                                 placeholder="Search by customer name..."
                                 value={searchValue}
@@ -495,15 +527,24 @@ export default function PaymentsIndex({
                             />
                         </div>
                         {creditSales.length > 0 && (
-                            <Select value={saleFilter} onValueChange={handleSaleFilter}>
+                            <Select
+                                value={saleFilter}
+                                onValueChange={handleSaleFilter}
+                            >
                                 <SelectTrigger className="w-[250px]">
                                     <SelectValue placeholder="All Sales" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="all">All Sales</SelectItem>
+                                    <SelectItem value="all">
+                                        All Sales
+                                    </SelectItem>
                                     {creditSales.map((sale) => (
-                                        <SelectItem key={sale.id} value={sale.id.toString()}>
-                                            Sale #{sale.id} - {sale.customer_name}
+                                        <SelectItem
+                                            key={sale.id}
+                                            value={sale.id.toString()}
+                                        >
+                                            Sale #{sale.id} -{' '}
+                                            {sale.customer_name}
                                         </SelectItem>
                                     ))}
                                 </SelectContent>
@@ -524,8 +565,9 @@ export default function PaymentsIndex({
                                     .getAllColumns()
                                     .filter(
                                         (column) =>
-                                            typeof column.accessorFn !== 'undefined' &&
-                                            column.getCanHide()
+                                            typeof column.accessorFn !==
+                                                'undefined' &&
+                                            column.getCanHide(),
                                     )
                                     .map((column) => {
                                         return (
@@ -534,13 +576,19 @@ export default function PaymentsIndex({
                                                 className="capitalize"
                                                 checked={column.getIsVisible()}
                                                 onCheckedChange={(value) =>
-                                                    column.toggleVisibility(!!value)
+                                                    column.toggleVisibility(
+                                                        !!value,
+                                                    )
                                                 }
                                             >
-                                                {column.id === 'payment_date' && 'Date'}
-                                                {column.id === 'customer' && 'Customer'}
-                                                {column.id === 'sale_id' && 'Sale ID'}
-                                                {column.id === 'amount' && 'Amount'}
+                                                {column.id === 'payment_date' &&
+                                                    'Date'}
+                                                {column.id === 'customer' &&
+                                                    'Customer'}
+                                                {column.id === 'sale_id' &&
+                                                    'Sale ID'}
+                                                {column.id === 'amount' &&
+                                                    'Amount'}
                                             </DropdownMenuCheckboxItem>
                                         );
                                     })}
@@ -552,17 +600,21 @@ export default function PaymentsIndex({
                 {/* Data Table */}
                 <div className="rounded-lg border">
                     <Table>
-                        <TableHeader className="bg-muted/50 sticky top-0 z-10">
+                        <TableHeader className="sticky top-0 z-10 bg-muted/50">
                             {table.getHeaderGroups().map((headerGroup) => (
                                 <TableRow key={headerGroup.id}>
                                     {headerGroup.headers.map((header) => {
                                         return (
-                                            <TableHead key={header.id} className="px-4 py-3">
+                                            <TableHead
+                                                key={header.id}
+                                                className="px-4 py-3"
+                                            >
                                                 {header.isPlaceholder
                                                     ? null
                                                     : flexRender(
-                                                          header.column.columnDef.header,
-                                                          header.getContext()
+                                                          header.column
+                                                              .columnDef.header,
+                                                          header.getContext(),
                                                       )}
                                             </TableHead>
                                         );
@@ -575,14 +627,23 @@ export default function PaymentsIndex({
                                 table.getRowModel().rows.map((row) => (
                                     <TableRow
                                         key={row.id}
-                                        data-state={row.getIsSelected() && 'selected'}
-                                        className={row.getIsSelected() ? 'bg-muted/50' : ''}
+                                        data-state={
+                                            row.getIsSelected() && 'selected'
+                                        }
+                                        className={
+                                            row.getIsSelected()
+                                                ? 'bg-muted/50'
+                                                : ''
+                                        }
                                     >
                                         {row.getVisibleCells().map((cell) => (
-                                            <TableCell key={cell.id} className="px-4 py-3">
+                                            <TableCell
+                                                key={cell.id}
+                                                className="px-4 py-3"
+                                            >
                                                 {flexRender(
                                                     cell.column.columnDef.cell,
-                                                    cell.getContext()
+                                                    cell.getContext(),
                                                 )}
                                             </TableCell>
                                         ))}
@@ -599,13 +660,22 @@ export default function PaymentsIndex({
                                                 <CreditCard className="size-8" />
                                             </EmptyMedia>
                                             <EmptyHeader>
-                                                <EmptyTitle>No payments found</EmptyTitle>
+                                                <EmptyTitle>
+                                                    No payments found
+                                                </EmptyTitle>
                                                 <EmptyDescription>
-                                                    Get started by recording your first payment. Payments are used to track payments for credit sales.
+                                                    Get started by recording
+                                                    your first payment. Payments
+                                                    are used to track payments
+                                                    for credit sales.
                                                 </EmptyDescription>
                                             </EmptyHeader>
                                             <EmptyContent>
-                                                <Button onClick={() => setCreateOpen(true)}>
+                                                <Button
+                                                    onClick={() =>
+                                                        setCreateOpen(true)
+                                                    }
+                                                >
                                                     <PlusIcon className="mr-2 h-4 w-4" />
                                                     Add Payment
                                                 </Button>
@@ -623,17 +693,22 @@ export default function PaymentsIndex({
                     <div className="flex items-center gap-4">
                         {Object.keys(rowSelection).length > 0 && (
                             <div className="text-sm text-muted-foreground">
-                                {Object.keys(rowSelection).length} of {payments.data.length} row(s) selected
+                                {Object.keys(rowSelection).length} of{' '}
+                                {payments.data.length} row(s) selected
                             </div>
                         )}
                         <div className="text-sm text-muted-foreground">
-                            Showing {payments.from} to {payments.to} of {payments.total} payments
+                            Showing {payments.from} to {payments.to} of{' '}
+                            {payments.total} payments
                         </div>
                     </div>
                     {payments.last_page > 1 && (
                         <div className="flex items-center gap-2">
                             <div className="flex items-center gap-2">
-                                <Label htmlFor="rows-per-page" className="text-sm font-medium">
+                                <Label
+                                    htmlFor="rows-per-page"
+                                    className="text-sm font-medium"
+                                >
                                     Rows per page
                                 </Label>
                                 <Select
@@ -643,7 +718,8 @@ export default function PaymentsIndex({
                                             '/payments',
                                             {
                                                 sale_id: filters.sale_id,
-                                                search: searchValue || undefined,
+                                                search:
+                                                    searchValue || undefined,
                                                 per_page: value,
                                             },
                                             {
@@ -651,24 +727,36 @@ export default function PaymentsIndex({
                                                 preserveScroll: true,
                                                 replace: true,
                                                 only: ['payments', 'filters'],
-                                            }
+                                            },
                                         );
                                     }}
                                 >
-                                    <SelectTrigger size="sm" className="w-20" id="rows-per-page">
-                                        <SelectValue placeholder={payments.per_page.toString()} />
+                                    <SelectTrigger
+                                        size="sm"
+                                        className="w-20"
+                                        id="rows-per-page"
+                                    >
+                                        <SelectValue
+                                            placeholder={payments.per_page.toString()}
+                                        />
                                     </SelectTrigger>
                                     <SelectContent side="top">
-                                        {[10, 15, 20, 25, 50].map((pageSize) => (
-                                            <SelectItem key={pageSize} value={pageSize.toString()}>
-                                                {pageSize}
-                                            </SelectItem>
-                                        ))}
+                                        {[10, 15, 20, 25, 50].map(
+                                            (pageSize) => (
+                                                <SelectItem
+                                                    key={pageSize}
+                                                    value={pageSize.toString()}
+                                                >
+                                                    {pageSize}
+                                                </SelectItem>
+                                            ),
+                                        )}
                                     </SelectContent>
                                 </Select>
                             </div>
                             <div className="flex items-center justify-center text-sm font-medium">
-                                Page {payments.current_page} of {payments.last_page}
+                                Page {payments.current_page} of{' '}
+                                {payments.last_page}
                             </div>
                             <div className="flex items-center gap-2">
                                 <Button
@@ -676,60 +764,106 @@ export default function PaymentsIndex({
                                     size="icon"
                                     className="h-8 w-8"
                                     onClick={() => {
-                                        const firstPageUrl = payments.links.find((link) => link.label.includes('Previous'))?.url || payments.links[0]?.url;
-                                        if (firstPageUrl && payments.current_page > 1) {
+                                        const firstPageUrl =
+                                            payments.links.find((link) =>
+                                                link.label.includes('Previous'),
+                                            )?.url || payments.links[0]?.url;
+                                        if (
+                                            firstPageUrl &&
+                                            payments.current_page > 1
+                                        ) {
                                             handlePageChange(firstPageUrl);
                                         }
                                     }}
                                     disabled={payments.current_page === 1}
                                 >
                                     <ChevronsLeft className="h-4 w-4" />
-                                    <span className="sr-only">Go to first page</span>
+                                    <span className="sr-only">
+                                        Go to first page
+                                    </span>
                                 </Button>
                                 <Button
                                     variant="outline"
                                     size="icon"
                                     className="h-8 w-8"
                                     onClick={() => {
-                                        const prevPageUrl = payments.links.find((link) => link.label.includes('Previous'))?.url || payments.links[0]?.url;
-                                        if (prevPageUrl && payments.current_page > 1) {
+                                        const prevPageUrl =
+                                            payments.links.find((link) =>
+                                                link.label.includes('Previous'),
+                                            )?.url || payments.links[0]?.url;
+                                        if (
+                                            prevPageUrl &&
+                                            payments.current_page > 1
+                                        ) {
                                             handlePageChange(prevPageUrl);
                                         }
                                     }}
                                     disabled={payments.current_page === 1}
                                 >
                                     <ChevronLeft className="h-4 w-4" />
-                                    <span className="sr-only">Go to previous page</span>
+                                    <span className="sr-only">
+                                        Go to previous page
+                                    </span>
                                 </Button>
                                 <Button
                                     variant="outline"
                                     size="icon"
                                     className="h-8 w-8"
                                     onClick={() => {
-                                        const nextPageUrl = payments.links.find((link) => link.label.includes('Next'))?.url || payments.links[payments.links.length - 1]?.url;
-                                        if (nextPageUrl && payments.current_page < payments.last_page) {
+                                        const nextPageUrl =
+                                            payments.links.find((link) =>
+                                                link.label.includes('Next'),
+                                            )?.url ||
+                                            payments.links[
+                                                payments.links.length - 1
+                                            ]?.url;
+                                        if (
+                                            nextPageUrl &&
+                                            payments.current_page <
+                                                payments.last_page
+                                        ) {
                                             handlePageChange(nextPageUrl);
                                         }
                                     }}
-                                    disabled={payments.current_page === payments.last_page}
+                                    disabled={
+                                        payments.current_page ===
+                                        payments.last_page
+                                    }
                                 >
                                     <ChevronRight className="h-4 w-4" />
-                                    <span className="sr-only">Go to next page</span>
+                                    <span className="sr-only">
+                                        Go to next page
+                                    </span>
                                 </Button>
                                 <Button
                                     variant="outline"
                                     size="icon"
                                     className="h-8 w-8"
                                     onClick={() => {
-                                        const lastPageUrl = payments.links.find((link) => link.label.includes('Next'))?.url || payments.links[payments.links.length - 1]?.url;
-                                        if (lastPageUrl && payments.current_page < payments.last_page) {
+                                        const lastPageUrl =
+                                            payments.links.find((link) =>
+                                                link.label.includes('Next'),
+                                            )?.url ||
+                                            payments.links[
+                                                payments.links.length - 1
+                                            ]?.url;
+                                        if (
+                                            lastPageUrl &&
+                                            payments.current_page <
+                                                payments.last_page
+                                        ) {
                                             handlePageChange(lastPageUrl);
                                         }
                                     }}
-                                    disabled={payments.current_page === payments.last_page}
+                                    disabled={
+                                        payments.current_page ===
+                                        payments.last_page
+                                    }
                                 >
                                     <ChevronsRight className="h-4 w-4" />
-                                    <span className="sr-only">Go to last page</span>
+                                    <span className="sr-only">
+                                        Go to last page
+                                    </span>
                                 </Button>
                             </div>
                         </div>
@@ -758,17 +892,22 @@ export default function PaymentsIndex({
                                         <SelectValue placeholder="Select sale" />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        {creditSales.length > 0 ? (
-                                            creditSales.map((sale) => (
-                                                <SelectItem
-                                                    key={sale.id}
-                                                    value={sale.id.toString()}
-                                                >
-                                                    Sale #{sale.id} - {sale.customer_name} (Outstanding: SBD{' '}
-                                                    {Number(sale.outstanding_balance).toFixed(2)})
-                                                </SelectItem>
-                                            ))
-                                        ) : null}
+                                        {creditSales.length > 0
+                                            ? creditSales.map((sale) => (
+                                                  <SelectItem
+                                                      key={sale.id}
+                                                      value={sale.id.toString()}
+                                                  >
+                                                      Sale #{sale.id} -{' '}
+                                                      {sale.customer_name}{' '}
+                                                      (Outstanding: SBD{' '}
+                                                      {Number(
+                                                          sale.outstanding_balance,
+                                                      ).toFixed(2)}
+                                                      )
+                                                  </SelectItem>
+                                              ))
+                                            : null}
                                     </SelectContent>
                                 </Select>
                                 {createForm.errors.sale_id && (
@@ -778,12 +917,17 @@ export default function PaymentsIndex({
                                 )}
                             </div>
                             <div>
-                                <Label htmlFor="payment_date">Payment Date *</Label>
+                                <Label htmlFor="payment_date">
+                                    Payment Date *
+                                </Label>
                                 <DatePicker
                                     id="payment_date"
                                     value={createForm.data.payment_date}
                                     onChange={(value) =>
-                                        createForm.setData('payment_date', value)
+                                        createForm.setData(
+                                            'payment_date',
+                                            value,
+                                        )
                                     }
                                     placeholder="Select payment date"
                                     className="mt-1"
@@ -803,7 +947,10 @@ export default function PaymentsIndex({
                                     min="0.01"
                                     value={createForm.data.amount}
                                     onChange={(e) =>
-                                        createForm.setData('amount', e.target.value)
+                                        createForm.setData(
+                                            'amount',
+                                            e.target.value,
+                                        )
                                     }
                                     className="mt-1"
                                 />
@@ -819,7 +966,10 @@ export default function PaymentsIndex({
                                     id="notes"
                                     value={createForm.data.notes}
                                     onChange={(e) =>
-                                        createForm.setData('notes', e.target.value)
+                                        createForm.setData(
+                                            'notes',
+                                            e.target.value,
+                                        )
                                     }
                                     className="mt-1 flex min-h-[80px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm"
                                 />
@@ -832,7 +982,10 @@ export default function PaymentsIndex({
                             >
                                 Cancel
                             </Button>
-                            <Button onClick={handleCreate} disabled={createForm.processing}>
+                            <Button
+                                onClick={handleCreate}
+                                disabled={createForm.processing}
+                            >
                                 Create
                             </Button>
                         </DialogFooter>
@@ -850,7 +1003,9 @@ export default function PaymentsIndex({
                         </DialogHeader>
                         <div className="space-y-4">
                             <div>
-                                <Label htmlFor="edit-payment_date">Payment Date *</Label>
+                                <Label htmlFor="edit-payment_date">
+                                    Payment Date *
+                                </Label>
                                 <DatePicker
                                     id="edit-payment_date"
                                     value={editForm.data.payment_date}
@@ -867,7 +1022,9 @@ export default function PaymentsIndex({
                                 )}
                             </div>
                             <div>
-                                <Label htmlFor="edit-amount">Amount (SBD) *</Label>
+                                <Label htmlFor="edit-amount">
+                                    Amount (SBD) *
+                                </Label>
                                 <Input
                                     id="edit-amount"
                                     type="number"
@@ -875,7 +1032,10 @@ export default function PaymentsIndex({
                                     min="0.01"
                                     value={editForm.data.amount}
                                     onChange={(e) =>
-                                        editForm.setData('amount', e.target.value)
+                                        editForm.setData(
+                                            'amount',
+                                            e.target.value,
+                                        )
                                     }
                                     className="mt-1"
                                 />
@@ -891,7 +1051,10 @@ export default function PaymentsIndex({
                                     id="edit-notes"
                                     value={editForm.data.notes}
                                     onChange={(e) =>
-                                        editForm.setData('notes', e.target.value)
+                                        editForm.setData(
+                                            'notes',
+                                            e.target.value,
+                                        )
                                     }
                                     className="mt-1 flex min-h-[80px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm"
                                 />
@@ -904,7 +1067,10 @@ export default function PaymentsIndex({
                             >
                                 Cancel
                             </Button>
-                            <Button onClick={handleUpdate} disabled={editForm.processing}>
+                            <Button
+                                onClick={handleUpdate}
+                                disabled={editForm.processing}
+                            >
                                 Update
                             </Button>
                         </DialogFooter>
@@ -922,7 +1088,9 @@ export default function PaymentsIndex({
                                 <div>
                                     <Label>Date</Label>
                                     <p className="mt-1">
-                                        {new Date(selectedPayment.payment_date).toLocaleDateString()}
+                                        {new Date(
+                                            selectedPayment.payment_date,
+                                        ).toLocaleDateString()}
                                     </p>
                                 </div>
                                 <div>
@@ -933,24 +1101,34 @@ export default function PaymentsIndex({
                                 </div>
                                 <div>
                                     <Label>Sale ID</Label>
-                                    <p className="mt-1">#{selectedPayment.sale.id}</p>
+                                    <p className="mt-1">
+                                        #{selectedPayment.sale.id}
+                                    </p>
                                 </div>
                                 <div>
                                     <Label>Amount</Label>
                                     <p className="mt-1 font-semibold">
-                                        SBD {Number(selectedPayment.amount).toFixed(2)}
+                                        SBD{' '}
+                                        {Number(selectedPayment.amount).toFixed(
+                                            2,
+                                        )}
                                     </p>
                                 </div>
                                 {selectedPayment.notes && (
                                     <div>
                                         <Label>Notes</Label>
-                                        <p className="mt-1">{selectedPayment.notes}</p>
+                                        <p className="mt-1">
+                                            {selectedPayment.notes}
+                                        </p>
                                     </div>
                                 )}
                             </div>
                         )}
                         <DialogFooter>
-                            <Button variant="outline" onClick={() => setShowOpen(false)}>
+                            <Button
+                                variant="outline"
+                                onClick={() => setShowOpen(false)}
+                            >
                                 Close
                             </Button>
                         </DialogFooter>
@@ -963,8 +1141,8 @@ export default function PaymentsIndex({
                         <DialogHeader>
                             <DialogTitle>Delete Payment</DialogTitle>
                             <DialogDescription>
-                                Are you sure you want to delete this payment? This action cannot
-                                be undone.
+                                Are you sure you want to delete this payment?
+                                This action cannot be undone.
                             </DialogDescription>
                         </DialogHeader>
                         <DialogFooter>
@@ -974,7 +1152,10 @@ export default function PaymentsIndex({
                             >
                                 Cancel
                             </Button>
-                            <Button variant="destructive" onClick={handleDelete}>
+                            <Button
+                                variant="destructive"
+                                onClick={handleDelete}
+                            >
                                 Delete
                             </Button>
                         </DialogFooter>

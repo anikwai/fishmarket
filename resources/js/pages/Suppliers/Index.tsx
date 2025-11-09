@@ -1,4 +1,6 @@
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
     Dialog,
     DialogContent,
@@ -7,6 +9,22 @@ import {
     DialogHeader,
     DialogTitle,
 } from '@/components/ui/dialog';
+import {
+    DropdownMenu,
+    DropdownMenuCheckboxItem,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import {
+    Empty,
+    EmptyContent,
+    EmptyDescription,
+    EmptyHeader,
+    EmptyMedia,
+    EmptyTitle,
+} from '@/components/ui/empty';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
@@ -24,55 +42,37 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
-import {
-    Empty,
-    EmptyContent,
-    EmptyDescription,
-    EmptyHeader,
-    EmptyMedia,
-    EmptyTitle,
-} from '@/components/ui/empty';
-import {
-    DropdownMenu,
-    DropdownMenuCheckboxItem,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuSeparator,
-    DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { Checkbox } from '@/components/ui/checkbox';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Head, router, useForm } from '@inertiajs/react';
-import { 
-    PencilIcon, 
-    PlusIcon, 
-    TrashIcon, 
-    EyeIcon, 
-    InfoIcon, 
-    UserCircle,
-    ArrowUpDown,
-    ChevronDown,
-    Columns,
-    ChevronsLeft,
-    ChevronsRight,
-    ChevronLeft,
-    ChevronRight,
-    MoreHorizontal,
-    Search,
-} from 'lucide-react';
-import { useState, useMemo, useEffect, useCallback, useRef } from 'react';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import {
     ColumnDef,
     flexRender,
     getCoreRowModel,
     getSortedRowModel,
-    SortingState,
     RowSelectionState,
-    VisibilityState,
+    SortingState,
     useReactTable,
+    VisibilityState,
 } from '@tanstack/react-table';
+import {
+    ArrowUpDown,
+    ChevronDown,
+    ChevronLeft,
+    ChevronRight,
+    ChevronsLeft,
+    ChevronsRight,
+    Columns,
+    EyeIcon,
+    InfoIcon,
+    MoreHorizontal,
+    PencilIcon,
+    PlusIcon,
+    Search,
+    TrashIcon,
+    UserCircle,
+} from 'lucide-react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -109,36 +109,40 @@ interface SuppliersProps {
     };
 }
 
-export default function SuppliersIndex({ suppliers, filters = {} }: SuppliersProps) {
+export default function SuppliersIndex({
+    suppliers,
+    filters = {},
+}: SuppliersProps) {
     const [createOpen, setCreateOpen] = useState(false);
     const [editOpen, setEditOpen] = useState(false);
     const [showOpen, setShowOpen] = useState(false);
     const [deleteOpen, setDeleteOpen] = useState(false);
-    const [selectedSupplier, setSelectedSupplier] = useState<Supplier | null>(null);
+    const [selectedSupplier, setSelectedSupplier] = useState<Supplier | null>(
+        null,
+    );
     const [sorting, setSorting] = useState<SortingState>([]);
     const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
-    const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
+    const [columnVisibility, setColumnVisibility] = useState<VisibilityState>(
+        {},
+    );
     const [searchValue, setSearchValue] = useState(filters.search || '');
     const isInitialMount = useRef(true);
 
     // Debounced search function
-    const performSearch = useCallback(
-        (search: string) => {
-            router.get(
-                '/suppliers',
-                {
-                    search: search || undefined,
-                },
-                {
-                    preserveState: true,
-                    preserveScroll: true,
-                    replace: true,
-                    only: ['suppliers', 'filters'],
-                }
-            );
-        },
-        []
-    );
+    const performSearch = useCallback((search: string) => {
+        router.get(
+            '/suppliers',
+            {
+                search: search || undefined,
+            },
+            {
+                preserveState: true,
+                preserveScroll: true,
+                replace: true,
+                only: ['suppliers', 'filters'],
+            },
+        );
+    }, []);
 
     // Debounce search input
     useEffect(() => {
@@ -161,10 +165,13 @@ export default function SuppliersIndex({ suppliers, filters = {} }: SuppliersPro
             return;
         }
 
-        const sortParam = sorting.length > 0 ? {
-            sort_by: sorting[0].id,
-            sort_dir: sorting[0].desc ? 'desc' : 'asc',
-        } : {};
+        const sortParam =
+            sorting.length > 0
+                ? {
+                      sort_by: sorting[0].id,
+                      sort_dir: sorting[0].desc ? 'desc' : 'asc',
+                  }
+                : {};
 
         router.get(
             '/suppliers',
@@ -177,7 +184,7 @@ export default function SuppliersIndex({ suppliers, filters = {} }: SuppliersPro
                 preserveScroll: true,
                 replace: true,
                 only: ['suppliers', 'filters'],
-            }
+            },
         );
     }, [sorting, searchValue]);
 
@@ -219,17 +226,20 @@ export default function SuppliersIndex({ suppliers, filters = {} }: SuppliersPro
         });
     };
 
-    const handleEdit = (supplier: Supplier) => {
-        setSelectedSupplier(supplier);
-        editForm.setData({
-            name: supplier.name,
-            email: supplier.email || '',
-            phone: supplier.phone || '',
-            address: supplier.address || '',
-            notes: supplier.notes || '',
-        });
-        setEditOpen(true);
-    };
+    const handleEdit = useCallback(
+        (supplier: Supplier) => {
+            setSelectedSupplier(supplier);
+            editForm.setData({
+                name: supplier.name,
+                email: supplier.email || '',
+                phone: supplier.phone || '',
+                address: supplier.address || '',
+                notes: supplier.notes || '',
+            });
+            setEditOpen(true);
+        },
+        [editForm],
+    );
 
     const handleUpdate = () => {
         if (!selectedSupplier) return;
@@ -262,9 +272,12 @@ export default function SuppliersIndex({ suppliers, filters = {} }: SuppliersPro
                         <Checkbox
                             checked={
                                 table.getIsAllPageRowsSelected() ||
-                                (table.getIsSomePageRowsSelected() && 'indeterminate')
+                                (table.getIsSomePageRowsSelected() &&
+                                    'indeterminate')
                             }
-                            onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+                            onCheckedChange={(value) =>
+                                table.toggleAllPageRowsSelected(!!value)
+                            }
                             aria-label="Select all"
                         />
                     </div>
@@ -273,7 +286,9 @@ export default function SuppliersIndex({ suppliers, filters = {} }: SuppliersPro
                     <div className="flex items-center justify-center">
                         <Checkbox
                             checked={row.getIsSelected()}
-                            onCheckedChange={(value) => row.toggleSelected(!!value)}
+                            onCheckedChange={(value) =>
+                                row.toggleSelected(!!value)
+                            }
                             aria-label="Select row"
                         />
                     </div>
@@ -287,7 +302,11 @@ export default function SuppliersIndex({ suppliers, filters = {} }: SuppliersPro
                     return (
                         <Button
                             variant="ghost"
-                            onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+                            onClick={() =>
+                                column.toggleSorting(
+                                    column.getIsSorted() === 'asc',
+                                )
+                            }
                             className="h-8 px-2 lg:px-3"
                         >
                             Name
@@ -303,14 +322,18 @@ export default function SuppliersIndex({ suppliers, filters = {} }: SuppliersPro
                 accessorKey: 'email',
                 header: 'Email',
                 cell: ({ row }) => (
-                    <div className="text-muted-foreground">{row.getValue('email') || '-'}</div>
+                    <div className="text-muted-foreground">
+                        {row.getValue('email') || '-'}
+                    </div>
                 ),
             },
             {
                 accessorKey: 'phone',
                 header: 'Phone',
                 cell: ({ row }) => (
-                    <div className="text-muted-foreground">{row.getValue('phone') || '-'}</div>
+                    <div className="text-muted-foreground">
+                        {row.getValue('phone') || '-'}
+                    </div>
                 ),
             },
             {
@@ -319,7 +342,11 @@ export default function SuppliersIndex({ suppliers, filters = {} }: SuppliersPro
                     return (
                         <Button
                             variant="ghost"
-                            onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+                            onClick={() =>
+                                column.toggleSorting(
+                                    column.getIsSorted() === 'asc',
+                                )
+                            }
                             className="h-8 px-2 lg:px-3"
                         >
                             Total Purchases (kg)
@@ -333,7 +360,9 @@ export default function SuppliersIndex({ suppliers, filters = {} }: SuppliersPro
                     return (
                         <div>
                             {supplier.purchases_sum_quantity_kg
-                                ? Number(supplier.purchases_sum_quantity_kg).toFixed(2)
+                                ? Number(
+                                      supplier.purchases_sum_quantity_kg,
+                                  ).toFixed(2)
                                 : '0.00'}
                         </div>
                     );
@@ -345,7 +374,11 @@ export default function SuppliersIndex({ suppliers, filters = {} }: SuppliersPro
                     return (
                         <Button
                             variant="ghost"
-                            onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+                            onClick={() =>
+                                column.toggleSorting(
+                                    column.getIsSorted() === 'asc',
+                                )
+                            }
                             className="h-8 px-2 lg:px-3"
                         >
                             Remaining Stock (kg)
@@ -371,7 +404,11 @@ export default function SuppliersIndex({ suppliers, filters = {} }: SuppliersPro
                     return (
                         <Button
                             variant="ghost"
-                            onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+                            onClick={() =>
+                                column.toggleSorting(
+                                    column.getIsSorted() === 'asc',
+                                )
+                            }
                             className="h-8 px-2 lg:px-3"
                         >
                             Created At
@@ -381,7 +418,9 @@ export default function SuppliersIndex({ suppliers, filters = {} }: SuppliersPro
                 },
                 cell: ({ row }) => (
                     <div>
-                        {new Date(row.getValue('created_at')).toLocaleDateString('en-US', {
+                        {new Date(
+                            row.getValue('created_at'),
+                        ).toLocaleDateString('en-US', {
                             year: 'numeric',
                             month: 'short',
                             day: 'numeric',
@@ -403,7 +442,9 @@ export default function SuppliersIndex({ suppliers, filters = {} }: SuppliersPro
                                         className="h-8 w-8 p-0"
                                         size="icon"
                                     >
-                                        <span className="sr-only">Open menu</span>
+                                        <span className="sr-only">
+                                            Open menu
+                                        </span>
                                         <MoreHorizontal className="h-4 w-4" />
                                     </Button>
                                 </DropdownMenuTrigger>
@@ -441,7 +482,7 @@ export default function SuppliersIndex({ suppliers, filters = {} }: SuppliersPro
                 },
             },
         ],
-        []
+        [handleEdit],
     );
 
     const table = useReactTable({
@@ -478,17 +519,22 @@ export default function SuppliersIndex({ suppliers, filters = {} }: SuppliersPro
                     <InfoIcon />
                     <AlertTitle>About Suppliers</AlertTitle>
                     <AlertDescription>
-                        Suppliers are the local fishermen you purchase fish from. Create a supplier once, then select them when recording purchases. 
-                        You can track total purchases (in kg) and remaining stock from each supplier. Remaining stock shows how much fish from each supplier is still available in your inventory.
-                        Use the "Add New Supplier" button in the purchase form to quickly create suppliers while recording purchases.
+                        Suppliers are the local fishermen you purchase fish
+                        from. Create a supplier once, then select them when
+                        recording purchases. You can track total purchases (in
+                        kg) and remaining stock from each supplier. Remaining
+                        stock shows how much fish from each supplier is still
+                        available in your inventory. Use the "Add New Supplier"
+                        button in the purchase form to quickly create suppliers
+                        while recording purchases.
                     </AlertDescription>
                 </Alert>
 
                 {/* Filters and Table Controls */}
                 <div className="flex items-center justify-between gap-4">
-                    <div className="flex items-center gap-4 flex-1">
-                        <div className="relative flex-1 max-w-sm">
-                            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                    <div className="flex flex-1 items-center gap-4">
+                        <div className="relative max-w-sm flex-1">
+                            <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                             <Input
                                 placeholder="Search by supplier name..."
                                 value={searchValue}
@@ -511,8 +557,9 @@ export default function SuppliersIndex({ suppliers, filters = {} }: SuppliersPro
                                     .getAllColumns()
                                     .filter(
                                         (column) =>
-                                            typeof column.accessorFn !== 'undefined' &&
-                                            column.getCanHide()
+                                            typeof column.accessorFn !==
+                                                'undefined' &&
+                                            column.getCanHide(),
                                     )
                                     .map((column) => {
                                         return (
@@ -521,15 +568,24 @@ export default function SuppliersIndex({ suppliers, filters = {} }: SuppliersPro
                                                 className="capitalize"
                                                 checked={column.getIsVisible()}
                                                 onCheckedChange={(value) =>
-                                                    column.toggleVisibility(!!value)
+                                                    column.toggleVisibility(
+                                                        !!value,
+                                                    )
                                                 }
                                             >
                                                 {column.id === 'name' && 'Name'}
-                                                {column.id === 'email' && 'Email'}
-                                                {column.id === 'phone' && 'Phone'}
-                                                {column.id === 'total_purchases' && 'Total Purchases'}
-                                                {column.id === 'remaining_stock' && 'Remaining Stock'}
-                                                {column.id === 'created_at' && 'Created At'}
+                                                {column.id === 'email' &&
+                                                    'Email'}
+                                                {column.id === 'phone' &&
+                                                    'Phone'}
+                                                {column.id ===
+                                                    'total_purchases' &&
+                                                    'Total Purchases'}
+                                                {column.id ===
+                                                    'remaining_stock' &&
+                                                    'Remaining Stock'}
+                                                {column.id === 'created_at' &&
+                                                    'Created At'}
                                             </DropdownMenuCheckboxItem>
                                         );
                                     })}
@@ -541,17 +597,21 @@ export default function SuppliersIndex({ suppliers, filters = {} }: SuppliersPro
                 {/* Data Table */}
                 <div className="rounded-lg border">
                     <Table>
-                        <TableHeader className="bg-muted/50 sticky top-0 z-10">
+                        <TableHeader className="sticky top-0 z-10 bg-muted/50">
                             {table.getHeaderGroups().map((headerGroup) => (
                                 <TableRow key={headerGroup.id}>
                                     {headerGroup.headers.map((header) => {
                                         return (
-                                            <TableHead key={header.id} className="px-4 py-3">
+                                            <TableHead
+                                                key={header.id}
+                                                className="px-4 py-3"
+                                            >
                                                 {header.isPlaceholder
                                                     ? null
                                                     : flexRender(
-                                                          header.column.columnDef.header,
-                                                          header.getContext()
+                                                          header.column
+                                                              .columnDef.header,
+                                                          header.getContext(),
                                                       )}
                                             </TableHead>
                                         );
@@ -564,14 +624,23 @@ export default function SuppliersIndex({ suppliers, filters = {} }: SuppliersPro
                                 table.getRowModel().rows.map((row) => (
                                     <TableRow
                                         key={row.id}
-                                        data-state={row.getIsSelected() && 'selected'}
-                                        className={row.getIsSelected() ? 'bg-muted/50' : ''}
+                                        data-state={
+                                            row.getIsSelected() && 'selected'
+                                        }
+                                        className={
+                                            row.getIsSelected()
+                                                ? 'bg-muted/50'
+                                                : ''
+                                        }
                                     >
                                         {row.getVisibleCells().map((cell) => (
-                                            <TableCell key={cell.id} className="px-4 py-3">
+                                            <TableCell
+                                                key={cell.id}
+                                                className="px-4 py-3"
+                                            >
                                                 {flexRender(
                                                     cell.column.columnDef.cell,
-                                                    cell.getContext()
+                                                    cell.getContext(),
                                                 )}
                                             </TableCell>
                                         ))}
@@ -588,13 +657,23 @@ export default function SuppliersIndex({ suppliers, filters = {} }: SuppliersPro
                                                 <UserCircle className="size-8" />
                                             </EmptyMedia>
                                             <EmptyHeader>
-                                                <EmptyTitle>No suppliers found</EmptyTitle>
+                                                <EmptyTitle>
+                                                    No suppliers found
+                                                </EmptyTitle>
                                                 <EmptyDescription>
-                                                    Get started by adding your first supplier. Suppliers are the fishermen or businesses you purchase fish from.
+                                                    Get started by adding your
+                                                    first supplier. Suppliers
+                                                    are the fishermen or
+                                                    businesses you purchase fish
+                                                    from.
                                                 </EmptyDescription>
                                             </EmptyHeader>
                                             <EmptyContent>
-                                                <Button onClick={() => setCreateOpen(true)}>
+                                                <Button
+                                                    onClick={() =>
+                                                        setCreateOpen(true)
+                                                    }
+                                                >
                                                     <PlusIcon className="mr-2 h-4 w-4" />
                                                     Add Supplier
                                                 </Button>
@@ -612,17 +691,22 @@ export default function SuppliersIndex({ suppliers, filters = {} }: SuppliersPro
                     <div className="flex items-center gap-4">
                         {Object.keys(rowSelection).length > 0 && (
                             <div className="text-sm text-muted-foreground">
-                                {Object.keys(rowSelection).length} of {suppliers.data.length} row(s) selected
+                                {Object.keys(rowSelection).length} of{' '}
+                                {suppliers.data.length} row(s) selected
                             </div>
                         )}
                         <div className="text-sm text-muted-foreground">
-                            Showing {suppliers.from} to {suppliers.to} of {suppliers.total} suppliers
+                            Showing {suppliers.from} to {suppliers.to} of{' '}
+                            {suppliers.total} suppliers
                         </div>
                     </div>
                     {suppliers.last_page > 1 && (
                         <div className="flex items-center gap-2">
                             <div className="flex items-center gap-2">
-                                <Label htmlFor="rows-per-page" className="text-sm font-medium">
+                                <Label
+                                    htmlFor="rows-per-page"
+                                    className="text-sm font-medium"
+                                >
                                     Rows per page
                                 </Label>
                                 <Select
@@ -631,7 +715,8 @@ export default function SuppliersIndex({ suppliers, filters = {} }: SuppliersPro
                                         router.get(
                                             '/suppliers',
                                             {
-                                                search: searchValue || undefined,
+                                                search:
+                                                    searchValue || undefined,
                                                 per_page: value,
                                             },
                                             {
@@ -639,24 +724,36 @@ export default function SuppliersIndex({ suppliers, filters = {} }: SuppliersPro
                                                 preserveScroll: true,
                                                 replace: true,
                                                 only: ['suppliers', 'filters'],
-                                            }
+                                            },
                                         );
                                     }}
                                 >
-                                    <SelectTrigger size="sm" className="w-20" id="rows-per-page">
-                                        <SelectValue placeholder={suppliers.per_page.toString()} />
+                                    <SelectTrigger
+                                        size="sm"
+                                        className="w-20"
+                                        id="rows-per-page"
+                                    >
+                                        <SelectValue
+                                            placeholder={suppliers.per_page.toString()}
+                                        />
                                     </SelectTrigger>
                                     <SelectContent side="top">
-                                        {[10, 15, 20, 25, 50].map((pageSize) => (
-                                            <SelectItem key={pageSize} value={pageSize.toString()}>
-                                                {pageSize}
-                                            </SelectItem>
-                                        ))}
+                                        {[10, 15, 20, 25, 50].map(
+                                            (pageSize) => (
+                                                <SelectItem
+                                                    key={pageSize}
+                                                    value={pageSize.toString()}
+                                                >
+                                                    {pageSize}
+                                                </SelectItem>
+                                            ),
+                                        )}
                                     </SelectContent>
                                 </Select>
                             </div>
                             <div className="flex items-center justify-center text-sm font-medium">
-                                Page {suppliers.current_page} of {suppliers.last_page}
+                                Page {suppliers.current_page} of{' '}
+                                {suppliers.last_page}
                             </div>
                             <div className="flex items-center gap-2">
                                 <Button
@@ -664,60 +761,106 @@ export default function SuppliersIndex({ suppliers, filters = {} }: SuppliersPro
                                     size="icon"
                                     className="h-8 w-8"
                                     onClick={() => {
-                                        const firstPageUrl = suppliers.links.find((link) => link.label.includes('Previous'))?.url || suppliers.links[0]?.url;
-                                        if (firstPageUrl && suppliers.current_page > 1) {
+                                        const firstPageUrl =
+                                            suppliers.links.find((link) =>
+                                                link.label.includes('Previous'),
+                                            )?.url || suppliers.links[0]?.url;
+                                        if (
+                                            firstPageUrl &&
+                                            suppliers.current_page > 1
+                                        ) {
                                             handlePageChange(firstPageUrl);
                                         }
                                     }}
                                     disabled={suppliers.current_page === 1}
                                 >
                                     <ChevronsLeft className="h-4 w-4" />
-                                    <span className="sr-only">Go to first page</span>
+                                    <span className="sr-only">
+                                        Go to first page
+                                    </span>
                                 </Button>
                                 <Button
                                     variant="outline"
                                     size="icon"
                                     className="h-8 w-8"
                                     onClick={() => {
-                                        const prevPageUrl = suppliers.links.find((link) => link.label.includes('Previous'))?.url || suppliers.links[0]?.url;
-                                        if (prevPageUrl && suppliers.current_page > 1) {
+                                        const prevPageUrl =
+                                            suppliers.links.find((link) =>
+                                                link.label.includes('Previous'),
+                                            )?.url || suppliers.links[0]?.url;
+                                        if (
+                                            prevPageUrl &&
+                                            suppliers.current_page > 1
+                                        ) {
                                             handlePageChange(prevPageUrl);
                                         }
                                     }}
                                     disabled={suppliers.current_page === 1}
                                 >
                                     <ChevronLeft className="h-4 w-4" />
-                                    <span className="sr-only">Go to previous page</span>
+                                    <span className="sr-only">
+                                        Go to previous page
+                                    </span>
                                 </Button>
                                 <Button
                                     variant="outline"
                                     size="icon"
                                     className="h-8 w-8"
                                     onClick={() => {
-                                        const nextPageUrl = suppliers.links.find((link) => link.label.includes('Next'))?.url || suppliers.links[suppliers.links.length - 1]?.url;
-                                        if (nextPageUrl && suppliers.current_page < suppliers.last_page) {
+                                        const nextPageUrl =
+                                            suppliers.links.find((link) =>
+                                                link.label.includes('Next'),
+                                            )?.url ||
+                                            suppliers.links[
+                                                suppliers.links.length - 1
+                                            ]?.url;
+                                        if (
+                                            nextPageUrl &&
+                                            suppliers.current_page <
+                                                suppliers.last_page
+                                        ) {
                                             handlePageChange(nextPageUrl);
                                         }
                                     }}
-                                    disabled={suppliers.current_page === suppliers.last_page}
+                                    disabled={
+                                        suppliers.current_page ===
+                                        suppliers.last_page
+                                    }
                                 >
                                     <ChevronRight className="h-4 w-4" />
-                                    <span className="sr-only">Go to next page</span>
+                                    <span className="sr-only">
+                                        Go to next page
+                                    </span>
                                 </Button>
                                 <Button
                                     variant="outline"
                                     size="icon"
                                     className="h-8 w-8"
                                     onClick={() => {
-                                        const lastPageUrl = suppliers.links.find((link) => link.label.includes('Next'))?.url || suppliers.links[suppliers.links.length - 1]?.url;
-                                        if (lastPageUrl && suppliers.current_page < suppliers.last_page) {
+                                        const lastPageUrl =
+                                            suppliers.links.find((link) =>
+                                                link.label.includes('Next'),
+                                            )?.url ||
+                                            suppliers.links[
+                                                suppliers.links.length - 1
+                                            ]?.url;
+                                        if (
+                                            lastPageUrl &&
+                                            suppliers.current_page <
+                                                suppliers.last_page
+                                        ) {
                                             handlePageChange(lastPageUrl);
                                         }
                                     }}
-                                    disabled={suppliers.current_page === suppliers.last_page}
+                                    disabled={
+                                        suppliers.current_page ===
+                                        suppliers.last_page
+                                    }
                                 >
                                     <ChevronsRight className="h-4 w-4" />
-                                    <span className="sr-only">Go to last page</span>
+                                    <span className="sr-only">
+                                        Go to last page
+                                    </span>
                                 </Button>
                             </div>
                         </div>
@@ -740,7 +883,10 @@ export default function SuppliersIndex({ suppliers, filters = {} }: SuppliersPro
                                     id="name"
                                     value={createForm.data.name}
                                     onChange={(e) =>
-                                        createForm.setData('name', e.target.value)
+                                        createForm.setData(
+                                            'name',
+                                            e.target.value,
+                                        )
                                     }
                                     className="mt-1"
                                 />
@@ -757,7 +903,10 @@ export default function SuppliersIndex({ suppliers, filters = {} }: SuppliersPro
                                     type="email"
                                     value={createForm.data.email}
                                     onChange={(e) =>
-                                        createForm.setData('email', e.target.value)
+                                        createForm.setData(
+                                            'email',
+                                            e.target.value,
+                                        )
                                     }
                                     className="mt-1"
                                 />
@@ -773,7 +922,10 @@ export default function SuppliersIndex({ suppliers, filters = {} }: SuppliersPro
                                     id="phone"
                                     value={createForm.data.phone}
                                     onChange={(e) =>
-                                        createForm.setData('phone', e.target.value)
+                                        createForm.setData(
+                                            'phone',
+                                            e.target.value,
+                                        )
                                     }
                                     className="mt-1"
                                 />
@@ -784,7 +936,10 @@ export default function SuppliersIndex({ suppliers, filters = {} }: SuppliersPro
                                     id="address"
                                     value={createForm.data.address}
                                     onChange={(e) =>
-                                        createForm.setData('address', e.target.value)
+                                        createForm.setData(
+                                            'address',
+                                            e.target.value,
+                                        )
                                     }
                                     className="mt-1"
                                 />
@@ -795,7 +950,10 @@ export default function SuppliersIndex({ suppliers, filters = {} }: SuppliersPro
                                     id="notes"
                                     value={createForm.data.notes}
                                     onChange={(e) =>
-                                        createForm.setData('notes', e.target.value)
+                                        createForm.setData(
+                                            'notes',
+                                            e.target.value,
+                                        )
                                     }
                                     className="mt-1 flex min-h-[80px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm"
                                 />
@@ -808,7 +966,10 @@ export default function SuppliersIndex({ suppliers, filters = {} }: SuppliersPro
                             >
                                 Cancel
                             </Button>
-                            <Button onClick={handleCreate} disabled={createForm.processing}>
+                            <Button
+                                onClick={handleCreate}
+                                disabled={createForm.processing}
+                            >
                                 Create
                             </Button>
                         </DialogFooter>
@@ -848,7 +1009,10 @@ export default function SuppliersIndex({ suppliers, filters = {} }: SuppliersPro
                                     type="email"
                                     value={editForm.data.email}
                                     onChange={(e) =>
-                                        editForm.setData('email', e.target.value)
+                                        editForm.setData(
+                                            'email',
+                                            e.target.value,
+                                        )
                                     }
                                     className="mt-1"
                                 />
@@ -864,7 +1028,10 @@ export default function SuppliersIndex({ suppliers, filters = {} }: SuppliersPro
                                     id="edit-phone"
                                     value={editForm.data.phone}
                                     onChange={(e) =>
-                                        editForm.setData('phone', e.target.value)
+                                        editForm.setData(
+                                            'phone',
+                                            e.target.value,
+                                        )
                                     }
                                     className="mt-1"
                                 />
@@ -875,7 +1042,10 @@ export default function SuppliersIndex({ suppliers, filters = {} }: SuppliersPro
                                     id="edit-address"
                                     value={editForm.data.address}
                                     onChange={(e) =>
-                                        editForm.setData('address', e.target.value)
+                                        editForm.setData(
+                                            'address',
+                                            e.target.value,
+                                        )
                                     }
                                     className="mt-1"
                                 />
@@ -886,7 +1056,10 @@ export default function SuppliersIndex({ suppliers, filters = {} }: SuppliersPro
                                     id="edit-notes"
                                     value={editForm.data.notes}
                                     onChange={(e) =>
-                                        editForm.setData('notes', e.target.value)
+                                        editForm.setData(
+                                            'notes',
+                                            e.target.value,
+                                        )
                                     }
                                     className="mt-1 flex min-h-[80px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm"
                                 />
@@ -899,7 +1072,10 @@ export default function SuppliersIndex({ suppliers, filters = {} }: SuppliersPro
                             >
                                 Cancel
                             </Button>
-                            <Button onClick={handleUpdate} disabled={editForm.processing}>
+                            <Button
+                                onClick={handleUpdate}
+                                disabled={editForm.processing}
+                            >
                                 Update
                             </Button>
                         </DialogFooter>
@@ -916,53 +1092,84 @@ export default function SuppliersIndex({ suppliers, filters = {} }: SuppliersPro
                             <div className="space-y-4">
                                 <div>
                                     <Label>Name</Label>
-                                    <p className="mt-1">{selectedSupplier.name}</p>
+                                    <p className="mt-1">
+                                        {selectedSupplier.name}
+                                    </p>
                                 </div>
                                 <div>
                                     <Label>Email</Label>
-                                    <p className="mt-1">{selectedSupplier.email || '-'}</p>
+                                    <p className="mt-1">
+                                        {selectedSupplier.email || '-'}
+                                    </p>
                                 </div>
                                 <div>
                                     <Label>Phone</Label>
-                                    <p className="mt-1">{selectedSupplier.phone || '-'}</p>
+                                    <p className="mt-1">
+                                        {selectedSupplier.phone || '-'}
+                                    </p>
                                 </div>
                                 <div>
                                     <Label>Address</Label>
-                                    <p className="mt-1">{selectedSupplier.address || '-'}</p>
+                                    <p className="mt-1">
+                                        {selectedSupplier.address || '-'}
+                                    </p>
                                 </div>
                                 <div>
                                     <Label>Total Purchases</Label>
                                     <p className="mt-1">
                                         {selectedSupplier.purchases_sum_quantity_kg
-                                            ? Number(selectedSupplier.purchases_sum_quantity_kg).toFixed(2)
+                                            ? Number(
+                                                  selectedSupplier.purchases_sum_quantity_kg,
+                                              ).toFixed(2)
                                             : '0.00'}{' '}
                                         kg
                                     </p>
                                 </div>
                                 <div>
                                     <Label>Remaining Stock</Label>
-                                    <p className="mt-1 font-semibold text-lg">
-                                        {selectedSupplier.remaining_stock !== undefined
-                                            ? Number(selectedSupplier.remaining_stock).toFixed(2)
+                                    <p className="mt-1 text-lg font-semibold">
+                                        {selectedSupplier.remaining_stock !==
+                                        undefined
+                                            ? Number(
+                                                  selectedSupplier.remaining_stock,
+                                              ).toFixed(2)
                                             : '0.00'}{' '}
                                         kg
                                     </p>
-                                    {selectedSupplier.purchases_sum_quantity_kg && selectedSupplier.remaining_stock !== undefined && Number(selectedSupplier.purchases_sum_quantity_kg) > 0 && (
-                                        <p className="mt-1 text-xs text-muted-foreground">
-                                            {((Number(selectedSupplier.remaining_stock) / Number(selectedSupplier.purchases_sum_quantity_kg)) * 100).toFixed(1)}% of total purchases remaining
-                                        </p>
-                                    )}
+                                    {selectedSupplier.purchases_sum_quantity_kg &&
+                                        selectedSupplier.remaining_stock !==
+                                            undefined &&
+                                        Number(
+                                            selectedSupplier.purchases_sum_quantity_kg,
+                                        ) > 0 && (
+                                            <p className="mt-1 text-xs text-muted-foreground">
+                                                {(
+                                                    (Number(
+                                                        selectedSupplier.remaining_stock,
+                                                    ) /
+                                                        Number(
+                                                            selectedSupplier.purchases_sum_quantity_kg,
+                                                        )) *
+                                                    100
+                                                ).toFixed(1)}
+                                                % of total purchases remaining
+                                            </p>
+                                        )}
                                 </div>
                                 {selectedSupplier.notes && (
                                     <div>
                                         <Label>Notes</Label>
-                                        <p className="mt-1">{selectedSupplier.notes}</p>
+                                        <p className="mt-1">
+                                            {selectedSupplier.notes}
+                                        </p>
                                     </div>
                                 )}
                                 <div>
                                     <Label>Created At</Label>
                                     <p className="mt-1">
-                                        {new Date(selectedSupplier.created_at).toLocaleDateString('en-US', {
+                                        {new Date(
+                                            selectedSupplier.created_at,
+                                        ).toLocaleDateString('en-US', {
                                             year: 'numeric',
                                             month: 'long',
                                             day: 'numeric',
@@ -974,7 +1181,10 @@ export default function SuppliersIndex({ suppliers, filters = {} }: SuppliersPro
                             </div>
                         )}
                         <DialogFooter>
-                            <Button variant="outline" onClick={() => setShowOpen(false)}>
+                            <Button
+                                variant="outline"
+                                onClick={() => setShowOpen(false)}
+                            >
                                 Close
                             </Button>
                         </DialogFooter>
@@ -988,7 +1198,8 @@ export default function SuppliersIndex({ suppliers, filters = {} }: SuppliersPro
                             <DialogTitle>Delete Supplier</DialogTitle>
                             <DialogDescription>
                                 Are you sure you want to delete{' '}
-                                {selectedSupplier?.name}? This action cannot be undone.
+                                {selectedSupplier?.name}? This action cannot be
+                                undone.
                             </DialogDescription>
                         </DialogHeader>
                         <DialogFooter>
@@ -998,7 +1209,10 @@ export default function SuppliersIndex({ suppliers, filters = {} }: SuppliersPro
                             >
                                 Cancel
                             </Button>
-                            <Button variant="destructive" onClick={handleDelete}>
+                            <Button
+                                variant="destructive"
+                                onClick={handleDelete}
+                            >
                                 Delete
                             </Button>
                         </DialogFooter>

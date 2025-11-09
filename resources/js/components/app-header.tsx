@@ -20,19 +20,24 @@ import {
     SheetTitle,
     SheetTrigger,
 } from '@/components/ui/sheet';
-import {
-    Tooltip,
-    TooltipContent,
-    TooltipProvider,
-    TooltipTrigger,
-} from '@/components/ui/tooltip';
 import { UserMenuContent } from '@/components/user-menu-content';
 import { useInitials } from '@/hooks/use-initials';
 import { cn } from '@/lib/utils';
 import { dashboard } from '@/routes';
 import { type BreadcrumbItem, type NavItem, type SharedData } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
-import { LayoutGrid, Menu, Search, Users, UserCircle, ShoppingCart, DollarSign, CreditCard, Receipt, FileText } from 'lucide-react';
+import {
+    CreditCard,
+    DollarSign,
+    FileText,
+    LayoutGrid,
+    Menu,
+    Receipt,
+    Search,
+    ShoppingCart,
+    UserCircle,
+    Users,
+} from 'lucide-react';
 import AppLogo from './app-logo';
 import AppLogoIcon from './app-logo-icon';
 
@@ -78,8 +83,6 @@ const mainNavItems: NavItem[] = [
         icon: FileText,
     },
 ];
-
-const rightNavItems: NavItem[] = [];
 
 const activeItemStyles =
     'text-neutral-900 dark:bg-neutral-800 dark:text-neutral-100';

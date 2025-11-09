@@ -78,20 +78,20 @@ final readonly class PurchaseController
     {
         $action->handle($request->validated());
 
-        return redirect()->back()->with('success', 'Purchase created successfully.');
+        return back()->with('success', 'Purchase created successfully.');
     }
 
     public function update(UpdatePurchaseRequest $request, Purchase $purchase, UpdatePurchase $action): RedirectResponse
     {
         $action->handle($purchase, $request->validated());
 
-        return redirect()->back()->with('success', 'Purchase updated successfully.');
+        return back()->with('success', 'Purchase updated successfully.');
     }
 
     public function destroy(Purchase $purchase, DeletePurchase $action): RedirectResponse
     {
         $action->handle($purchase);
 
-        return redirect()->back()->with('success', 'Purchase deleted successfully.');
+        return back()->with('success', 'Purchase deleted successfully.');
     }
 }

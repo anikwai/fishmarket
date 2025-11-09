@@ -75,21 +75,21 @@ final readonly class SaleController
     {
         $action->handle($request->validated());
 
-        return redirect()->back()->with('success', 'Sale created successfully.');
+        return back()->with('success', 'Sale created successfully.');
     }
 
     public function update(UpdateSaleRequest $request, Sale $sale, UpdateSale $action): RedirectResponse
     {
         $action->handle($sale, $request->validated());
 
-        return redirect()->back()->with('success', 'Sale updated successfully.');
+        return back()->with('success', 'Sale updated successfully.');
     }
 
     public function destroy(Sale $sale, DeleteSale $action): RedirectResponse
     {
         $action->handle($sale);
 
-        return redirect()->back()->with('success', 'Sale deleted successfully.');
+        return back()->with('success', 'Sale deleted successfully.');
     }
 
     public function downloadReceipt(Sale $sale, GenerateReceipt $action): HttpResponse
@@ -97,7 +97,7 @@ final readonly class SaleController
         $receipt = $sale->activeReceipt ?? $sale->receipts()->latest()->first();
 
         if (! $receipt) {
-            return redirect()->back()->with('error', 'No receipt found for this sale.');
+            return back()->with('error', 'No receipt found for this sale.');
         }
 
         $pdf = $action->handle($receipt);
@@ -110,11 +110,11 @@ final readonly class SaleController
         $receipt = $sale->activeReceipt ?? $sale->receipts()->latest()->first();
 
         if (! $receipt) {
-            return redirect()->back()->with('error', 'No receipt found for this sale.');
+            return back()->with('error', 'No receipt found for this sale.');
         }
 
         $action->handle($receipt);
 
-        return redirect()->back()->with('success', 'Receipt email sent successfully.');
+        return back()->with('success', 'Receipt email sent successfully.');
     }
 }

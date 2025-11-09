@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Actions\GetDashboardDataAction;
-use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -15,7 +14,7 @@ final readonly class DashboardController
         private GetDashboardDataAction $getDashboardData,
     ) {}
 
-    public function __invoke(Request $request): Response
+    public function __invoke(): Response
     {
         $data = $this->getDashboardData->handle();
 

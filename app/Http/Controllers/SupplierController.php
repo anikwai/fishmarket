@@ -70,20 +70,20 @@ final readonly class SupplierController
     {
         $action->handle($request->validated());
 
-        return redirect()->back()->with('success', 'Supplier created successfully.');
+        return back()->with('success', 'Supplier created successfully.');
     }
 
     public function update(UpdateSupplierRequest $request, Supplier $supplier, UpdateSupplier $action): RedirectResponse
     {
         $action->handle($supplier, $request->validated());
 
-        return redirect()->back()->with('success', 'Supplier updated successfully.');
+        return back()->with('success', 'Supplier updated successfully.');
     }
 
     public function destroy(Supplier $supplier, DeleteSupplier $action): RedirectResponse
     {
         $action->handle($supplier);
 
-        return redirect()->back()->with('success', 'Supplier deleted successfully.');
+        return back()->with('success', 'Supplier deleted successfully.');
     }
 }

@@ -13,4 +13,3 @@ final readonly class DeleteSupplier
         $supplier->delete();
     }
 }
-

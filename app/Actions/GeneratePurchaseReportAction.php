@@ -35,7 +35,7 @@ final readonly class GeneratePurchaseReportAction
             ->get();
 
         return [
-            'purchases' => $purchases->map(fn ($purchase) => [
+            'purchases' => $purchases->map(fn ($purchase): array => [
                 'id' => $purchase->id,
                 'date' => $purchase->purchase_date->format('Y-m-d'),
                 'supplier' => $purchase->supplier->name,
@@ -43,7 +43,7 @@ final readonly class GeneratePurchaseReportAction
                 'price_per_kg' => $purchase->price_per_kg,
                 'total_cost' => $purchase->total_cost,
             ]),
-            'by_supplier' => $bySupplier->map(fn ($item) => [
+            'by_supplier' => $bySupplier->map(fn ($item): array => [
                 'id' => $item->id,
                 'name' => $item->name,
                 'total_cost' => (float) $item->total_cost,
