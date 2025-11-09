@@ -6,6 +6,7 @@ namespace App\Http\Controllers;
 
 use App\Actions\CreatePurchase;
 use App\Actions\DeletePurchase;
+use App\Actions\PreparePurchaseIndexDataAction;
 use App\Actions\UpdatePurchase;
 use App\Http\Requests\StorePurchaseRequest;
 use App\Http\Requests\UpdatePurchaseRequest;
@@ -18,6 +19,10 @@ use Inertia\Response;
 
 final readonly class PurchaseController
 {
+    public function __construct(
+        private PreparePurchaseIndexDataAction $preparePurchaseIndexData,
+    ) {}
+
     public function index(Request $request): Response
     {
         $perPage = $request->get('per_page', 10);
@@ -58,28 +63,7 @@ final readonly class PurchaseController
 
         $purchases = $query->paginate($perPage);
 
-        // Calculate profit for each purchase
-        $purchases->getCollection()->transform(function (Purchase $purchase) {
-            // Load sales relationship with pivot data
-            $purchase->load(['sales' => function ($query) {
-                $query->withPivot('quantity_kg');
-            }, 'expenses']);
-
-            // Access the accessors to calculate values
-            $purchase->profit = $purchase->profit;
-            $purchase->total_revenue = $purchase->total_revenue;
-            $purchase->remaining_quantity = $purchase->remaining_quantity;
-            $purchase->total_expenses = $purchase->total_expenses;
-
-            return $purchase;
-        });
-
-        // Sort by profit if needed (after calculation)
-        if ($sortBy === 'profit' && in_array($sortDir, ['asc', 'desc'])) {
-            $purchases->getCollection()->sortBy(function (Purchase $purchase) {
-                return (float) ($purchase->profit ?? 0);
-            }, SORT_REGULAR, $sortDir === 'desc');
-        }
+        $purchases = $this->preparePurchaseIndexData->handle($purchases, $sortBy, $sortDir);
 
         $suppliers = Supplier::query()->orderBy('name')->get();
 

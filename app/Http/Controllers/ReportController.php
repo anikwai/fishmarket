@@ -4,20 +4,37 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Actions\GenerateCustomerReportAction;
+use App\Actions\GenerateExpenseReportAction;
+use App\Actions\GenerateOutstandingCreditsReportAction;
+use App\Actions\GenerateProfitLossReportAction;
+use App\Actions\GeneratePurchaseReportAction;
+use App\Actions\GenerateSalesByCustomerReportAction;
+use App\Actions\GenerateSalesSummaryReportAction;
+use App\Actions\GenerateStockReportAction;
+use App\Actions\GenerateSupplierReportAction;
 use App\Models\Customer;
-use App\Models\Expense;
-use App\Models\Purchase;
 use App\Models\Sale;
 use App\Models\Supplier;
-use App\Support\Stock;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Inertia\Response as InertiaResponse;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 final readonly class ReportController
 {
+    public function __construct(
+        private GenerateSalesSummaryReportAction $generateSalesSummaryReport,
+        private GenerateSalesByCustomerReportAction $generateSalesByCustomerReport,
+        private GenerateProfitLossReportAction $generateProfitLossReport,
+        private GenerateOutstandingCreditsReportAction $generateOutstandingCreditsReport,
+        private GenerateExpenseReportAction $generateExpenseReport,
+        private GeneratePurchaseReportAction $generatePurchaseReport,
+        private GenerateStockReportAction $generateStockReport,
+        private GenerateCustomerReportAction $generateCustomerReport,
+        private GenerateSupplierReportAction $generateSupplierReport,
+    ) {}
+
     public function index(Request $request): InertiaResponse
     {
         $reportType = $request->query('type', 'sales-summary');
@@ -27,16 +44,16 @@ final readonly class ReportController
         $supplierId = $request->query('supplier_id');
 
         $data = match ($reportType) {
-            'sales-summary' => $this->salesSummary($startDate, $endDate, $customerId),
-            'sales-by-customer' => $this->salesByCustomer($startDate, $endDate),
-            'profit-loss' => $this->profitLoss($startDate, $endDate),
-            'outstanding-credits' => $this->outstandingCredits(),
-            'expense-report' => $this->expenseReport($startDate, $endDate),
-            'purchase-report' => $this->purchaseReport($startDate, $endDate, $supplierId),
-            'stock-report' => $this->stockReport(),
-            'customer-report' => $this->customerReport($customerId),
-            'supplier-report' => $this->supplierReport($supplierId),
-            default => $this->salesSummary($startDate, $endDate, $customerId),
+            'sales-summary' => $this->generateSalesSummaryReport->handle($startDate, $endDate, $customerId),
+            'sales-by-customer' => $this->generateSalesByCustomerReport->handle($startDate, $endDate),
+            'profit-loss' => $this->generateProfitLossReport->handle($startDate, $endDate),
+            'outstanding-credits' => $this->generateOutstandingCreditsReport->handle(),
+            'expense-report' => $this->generateExpenseReport->handle($startDate, $endDate),
+            'purchase-report' => $this->generatePurchaseReport->handle($startDate, $endDate, $supplierId),
+            'stock-report' => $this->generateStockReport->handle(),
+            'customer-report' => $this->generateCustomerReport->handle($customerId),
+            'supplier-report' => $this->generateSupplierReport->handle($supplierId),
+            default => $this->generateSalesSummaryReport->handle($startDate, $endDate, $customerId),
         };
 
         return Inertia::render('Reports/Index', [
@@ -91,385 +108,6 @@ final readonly class ReportController
             'Content-Type' => 'text/csv',
             'Content-Disposition' => "attachment; filename=\"{$filename}\"",
         ]);
-    }
-
-    private function salesSummary(string $startDate, string $endDate, ?string $customerId): array
-    {
-        $query = Sale::query()
-            ->whereBetween('sale_date', [$startDate, $endDate]);
-
-        if ($customerId) {
-            $query->where('customer_id', $customerId);
-        }
-
-        $sales = $query->with('customer')->get();
-
-        $dailyData = Sale::query()
-            ->selectRaw('sale_date::date as date')
-            ->selectRaw('SUM(total_amount) as revenue')
-            ->selectRaw('SUM(quantity_kg) as quantity')
-            ->selectRaw('COUNT(*) as count')
-            ->whereBetween('sale_date', [$startDate, $endDate])
-            ->when($customerId, fn ($q) => $q->where('customer_id', $customerId))
-            ->groupByRaw('sale_date::date')
-            ->orderBy('date')
-            ->get();
-
-        return [
-            'summary' => [
-                'total_revenue' => $sales->sum('total_amount'),
-                'total_quantity' => $sales->sum('quantity_kg'),
-                'total_sales' => $sales->count(),
-                'average_sale' => $sales->count() > 0 ? $sales->sum('total_amount') / $sales->count() : 0,
-                'credit_sales' => $sales->where('is_credit', true)->sum('total_amount'),
-                'cash_sales' => $sales->where('is_credit', false)->sum('total_amount'),
-            ],
-            'daily_data' => $dailyData->map(fn ($item) => [
-                'date' => $item->date,
-                'revenue' => (float) $item->revenue,
-                'quantity' => (float) $item->quantity,
-                'count' => (int) $item->count,
-            ]),
-            'recent_sales' => $sales->take(10)->map(fn ($sale) => [
-                'id' => $sale->id,
-                'date' => $sale->sale_date->format('Y-m-d'),
-                'customer' => $sale->customer->name,
-                'amount' => $sale->total_amount,
-                'quantity' => $sale->quantity_kg,
-                'is_credit' => $sale->is_credit,
-            ]),
-        ];
-    }
-
-    private function salesByCustomer(string $startDate, string $endDate): array
-    {
-        $data = Sale::query()
-            ->select('customers.id', 'customers.name')
-            ->selectRaw('SUM(sales.total_amount) as total_revenue')
-            ->selectRaw('SUM(sales.quantity_kg) as total_quantity')
-            ->selectRaw('COUNT(sales.id) as sale_count')
-            ->join('customers', 'sales.customer_id', '=', 'customers.id')
-            ->whereBetween('sales.sale_date', [$startDate, $endDate])
-            ->groupBy('customers.id', 'customers.name')
-            ->orderByDesc('total_revenue')
-            ->get();
-
-        return [
-            'customers' => $data->map(fn ($item) => [
-                'id' => $item->id,
-                'name' => $item->name,
-                'total_revenue' => (float) $item->total_revenue,
-                'total_quantity' => (float) $item->total_quantity,
-                'sale_count' => (int) $item->sale_count,
-                'average_sale' => (int) $item->sale_count > 0
-                    ? (float) $item->total_revenue / (int) $item->sale_count
-                    : 0,
-            ]),
-            'summary' => [
-                'total_customers' => $data->count(),
-                'total_revenue' => $data->sum('total_revenue'),
-            ],
-        ];
-    }
-
-    private function profitLoss(string $startDate, string $endDate): array
-    {
-        $revenue = Sale::query()
-            ->whereBetween('sale_date', [$startDate, $endDate])
-            ->sum('total_amount');
-
-        $costs = Purchase::query()
-            ->whereBetween('purchase_date', [$startDate, $endDate])
-            ->sum('total_cost');
-
-        $expenses = Expense::query()
-            ->whereBetween('expense_date', [$startDate, $endDate])
-            ->sum('amount');
-
-        $profit = $revenue - $costs - $expenses;
-
-        $expenseBreakdown = Expense::query()
-            ->select('type', DB::raw('SUM(amount) as total'))
-            ->whereBetween('expense_date', [$startDate, $endDate])
-            ->groupBy('type')
-            ->get();
-
-        return [
-            'revenue' => (float) $revenue,
-            'costs' => (float) $costs,
-            'expenses' => (float) $expenses,
-            'profit' => (float) $profit,
-            'profit_margin' => $revenue > 0 ? (($profit / $revenue) * 100) : 0,
-            'expense_breakdown' => $expenseBreakdown->map(fn ($item) => [
-                'type' => ucfirst($item->type),
-                'total' => (float) $item->total,
-            ]),
-        ];
-    }
-
-    private function outstandingCredits(): array
-    {
-        $credits = Sale::query()
-            ->where('is_credit', true)
-            ->with('customer', 'payments')
-            ->get()
-            ->filter(fn (Sale $sale) => $sale->outstanding_balance > 0)
-            ->map(fn (Sale $sale) => [
-                'sale_id' => $sale->id,
-                'date' => $sale->sale_date->format('Y-m-d'),
-                'customer' => $sale->customer->name,
-                'total' => $sale->total_amount,
-                'paid' => $sale->payments->sum('amount'),
-                'outstanding' => $sale->outstanding_balance,
-                'days_outstanding' => $sale->sale_date->diffInDays(now()),
-            ])
-            ->sortByDesc('days_outstanding')
-            ->values();
-
-        return [
-            'credits' => $credits,
-            'summary' => [
-                'total_outstanding' => $credits->sum('outstanding'),
-                'count' => $credits->count(),
-                'average_days' => $credits->count() > 0
-                    ? round($credits->avg('days_outstanding'), 1)
-                    : 0,
-            ],
-        ];
-    }
-
-    private function expenseReport(string $startDate, string $endDate): array
-    {
-        $expenses = Expense::query()
-            ->whereBetween('expense_date', [$startDate, $endDate])
-            ->with('purchase.supplier')
-            ->orderBy('expense_date', 'desc')
-            ->get();
-
-        $breakdown = Expense::query()
-            ->select('type', DB::raw('SUM(amount) as total'))
-            ->whereBetween('expense_date', [$startDate, $endDate])
-            ->groupBy('type')
-            ->get();
-
-        $dailyData = Expense::query()
-            ->selectRaw('expense_date::date as date')
-            ->selectRaw('SUM(amount) as total')
-            ->whereBetween('expense_date', [$startDate, $endDate])
-            ->groupByRaw('expense_date::date')
-            ->orderBy('date')
-            ->get();
-
-        return [
-            'expenses' => $expenses->map(fn ($expense) => [
-                'id' => $expense->id,
-                'date' => $expense->expense_date->format('Y-m-d'),
-                'type' => ucfirst($expense->type),
-                'description' => $expense->description,
-                'amount' => $expense->amount,
-                'supplier' => $expense->purchase?->supplier?->name,
-            ]),
-            'breakdown' => $breakdown->map(fn ($item) => [
-                'type' => ucfirst($item->type),
-                'total' => (float) $item->total,
-            ]),
-            'daily_data' => $dailyData->map(fn ($item) => [
-                'date' => $item->date,
-                'total' => (float) $item->total,
-            ]),
-            'summary' => [
-                'total' => $expenses->sum('amount'),
-                'count' => $expenses->count(),
-            ],
-        ];
-    }
-
-    private function purchaseReport(string $startDate, string $endDate, ?string $supplierId): array
-    {
-        $query = Purchase::query()
-            ->whereBetween('purchase_date', [$startDate, $endDate])
-            ->with('supplier');
-
-        if ($supplierId) {
-            $query->where('supplier_id', $supplierId);
-        }
-
-        $purchases = $query->get();
-
-        $bySupplier = Purchase::query()
-            ->select('suppliers.id', 'suppliers.name')
-            ->selectRaw('SUM(purchases.total_cost) as total_cost')
-            ->selectRaw('SUM(purchases.quantity_kg) as total_quantity')
-            ->selectRaw('COUNT(purchases.id) as purchase_count')
-            ->join('suppliers', 'purchases.supplier_id', '=', 'suppliers.id')
-            ->whereBetween('purchases.purchase_date', [$startDate, $endDate])
-            ->groupBy('suppliers.id', 'suppliers.name')
-            ->orderByDesc('total_cost')
-            ->get();
-
-        return [
-            'purchases' => $purchases->map(fn ($purchase) => [
-                'id' => $purchase->id,
-                'date' => $purchase->purchase_date->format('Y-m-d'),
-                'supplier' => $purchase->supplier->name,
-                'quantity' => $purchase->quantity_kg,
-                'price_per_kg' => $purchase->price_per_kg,
-                'total_cost' => $purchase->total_cost,
-            ]),
-            'by_supplier' => $bySupplier->map(fn ($item) => [
-                'id' => $item->id,
-                'name' => $item->name,
-                'total_cost' => (float) $item->total_cost,
-                'total_quantity' => (float) $item->total_quantity,
-                'purchase_count' => (int) $item->purchase_count,
-                'average_price' => (float) $item->total_quantity > 0
-                    ? (float) $item->total_cost / (float) $item->total_quantity
-                    : 0,
-            ]),
-            'summary' => [
-                'total_cost' => $purchases->sum('total_cost'),
-                'total_quantity' => $purchases->sum('quantity_kg'),
-                'count' => $purchases->count(),
-                'average_price_per_kg' => $purchases->sum('quantity_kg') > 0
-                    ? $purchases->sum('total_cost') / $purchases->sum('quantity_kg')
-                    : 0,
-            ],
-        ];
-    }
-
-    private function stockReport(): array
-    {
-        $suppliers = Supplier::query()->get();
-        $currentStock = Stock::current();
-
-        return [
-            'current_stock' => $currentStock,
-            'by_supplier' => $suppliers->map(fn ($supplier) => [
-                'id' => $supplier->id,
-                'name' => $supplier->name,
-                'remaining_stock' => (float) $supplier->remaining_stock,
-            ])->filter(fn ($item) => $item['remaining_stock'] > 0),
-            'summary' => [
-                'total_suppliers' => $suppliers->count(),
-                'suppliers_with_stock' => $suppliers->filter(fn ($s) => $s->remaining_stock > 0)->count(),
-            ],
-        ];
-    }
-
-    private function customerReport(?string $customerId): array
-    {
-        if (! $customerId) {
-            return [
-                'customers' => Customer::query()
-                    ->withCount('sales')
-                    ->withSum('sales', 'total_amount')
-                    ->orderBy('name')
-                    ->get()
-                    ->map(fn ($customer) => [
-                        'id' => $customer->id,
-                        'name' => $customer->name,
-                        'email' => $customer->email,
-                        'phone' => $customer->phone,
-                        'type' => $customer->type,
-                        'total_sales' => (int) $customer->sales_count,
-                        'total_revenue' => (float) $customer->sales_sum_total_amount,
-                    ]),
-            ];
-        }
-
-        $customer = Customer::query()
-            ->with(['sales' => fn ($q) => $q->orderByDesc('sale_date')->limit(20)])
-            ->findOrFail($customerId);
-
-        $outstandingCredits = $customer->sales()
-            ->where('is_credit', true)
-            ->with('payments')
-            ->get()
-            ->filter(fn (Sale $sale) => $sale->outstanding_balance > 0);
-
-        return [
-            'customer' => [
-                'id' => $customer->id,
-                'name' => $customer->name,
-                'email' => $customer->email,
-                'phone' => $customer->phone,
-                'type' => $customer->type,
-                'address' => $customer->address,
-            ],
-            'summary' => [
-                'total_sales' => $customer->sales()->count(),
-                'total_revenue' => $customer->sales()->sum('total_amount'),
-                'outstanding_credits' => $outstandingCredits->sum('outstanding_balance'),
-                'credit_count' => $outstandingCredits->count(),
-            ],
-            'recent_sales' => $customer->sales->map(fn ($sale) => [
-                'id' => $sale->id,
-                'date' => $sale->sale_date->format('Y-m-d'),
-                'amount' => $sale->total_amount,
-                'quantity' => $sale->quantity_kg,
-                'is_credit' => $sale->is_credit,
-                'outstanding' => $sale->is_credit ? $sale->outstanding_balance : 0,
-            ]),
-            'outstanding_credits' => $outstandingCredits->map(fn ($sale) => [
-                'sale_id' => $sale->id,
-                'date' => $sale->sale_date->format('Y-m-d'),
-                'total' => $sale->total_amount,
-                'paid' => $sale->payments->sum('amount'),
-                'outstanding' => $sale->outstanding_balance,
-            ]),
-        ];
-    }
-
-    private function supplierReport(?string $supplierId): array
-    {
-        if (! $supplierId) {
-            return [
-                'suppliers' => Supplier::query()
-                    ->withCount('purchases')
-                    ->withSum('purchases', 'total_cost')
-                    ->orderBy('name')
-                    ->get()
-                    ->map(fn ($supplier) => [
-                        'id' => $supplier->id,
-                        'name' => $supplier->name,
-                        'email' => $supplier->email,
-                        'phone' => $supplier->phone,
-                        'total_purchases' => (int) $supplier->purchases_count,
-                        'total_cost' => (float) $supplier->purchases_sum_total_cost,
-                        'remaining_stock' => (float) $supplier->remaining_stock,
-                    ]),
-            ];
-        }
-
-        $supplier = Supplier::query()
-            ->with(['purchases' => fn ($q) => $q->orderByDesc('purchase_date')->limit(20)])
-            ->findOrFail($supplierId);
-
-        return [
-            'supplier' => [
-                'id' => $supplier->id,
-                'name' => $supplier->name,
-                'email' => $supplier->email,
-                'phone' => $supplier->phone,
-                'address' => $supplier->address,
-            ],
-            'summary' => [
-                'total_purchases' => $supplier->purchases()->count(),
-                'total_cost' => $supplier->purchases()->sum('total_cost'),
-                'total_quantity' => $supplier->purchases()->sum('quantity_kg'),
-                'remaining_stock' => (float) $supplier->remaining_stock,
-                'average_price_per_kg' => $supplier->purchases()->sum('quantity_kg') > 0
-                    ? $supplier->purchases()->sum('total_cost') / $supplier->purchases()->sum('quantity_kg')
-                    : 0,
-            ],
-            'recent_purchases' => $supplier->purchases->map(fn ($purchase) => [
-                'id' => $purchase->id,
-                'date' => $purchase->purchase_date->format('Y-m-d'),
-                'quantity' => $purchase->quantity_kg,
-                'price_per_kg' => $purchase->price_per_kg,
-                'total_cost' => $purchase->total_cost,
-            ]),
-        ];
     }
 
     private function exportSalesSummary($handle, string $startDate, string $endDate, ?string $customerId): void

@@ -6,6 +6,7 @@ namespace App\Http\Controllers;
 
 use App\Actions\CreateSupplier;
 use App\Actions\DeleteSupplier;
+use App\Actions\PrepareSupplierIndexDataAction;
 use App\Actions\UpdateSupplier;
 use App\Http\Requests\StoreSupplierRequest;
 use App\Http\Requests\UpdateSupplierRequest;
@@ -17,6 +18,10 @@ use Inertia\Response;
 
 final readonly class SupplierController
 {
+    public function __construct(
+        private PrepareSupplierIndexDataAction $prepareSupplierIndexData,
+    ) {}
+
     public function index(Request $request): Response
     {
         $perPage = $request->get('per_page', 10);
@@ -53,19 +58,7 @@ final readonly class SupplierController
 
         $suppliers = $query->paginate($perPage);
 
-        // Calculate remaining stock for each supplier
-        $suppliers->getCollection()->transform(function (Supplier $supplier) {
-            $supplier->remaining_stock = $supplier->remaining_stock;
-
-            return $supplier;
-        });
-
-        // Sort by remaining_stock if needed (after calculation)
-        if ($sortBy === 'remaining_stock' && in_array($sortDir, ['asc', 'desc'])) {
-            $suppliers->getCollection()->sortBy(function (Supplier $supplier) {
-                return (float) ($supplier->remaining_stock ?? 0);
-            }, SORT_REGULAR, $sortDir === 'desc');
-        }
+        $suppliers = $this->prepareSupplierIndexData->handle($suppliers, $sortBy, $sortDir);
 
         return Inertia::render('Suppliers/Index', [
             'suppliers' => $suppliers,

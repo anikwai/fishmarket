@@ -6,11 +6,11 @@ namespace App\Http\Controllers;
 
 use App\Actions\CreatePayment;
 use App\Actions\DeletePayment;
+use App\Actions\GetCreditSalesForPaymentAction;
 use App\Actions\UpdatePayment;
 use App\Http\Requests\StorePaymentRequest;
 use App\Http\Requests\UpdatePaymentRequest;
 use App\Models\Payment;
-use App\Models\Sale;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -18,6 +18,10 @@ use Inertia\Response;
 
 final readonly class PaymentController
 {
+    public function __construct(
+        private GetCreditSalesForPaymentAction $getCreditSalesForPayment,
+    ) {}
+
     public function index(Request $request): Response
     {
         $perPage = $request->get('per_page', 10);
@@ -48,18 +52,7 @@ final readonly class PaymentController
 
         $payments = $query->paginate($perPage);
 
-        $creditSales = Sale::query()
-            ->where('is_credit', true)
-            ->with('customer', 'payments')
-            ->get()
-            ->filter(fn (Sale $sale) => $sale->outstanding_balance > 0)
-            ->map(fn (Sale $sale) => [
-                'id' => $sale->id,
-                'customer_name' => $sale->customer->name,
-                'total_amount' => $sale->total_amount,
-                'outstanding_balance' => $sale->outstanding_balance,
-            ])
-            ->values();
+        $creditSales = $this->getCreditSalesForPayment->handle();
 
         return Inertia::render('Payments/Index', [
             'payments' => $payments,
