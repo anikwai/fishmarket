@@ -1,6 +1,6 @@
 # Fish Market Management System
 
-A comprehensive business management application for fish market operations, built with Laravel and React. This system helps manage suppliers, customers, purchases, sales, expenses, payments, and generates detailed reports and receipts.
+A comprehensive business management application for fish market operations. Manage suppliers, customers, purchases, sales, expenses, payments, and generate detailed reports and receipts.
 
 ## Features
 

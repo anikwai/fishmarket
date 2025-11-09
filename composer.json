@@ -2,10 +2,16 @@
     "$schema": "https://getcomposer.org/schema.json",
     "name": "nunomaduro/laravel-starter-kit-inertia-react",
     "type": "project",
-    "description": "The skeleton application for the Laravel framework.",
+    "description": "A comprehensive business management application for fish market operations, built with Laravel and React.",
     "keywords": [
         "laravel",
-        "framework"
+        "react",
+        "inertia",
+        "fish-market",
+        "business-management",
+        "inventory",
+        "sales",
+        "receipts"
     ],
     "license": "MIT",
     "require": {
