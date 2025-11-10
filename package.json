@@ -23,7 +23,7 @@
         "prettier-plugin-organize-imports": "^4.3.0",
         "prettier-plugin-tailwindcss": "^0.7.1",
         "shadcn": "^3.5.0",
-        "typescript-eslint": "^8.46.3"
+        "typescript-eslint": "^8.46.4"
     },
     "dependencies": {
         "@headlessui/react": "^2.2.9",

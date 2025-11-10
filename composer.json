@@ -20,6 +20,7 @@
         "inertiajs/inertia-laravel": "^2.0.10",
         "laravel/fortify": "^1.31.2",
         "laravel/framework": "^12.37",
+        "laravel/nightwatch": "^1.18",
         "laravel/tinker": "^2.10.1",
         "laravel/wayfinder": "^0.1.12",
         "nunomaduro/essentials": "^1.0.1",
