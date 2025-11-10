@@ -94,6 +94,11 @@ function RoleSelect({
 }) {
     const [value, setValue] = useState(defaultValue);
 
+    // Sync state when defaultValue changes (e.g., when editing different users)
+    useEffect(() => {
+        setValue(defaultValue);
+    }, [defaultValue]);
+
     return (
         <div className="relative">
             <input type="hidden" name="role" value={value} />
