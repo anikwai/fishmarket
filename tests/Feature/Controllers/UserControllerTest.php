@@ -6,6 +6,14 @@ use App\Models\User;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Hash;
+use Spatie\Permission\Models\Role;
+
+beforeEach(function (): void {
+    // Ensure roles exist for tests
+    Role::firstOrCreate(['name' => 'admin']);
+    Role::firstOrCreate(['name' => 'manager']);
+    Role::firstOrCreate(['name' => 'cashier']);
+});
 
 it('renders registration page', function (): void {
     $response = $this->fromRoute('home')
@@ -26,7 +34,8 @@ it('may register a new user', function (): void {
             'password_confirmation' => 'password1234',
         ]);
 
-    $response->assertRedirectToRoute('dashboard');
+    // New users without roles are redirected to pending-access
+    $response->assertRedirectToRoute('pending-access');
 
     $user = User::query()->where('email', 'test@example.com')->first();
 
@@ -178,6 +187,7 @@ it('requires correct password to delete account', function (): void {
 
 it('redirects authenticated users away from registration', function (): void {
     $user = User::factory()->create();
+    $user->assignRole('admin');
 
     $response = $this->actingAs($user)
         ->fromRoute('dashboard')

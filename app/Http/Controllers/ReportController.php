@@ -20,6 +20,7 @@ use App\Models\Sale;
 use App\Models\Supplier;
 use App\Support\Stock;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 use Inertia\Response as InertiaResponse;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -40,6 +41,8 @@ final readonly class ReportController
 
     public function index(Request $request): InertiaResponse
     {
+        Gate::authorize('view reports');
+
         $reportType = $request->query('type', 'sales-summary');
         $startDate = $request->query('start_date', now()->startOfMonth()->format('Y-m-d'));
         $endDate = $request->query('end_date', now()->format('Y-m-d'));
@@ -73,6 +76,8 @@ final readonly class ReportController
 
     public function export(Request $request): StreamedResponse
     {
+        Gate::authorize('export reports');
+
         $reportType = $request->query('type', 'sales-summary');
         $startDate = $request->query('start_date', now()->startOfMonth()->format('Y-m-d'));
         $endDate = $request->query('end_date', now()->format('Y-m-d'));

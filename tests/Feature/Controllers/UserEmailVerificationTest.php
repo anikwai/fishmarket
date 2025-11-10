@@ -4,11 +4,20 @@ declare(strict_types=1);
 
 use App\Models\User;
 use Illuminate\Support\Facades\URL;
+use Spatie\Permission\Models\Role;
+
+beforeEach(function (): void {
+    // Ensure roles exist for tests
+    Role::firstOrCreate(['name' => 'admin']);
+    Role::firstOrCreate(['name' => 'manager']);
+    Role::firstOrCreate(['name' => 'cashier']);
+});
 
 it('may verify email', function (): void {
     $user = User::factory()->create([
         'email_verified_at' => null,
     ]);
+    $user->assignRole('admin');
 
     $verificationUrl = URL::temporarySignedRoute(
         'verification.verify',
@@ -29,6 +38,7 @@ it('redirects to dashboard if already verified', function (): void {
     $user = User::factory()->create([
         'email_verified_at' => now(),
     ]);
+    $user->assignRole('admin');
 
     $verificationUrl = URL::temporarySignedRoute(
         'verification.verify',

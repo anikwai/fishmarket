@@ -3,9 +3,18 @@
 declare(strict_types=1);
 
 use App\Models\User;
+use Spatie\Permission\Models\Role;
+
+beforeEach(function (): void {
+    // Ensure roles exist for tests
+    Role::firstOrCreate(['name' => 'admin']);
+    Role::firstOrCreate(['name' => 'manager']);
+    Role::firstOrCreate(['name' => 'cashier']);
+});
 
 it('renders profile edit page', function (): void {
     $user = User::factory()->create();
+    $user->assignRole('admin');
 
     $response = $this->actingAs($user)
         ->fromRoute('dashboard')
@@ -22,6 +31,7 @@ it('may update profile information', function (): void {
         'name' => 'Old Name',
         'email' => 'old@example.com',
     ]);
+    $user->assignRole('admin');
 
     $response = $this->actingAs($user)
         ->fromRoute('user-profile.edit')
@@ -41,6 +51,7 @@ it('resets email verification when email changes', function (): void {
         'email' => 'old@example.com',
         'email_verified_at' => now(),
     ]);
+    $user->assignRole('admin');
 
     $response = $this->actingAs($user)
         ->fromRoute('user-profile.edit')
@@ -61,6 +72,7 @@ it('keeps email verification when email stays the same', function (): void {
         'email' => 'same@example.com',
         'email_verified_at' => $verifiedAt,
     ]);
+    $user->assignRole('admin');
 
     $response = $this->actingAs($user)
         ->fromRoute('user-profile.edit')
@@ -76,6 +88,7 @@ it('keeps email verification when email stays the same', function (): void {
 
 it('requires name', function (): void {
     $user = User::factory()->create();
+    $user->assignRole('admin');
 
     $response = $this->actingAs($user)
         ->fromRoute('user-profile.edit')
@@ -89,6 +102,7 @@ it('requires name', function (): void {
 
 it('requires email', function (): void {
     $user = User::factory()->create();
+    $user->assignRole('admin');
 
     $response = $this->actingAs($user)
         ->fromRoute('user-profile.edit')
@@ -102,6 +116,7 @@ it('requires email', function (): void {
 
 it('requires valid email', function (): void {
     $user = User::factory()->create();
+    $user->assignRole('admin');
 
     $response = $this->actingAs($user)
         ->fromRoute('user-profile.edit')
@@ -116,7 +131,9 @@ it('requires valid email', function (): void {
 
 it('requires unique email except own', function (): void {
     $existingUser = User::factory()->create(['email' => 'existing@example.com']);
+    $existingUser->assignRole('admin');
     $user = User::factory()->create(['email' => 'test@example.com']);
+    $user->assignRole('admin');
 
     $response = $this->actingAs($user)
         ->fromRoute('user-profile.edit')
@@ -134,6 +151,7 @@ it('allows keeping same email', function (): void {
         'name' => 'Test User',
         'email' => 'test@example.com',
     ]);
+    $user->assignRole('admin');
 
     $response = $this->actingAs($user)
         ->fromRoute('user-profile.edit')

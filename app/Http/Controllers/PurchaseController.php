@@ -14,6 +14,7 @@ use App\Models\Purchase;
 use App\Models\Supplier;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -25,6 +26,8 @@ final readonly class PurchaseController
 
     public function index(Request $request): Response
     {
+        Gate::authorize('view purchases');
+
         $perPage = $request->get('per_page', 10);
         $perPage = in_array($perPage, [10, 15, 20, 25, 50]) ? (int) $perPage : 10; // @phpstan-ignore cast.int
 
@@ -76,6 +79,8 @@ final readonly class PurchaseController
 
     public function store(StorePurchaseRequest $request, CreatePurchase $action): RedirectResponse
     {
+        Gate::authorize('create purchases');
+
         $action->handle($request->validated());
 
         return back()->with('success', 'Purchase created successfully.');
@@ -83,6 +88,8 @@ final readonly class PurchaseController
 
     public function update(UpdatePurchaseRequest $request, Purchase $purchase, UpdatePurchase $action): RedirectResponse
     {
+        Gate::authorize('update purchases');
+
         $action->handle($purchase, $request->validated());
 
         return back()->with('success', 'Purchase updated successfully.');
@@ -90,6 +97,8 @@ final readonly class PurchaseController
 
     public function destroy(Purchase $purchase, DeletePurchase $action): RedirectResponse
     {
+        Gate::authorize('delete purchases');
+
         $action->handle($purchase);
 
         return back()->with('success', 'Purchase deleted successfully.');

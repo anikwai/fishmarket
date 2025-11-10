@@ -5,6 +5,14 @@ declare(strict_types=1);
 use App\Models\User;
 use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Support\Facades\Notification;
+use Spatie\Permission\Models\Role;
+
+beforeEach(function (): void {
+    // Ensure roles exist for tests
+    Role::firstOrCreate(['name' => 'admin']);
+    Role::firstOrCreate(['name' => 'manager']);
+    Role::firstOrCreate(['name' => 'cashier']);
+});
 
 it('renders forgot password page', function (): void {
     $response = $this->fromRoute('home')
@@ -68,6 +76,7 @@ it('requires valid email format', function (): void {
 
 it('redirects authenticated users away from forgot password', function (): void {
     $user = User::factory()->create();
+    $user->assignRole('admin');
 
     $response = $this->actingAs($user)
         ->fromRoute('dashboard')

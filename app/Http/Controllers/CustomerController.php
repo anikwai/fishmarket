@@ -12,6 +12,7 @@ use App\Http\Requests\UpdateCustomerRequest;
 use App\Models\Customer;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -19,6 +20,8 @@ final readonly class CustomerController
 {
     public function index(Request $request): Response
     {
+        Gate::authorize('view customers');
+
         $query = Customer::query()
             ->when($request->search, fn (\Illuminate\Database\Eloquent\Builder $query, mixed $search) => $query->where('name', 'like', '%'.(is_string($search) ? $search : '').'%'))
             ->when($request->type, fn (\Illuminate\Database\Eloquent\Builder $query, mixed $type) => $query->where('type', is_string($type) ? $type : ''));
@@ -52,6 +55,8 @@ final readonly class CustomerController
 
     public function store(StoreCustomerRequest $request, CreateCustomer $action): RedirectResponse
     {
+        Gate::authorize('create customers');
+
         $action->handle($request->validated());
 
         return back()->with('success', 'Customer created successfully.');
@@ -59,6 +64,8 @@ final readonly class CustomerController
 
     public function update(UpdateCustomerRequest $request, Customer $customer, UpdateCustomer $action): RedirectResponse
     {
+        Gate::authorize('update customers');
+
         $action->handle($customer, $request->validated());
 
         return back()->with('success', 'Customer updated successfully.');
@@ -66,6 +73,8 @@ final readonly class CustomerController
 
     public function destroy(Customer $customer, DeleteCustomer $action): RedirectResponse
     {
+        Gate::authorize('delete customers');
+
         $action->handle($customer);
 
         return back()->with('success', 'Customer deleted successfully.');

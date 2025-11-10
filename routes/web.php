@@ -35,11 +35,18 @@ Route::middleware(['auth', 'verified'])->group(function (): void {
     Route::post('receipts/{receipt}/email', [App\Http\Controllers\ReceiptController::class, 'sendEmail'])->name('receipts.email');
     Route::post('receipts/{receipt}/void', [App\Http\Controllers\ReceiptController::class, 'void'])->name('receipts.void');
     Route::post('receipts/{receipt}/reissue', [App\Http\Controllers\ReceiptController::class, 'reissue'])->name('receipts.reissue');
+
+    // User Management (Admin only)
+    Route::resource('users', UserController::class)->except(['create', 'store']);
+    Route::post('users', [UserController::class, 'storeAdmin'])->name('users.store');
 });
 
 Route::middleware('auth')->group(function (): void {
-    // User...
-    Route::delete('user', [UserController::class, 'destroy'])->name('user.destroy');
+    // Pending Access Page (for users without roles)
+    Route::get('pending-access', fn () => Inertia::render('pending-access'))->name('pending-access');
+
+    // User deleting themselves...
+    Route::delete('user', [UserController::class, 'destroySelf'])->name('user.destroy');
 
     // User Profile...
     Route::redirect('settings', '/settings/profile');

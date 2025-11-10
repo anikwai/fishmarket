@@ -13,6 +13,7 @@ use App\Models\Expense;
 use App\Models\Purchase;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -20,6 +21,8 @@ final readonly class ExpenseController
 {
     public function index(Request $request): Response
     {
+        Gate::authorize('view expenses');
+
         $perPage = $request->get('per_page', 10);
         $perPage = in_array($perPage, [10, 15, 20, 25, 50], true) ? (int) $perPage : 10;
 
@@ -66,6 +69,8 @@ final readonly class ExpenseController
 
     public function store(StoreExpenseRequest $request, CreateExpense $action): RedirectResponse
     {
+        Gate::authorize('create expenses');
+
         $action->handle($request->validated());
 
         $count = isset($request->validated()['expenses']) && is_array($request->validated()['expenses'])
@@ -81,6 +86,8 @@ final readonly class ExpenseController
 
     public function update(UpdateExpenseRequest $request, Expense $expense, UpdateExpense $action): RedirectResponse
     {
+        Gate::authorize('update expenses');
+
         $action->handle($expense, $request->validated());
 
         return back()->with('success', 'Expense updated successfully.');
@@ -88,6 +95,8 @@ final readonly class ExpenseController
 
     public function destroy(Expense $expense, DeleteExpense $action): RedirectResponse
     {
+        Gate::authorize('delete expenses');
+
         $action->handle($expense);
 
         return back()->with('success', 'Expense deleted successfully.');

@@ -22,6 +22,7 @@ import {
     Receipt,
     ShoppingCart,
     UserCircle,
+    UserCog,
     Users,
 } from 'lucide-react';
 import AppLogo from './app-logo';
@@ -71,6 +72,11 @@ const mainNavItems: NavItem[] = [
         title: 'Reports',
         href: '/reports',
         icon: BarChart3,
+    },
+    {
+        title: 'Users',
+        href: '/users',
+        icon: UserCog,
     },
 ];
 

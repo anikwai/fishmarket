@@ -12,9 +12,9 @@ use Illuminate\Validation\Rule;
 
 final class StoreSaleRequest extends FormRequest
 {
-    public function authorize(): true
+    public function authorize(): bool
     {
-        return true;
+        return $this->user()?->can('create sales') ?? false;
     }
 
     /**

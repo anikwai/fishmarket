@@ -13,6 +13,7 @@ use App\Models\Receipt;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response as HttpResponse;
+use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -20,6 +21,8 @@ final readonly class ReceiptController
 {
     public function index(Request $request): Response
     {
+        Gate::authorize('view receipts');
+
         $perPage = $request->get('per_page', 10);
         $perPage = in_array($perPage, [10, 15, 20, 25, 50]) ? (int) $perPage : 10; // @phpstan-ignore cast.int
 
@@ -60,6 +63,8 @@ final readonly class ReceiptController
 
     public function download(Receipt $receipt, GenerateReceipt $action): HttpResponse
     {
+        Gate::authorize('download receipts');
+
         $pdf = $action->handle($receipt);
         $filename = $receipt->receipt_number.'.pdf';
 
@@ -68,6 +73,8 @@ final readonly class ReceiptController
 
     public function sendEmail(Receipt $receipt, SendReceiptEmail $action): RedirectResponse
     {
+        Gate::authorize('email receipts');
+
         $action->handle($receipt);
 
         return back()->with('success', 'Receipt email sent successfully.');
@@ -75,6 +82,8 @@ final readonly class ReceiptController
 
     public function void(VoidReceiptRequest $request, Receipt $receipt, VoidReceiptAction $action): RedirectResponse
     {
+        Gate::authorize('void receipts');
+
         $validated = $request->validated();
         $reason = $validated['reason'] ?? '';
 
@@ -89,6 +98,8 @@ final readonly class ReceiptController
 
     public function reissue(Receipt $receipt, ReissueReceiptAction $action): RedirectResponse
     {
+        Gate::authorize('reissue receipts');
+
         $newReceipt = $action->handle($receipt);
         $receiptNumber = $newReceipt->receipt_number;
 

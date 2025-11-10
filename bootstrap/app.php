@@ -24,5 +24,14 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        //
+        // Redirect guests to login when authorization fails
+        $exceptions->render(function (Illuminate\Auth\Access\AuthorizationException $e, Illuminate\Http\Request $request) {
+            if (! $request->user()) {
+                if ($request->expectsJson() || $request->header('X-Inertia')) {
+                    return response()->json(['message' => 'Unauthorized'], 403);
+                }
+
+                return to_route('login');
+            }
+        });
     })->create();

@@ -7,6 +7,14 @@ use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
+use Spatie\Permission\Models\Role;
+
+beforeEach(function (): void {
+    // Ensure roles exist for tests
+    Role::firstOrCreate(['name' => 'admin']);
+    Role::firstOrCreate(['name' => 'manager']);
+    Role::firstOrCreate(['name' => 'cashier']);
+});
 
 it('renders reset password page', function (): void {
     $response = $this->fromRoute('home')
@@ -124,6 +132,7 @@ it('requires matching password confirmation', function (): void {
 
 it('renders edit password page', function (): void {
     $user = User::factory()->create();
+    $user->assignRole('admin');
 
     $response = $this->actingAs($user)
         ->fromRoute('dashboard')
@@ -137,6 +146,7 @@ it('may update password', function (): void {
     $user = User::factory()->create([
         'password' => Hash::make('old-password'),
     ]);
+    $user->assignRole('admin');
 
     $response = $this->actingAs($user)
         ->fromRoute('password.edit')
@@ -153,6 +163,7 @@ it('may update password', function (): void {
 
 it('requires current password to update', function (): void {
     $user = User::factory()->create();
+    $user->assignRole('admin');
 
     $response = $this->actingAs($user)
         ->fromRoute('password.edit')
@@ -169,6 +180,7 @@ it('requires correct current password to update', function (): void {
     $user = User::factory()->create([
         'password' => Hash::make('old-password'),
     ]);
+    $user->assignRole('admin');
 
     $response = $this->actingAs($user)
         ->fromRoute('password.edit')
@@ -186,6 +198,7 @@ it('requires new password to update', function (): void {
     $user = User::factory()->create([
         'password' => Hash::make('old-password'),
     ]);
+    $user->assignRole('admin');
 
     $response = $this->actingAs($user)
         ->fromRoute('password.edit')
@@ -199,6 +212,7 @@ it('requires new password to update', function (): void {
 
 it('redirects authenticated users away from reset password', function (): void {
     $user = User::factory()->create();
+    $user->assignRole('admin');
 
     $response = $this->actingAs($user)
         ->fromRoute('dashboard')

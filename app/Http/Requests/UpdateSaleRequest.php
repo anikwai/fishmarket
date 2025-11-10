@@ -13,9 +13,9 @@ use Illuminate\Validation\Rule;
 
 final class UpdateSaleRequest extends FormRequest
 {
-    public function authorize(): true
+    public function authorize(): bool
     {
-        return true;
+        return $this->user()?->can('update sales') ?? false;
     }
 
     /**

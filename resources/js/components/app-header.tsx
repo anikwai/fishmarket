@@ -36,6 +36,7 @@ import {
     Search,
     ShoppingCart,
     UserCircle,
+    UserCog,
     Users,
 } from 'lucide-react';
 import AppLogo from './app-logo';
@@ -81,6 +82,11 @@ const mainNavItems: NavItem[] = [
         title: 'Receipts',
         href: '/receipts',
         icon: FileText,
+    },
+    {
+        title: 'Users',
+        href: '/users',
+        icon: UserCog,
     },
 ];
 
