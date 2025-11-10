@@ -77,3 +77,15 @@ it('does not assign role when role name is empty string', function (): void {
 
     Event::assertDispatched(Registered::class);
 });
+
+it('throws domain exception when role does not exist', function (): void {
+    Event::fake([Registered::class]);
+
+    $action = app(CreateUser::class);
+
+    expect(fn () => $action->handle([
+        'name' => 'Test User',
+        'email' => 'example@email.com',
+    ], 'password', 'non-existent-role'))
+        ->toThrow(DomainException::class, "Role 'non-existent-role' does not exist.");
+});

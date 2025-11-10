@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Actions;
 
 use App\Models\User;
+use DomainException;
+use Spatie\Permission\Exceptions\RoleDoesNotExist;
 use Spatie\Permission\Models\Role;
 
 final readonly class UpdateUser
@@ -27,8 +29,12 @@ final readonly class UpdateUser
 
         // Handle role assignment separately using Spatie Permission
         if (is_string($roleName) && $roleName !== '') {
-            $role = Role::findByName($roleName);
-            $user->syncRoles([$role]);
+            try {
+                $role = Role::findByName($roleName);
+                $user->syncRoles([$role]);
+            } catch (RoleDoesNotExist $e) {
+                throw new DomainException("Role '{$roleName}' does not exist.", 0, $e);
+            }
         } elseif ($roleName === '') {
             // If role is empty string, remove all roles
             $user->syncRoles([]);

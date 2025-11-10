@@ -112,3 +112,14 @@ it('does not change roles when role is null', function (): void {
     expect($user->refresh()->hasRole('admin'))->toBeTrue()
         ->and($user->roles()->count())->toBe(1);
 });
+
+it('throws domain exception when role does not exist', function (): void {
+    $user = User::factory()->create();
+
+    $action = app(UpdateUser::class);
+
+    expect(fn () => $action->handle($user, [
+        'name' => 'Updated Name',
+        'role' => 'non-existent-role',
+    ]))->toThrow(DomainException::class, "Role 'non-existent-role' does not exist.");
+});
