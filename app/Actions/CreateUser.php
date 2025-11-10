@@ -25,7 +25,7 @@ final readonly class CreateUser
         event(new Registered($user));
 
         // Handle role assignment if provided
-        if ($roleName !== null) {
+        if ($roleName !== null && $roleName !== '') {
             $role = Role::findByName($roleName);
             $user->assignRole($role);
         }

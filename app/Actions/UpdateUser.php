@@ -29,9 +29,10 @@ final readonly class UpdateUser
         if (is_string($roleName) && $roleName !== '') {
             $role = Role::findByName($roleName);
             $user->syncRoles([$role]);
-        } elseif ($roleName === '' || $roleName === null) {
-            // If role is empty string or null, remove all roles
+        } elseif ($roleName === '') {
+            // If role is empty string, remove all roles
             $user->syncRoles([]);
         }
+        // If $roleName is null, do nothing - don't change roles (partial update)
     }
 }
