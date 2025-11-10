@@ -25,19 +25,19 @@ final readonly class GenerateSalesByCustomerReportAction
             ->get();
 
         return [
-            'customers' => $data->map(fn ($item): array => [
-                'id' => $item->id,
-                'name' => $item->name,
-                'total_revenue' => (float) $item->total_revenue,
-                'total_quantity' => (float) $item->total_quantity,
-                'sale_count' => (int) $item->sale_count,
-                'average_sale' => (int) $item->sale_count > 0
+            'customers' => $data->map(fn (object $item): array => [
+                'id' => isset($item->id) ? (int) $item->id : 0,
+                'name' => (isset($item->name) && is_string($item->name)) ? $item->name : '',
+                'total_revenue' => (isset($item->total_revenue) && is_numeric($item->total_revenue)) ? (float) $item->total_revenue : 0.0,
+                'total_quantity' => (isset($item->total_quantity) && is_numeric($item->total_quantity)) ? (float) $item->total_quantity : 0.0,
+                'sale_count' => (isset($item->sale_count) && is_numeric($item->sale_count)) ? (int) $item->sale_count : 0,
+                'average_sale' => (isset($item->sale_count) && is_numeric($item->sale_count) && (int) $item->sale_count > 0 && isset($item->total_revenue) && is_numeric($item->total_revenue))
                     ? (float) $item->total_revenue / (int) $item->sale_count
-                    : 0,
+                    : 0.0,
             ]),
             'summary' => [
                 'total_customers' => $data->count(),
-                'total_revenue' => $data->sum('total_revenue'),
+                'total_revenue' => $data->sum(fn (object $item): float => (isset($item->total_revenue) && is_numeric($item->total_revenue)) ? (float) $item->total_revenue : 0.0),
             ],
         ];
     }

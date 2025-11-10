@@ -256,7 +256,7 @@ export default function ReceiptsIndex({
                 preserveScroll: true,
                 onSuccess: (page) => {
                     const message =
-                        page.props.flash?.success ||
+                        (page.props.flash as { success?: string })?.success ||
                         'Receipt reissued successfully.';
                     toast.success(message);
                 },

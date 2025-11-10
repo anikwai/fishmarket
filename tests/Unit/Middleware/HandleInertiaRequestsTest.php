@@ -5,11 +5,14 @@ declare(strict_types=1);
 use App\Http\Middleware\HandleInertiaRequests;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Session\NullSessionHandler;
+use Illuminate\Session\Store;
 
 it('shares app name from config', function (): void {
     $middleware = new HandleInertiaRequests();
 
     $request = Request::create('/', 'GET');
+    $request->setLaravelSession(new Store('test', new NullSessionHandler()));
 
     $shared = $middleware->share($request);
 
@@ -21,6 +24,7 @@ it('shares inspiring quote with message and author', function (): void {
     $middleware = new HandleInertiaRequests();
 
     $request = Request::create('/', 'GET');
+    $request->setLaravelSession(new Store('test', new NullSessionHandler()));
 
     $shared = $middleware->share($request);
 
@@ -34,6 +38,7 @@ it('shares null user when guest', function (): void {
     $middleware = new HandleInertiaRequests();
 
     $request = Request::create('/', 'GET');
+    $request->setLaravelSession(new Store('test', new NullSessionHandler()));
 
     $shared = $middleware->share($request);
 
@@ -52,6 +57,7 @@ it('shares authenticated user data', function (): void {
 
     $request = Request::create('/', 'GET');
     $request->setUserResolver(fn () => $user);
+    $request->setLaravelSession(new Store('test', new NullSessionHandler()));
 
     $shared = $middleware->share($request);
 
@@ -65,6 +71,7 @@ it('defaults sidebarOpen to true when no cookie', function (): void {
     $middleware = new HandleInertiaRequests();
 
     $request = Request::create('/', 'GET');
+    $request->setLaravelSession(new Store('test', new NullSessionHandler()));
 
     $shared = $middleware->share($request);
 
@@ -77,6 +84,7 @@ it('sets sidebarOpen to true when cookie is true', function (): void {
 
     $request = Request::create('/', 'GET');
     $request->cookies->set('sidebar_state', 'true');
+    $request->setLaravelSession(new Store('test', new NullSessionHandler()));
 
     $shared = $middleware->share($request);
 
@@ -88,6 +96,7 @@ it('sets sidebarOpen to false when cookie is false', function (): void {
 
     $request = Request::create('/', 'GET');
     $request->cookies->set('sidebar_state', 'false');
+    $request->setLaravelSession(new Store('test', new NullSessionHandler()));
 
     $shared = $middleware->share($request);
 
@@ -98,9 +107,20 @@ it('includes parent shared data', function (): void {
     $middleware = new HandleInertiaRequests();
 
     $request = Request::create('/', 'GET');
+    $request->setLaravelSession(new Store('test', new NullSessionHandler()));
 
     $shared = $middleware->share($request);
 
     // Parent Inertia middleware shares 'errors' by default
     expect($shared)->toHaveKey('errors');
+});
+
+it('returns version from parent', function (): void {
+    $middleware = new HandleInertiaRequests();
+
+    $request = Request::create('/', 'GET');
+
+    $version = $middleware->version($request);
+
+    expect($version)->toBeString();
 });

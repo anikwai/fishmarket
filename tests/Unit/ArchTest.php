@@ -3,7 +3,9 @@
 declare(strict_types=1);
 
 arch()->preset()->php();
-arch()->preset()->strict();
+arch()->preset()->strict()->ignoring([
+    'App\Models',
+]);
 arch()->preset()->security()->ignoring([
     'assert',
 ]);

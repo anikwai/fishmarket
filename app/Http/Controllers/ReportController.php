@@ -14,8 +14,11 @@ use App\Actions\GenerateSalesSummaryReportAction;
 use App\Actions\GenerateStockReportAction;
 use App\Actions\GenerateSupplierReportAction;
 use App\Models\Customer;
+use App\Models\Expense;
+use App\Models\Purchase;
 use App\Models\Sale;
 use App\Models\Supplier;
+use App\Support\Stock;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response as InertiaResponse;
@@ -89,6 +92,7 @@ final readonly class ReportController
         };
 
         return response()->streamDownload(function () use ($reportType, $startDate, $endDate, $customerId, $supplierId): void {
+            /** @var resource $handle */
             $handle = fopen('php://output', 'w');
 
             match ($reportType) {
@@ -110,7 +114,10 @@ final readonly class ReportController
         ]);
     }
 
-    private function exportSalesSummary($handle, string $startDate, string $endDate, ?string $customerId): void
+    /**
+     * @param  resource  $handle
+     */
+    private function exportSalesSummary(mixed $handle, string $startDate, string $endDate, ?string $customerId): void
     {
         $query = Sale::query()
             ->whereBetween('sale_date', [$startDate, $endDate])
@@ -147,15 +154,23 @@ final readonly class ReportController
         // Summary row
         fputcsv($handle, [], escape: '\\');
         fputcsv($handle, ['Summary'], escape: '\\');
-        fputcsv($handle, ['Total Revenue', number_format($sales->sum('total_amount'), 2)], escape: '\\');
-        fputcsv($handle, ['Total Quantity (kg)', number_format($sales->sum('quantity_kg'), 2)], escape: '\\');
-        fputcsv($handle, ['Total Sales', $sales->count()], escape: '\\');
-        fputcsv($handle, ['Average Sale', number_format($sales->count() > 0 ? $sales->sum('total_amount') / $sales->count() : 0, 2)], escape: '\\');
-        fputcsv($handle, ['Credit Sales', number_format($sales->where('is_credit', true)->sum('total_amount'), 2)], escape: '\\');
-        fputcsv($handle, ['Cash Sales', number_format($sales->where('is_credit', false)->sum('total_amount'), 2)], escape: '\\');
+        $totalRevenue = (float) $sales->sum('total_amount'); // @phpstan-ignore cast.double
+        $totalQuantity = (float) $sales->sum('quantity_kg'); // @phpstan-ignore cast.double
+        $salesCount = $sales->count();
+        fputcsv($handle, ['Total Revenue', number_format($totalRevenue, 2)], escape: '\\');
+        fputcsv($handle, ['Total Quantity (kg)', number_format($totalQuantity, 2)], escape: '\\');
+        fputcsv($handle, ['Total Sales', $salesCount], escape: '\\');
+        fputcsv($handle, ['Average Sale', number_format($salesCount > 0 ? $totalRevenue / $salesCount : 0.0, 2)], escape: '\\');
+        $creditSales = (float) $sales->where('is_credit', true)->sum('total_amount'); // @phpstan-ignore cast.double
+        $cashSales = (float) $sales->where('is_credit', false)->sum('total_amount'); // @phpstan-ignore cast.double
+        fputcsv($handle, ['Credit Sales', number_format($creditSales, 2)], escape: '\\');
+        fputcsv($handle, ['Cash Sales', number_format($cashSales, 2)], escape: '\\');
     }
 
-    private function exportSalesByCustomer($handle, string $startDate, string $endDate): void
+    /**
+     * @param  resource  $handle
+     */
+    private function exportSalesByCustomer(mixed $handle, string $startDate, string $endDate): void
     {
         $data = Sale::query()
             ->select('customers.id', 'customers.name')
@@ -171,49 +186,63 @@ final readonly class ReportController
         fputcsv($handle, ['Customer ID', 'Customer Name', 'Total Revenue', 'Total Quantity (kg)', 'Sales Count', 'Average Sale'], escape: '\\');
 
         foreach ($data as $item) {
+            $itemId = isset($item->id) ? (int) $item->id : 0;
+            $itemName = (isset($item->name) && is_string($item->name)) ? $item->name : '';
+            $totalRevenue = (isset($item->total_revenue) && is_numeric($item->total_revenue)) ? (float) $item->total_revenue : 0.0;
+            $totalQuantity = (isset($item->total_quantity) && is_numeric($item->total_quantity)) ? (float) $item->total_quantity : 0.0;
+            $saleCount = (isset($item->sale_count) && is_numeric($item->sale_count)) ? (int) $item->sale_count : 0;
+            $averageSale = ($saleCount > 0 && $totalRevenue > 0.0) ? $totalRevenue / $saleCount : 0.0;
             fputcsv($handle, [
-                $item->id,
-                $item->name,
-                number_format((float) $item->total_revenue, 2),
-                number_format((float) $item->total_quantity, 2),
-                $item->sale_count,
-                number_format((int) $item->sale_count > 0 ? (float) $item->total_revenue / (int) $item->sale_count : 0, 2),
+                $itemId,
+                $itemName,
+                number_format($totalRevenue, 2),
+                number_format($totalQuantity, 2),
+                $saleCount,
+                number_format($averageSale, 2),
             ],
                 escape: '\\');
         }
     }
 
-    private function exportOutstandingCredits($handle): void
+    /**
+     * @param  resource  $handle
+     */
+    private function exportOutstandingCredits(mixed $handle): void
     {
         $credits = Sale::query()
             ->where('is_credit', true)
-            ->with('customer', 'payments')
+            ->with(['customer', 'payments'])
             ->get()
             ->filter(fn (Sale $sale): bool => $sale->outstanding_balance > 0)
-            ->sortByDesc(fn (Sale $sale) => $sale->sale_date->diffInDays(now()))
+            ->sortByDesc(fn (Sale $sale): int => (int) $sale->sale_date->diffInDays(now()))
             ->values();
 
         fputcsv($handle, ['Sale ID', 'Date', 'Customer', 'Total Amount', 'Paid', 'Outstanding', 'Days Outstanding'], escape: '\\');
 
         foreach ($credits as $credit) {
+            $paidAmount = (float) $credit->payments->sum('amount'); // @phpstan-ignore cast.double
+            $daysOutstanding = $credit->sale_date->diffInDays(now());
             fputcsv($handle, [
                 $credit->id,
                 $credit->sale_date->format('Y-m-d'),
                 $credit->customer->name,
                 number_format((float) $credit->total_amount, 2),
-                number_format((float) $credit->payments->sum('amount'), 2),
+                number_format($paidAmount, 2),
                 number_format((float) $credit->outstanding_balance, 2),
-                $credit->sale_date->diffInDays(now()),
+                $daysOutstanding,
             ],
                 escape: '\\');
         }
     }
 
-    private function exportExpenseReport($handle, string $startDate, string $endDate): void
+    /**
+     * @param  resource  $handle
+     */
+    private function exportExpenseReport(mixed $handle, string $startDate, string $endDate): void
     {
         $expenses = Expense::query()
             ->whereBetween('expense_date', [$startDate, $endDate])
-            ->with('purchase.supplier')
+            ->with(['purchase.supplier'])
             ->orderBy('expense_date', 'desc')
             ->get();
 
@@ -226,16 +255,19 @@ final readonly class ReportController
                 ucfirst((string) $expense->type),
                 $expense->description,
                 number_format((float) $expense->amount, 2),
-                $expense->purchase?->supplier?->name ?? '',
+                $expense->purchase?->supplier?->name ?: '',
             ],
                 escape: '\\');
         }
 
         fputcsv($handle, [], escape: '\\');
-        fputcsv($handle, ['Total', '', '', '', number_format($expenses->sum('amount'), 2), ''], escape: '\\');
+        fputcsv($handle, ['Total', '', '', '', number_format((float) $expenses->sum('amount'), 2), ''], escape: '\\'); // @phpstan-ignore cast.double
     }
 
-    private function exportPurchaseReport($handle, string $startDate, string $endDate, ?string $supplierId): void
+    /**
+     * @param  resource  $handle
+     */
+    private function exportPurchaseReport(mixed $handle, string $startDate, string $endDate, ?string $supplierId): void
     {
         $query = Purchase::query()
             ->whereBetween('purchase_date', [$startDate, $endDate])
@@ -265,12 +297,17 @@ final readonly class ReportController
 
         fputcsv($handle, [], escape: '\\');
         fputcsv($handle, ['Summary'], escape: '\\');
-        fputcsv($handle, ['Total Cost', number_format($purchases->sum('total_cost'), 2)], escape: '\\');
-        fputcsv($handle, ['Total Quantity (kg)', number_format($purchases->sum('quantity_kg'), 2)], escape: '\\');
+        $totalCost = (float) $purchases->sum('total_cost'); // @phpstan-ignore cast.double
+        $totalQuantity = (float) $purchases->sum('quantity_kg'); // @phpstan-ignore cast.double
+        fputcsv($handle, ['Total Cost', number_format($totalCost, 2)], escape: '\\');
+        fputcsv($handle, ['Total Quantity (kg)', number_format($totalQuantity, 2)], escape: '\\');
         fputcsv($handle, ['Purchase Count', $purchases->count()], escape: '\\');
     }
 
-    private function exportStockReport($handle): void
+    /**
+     * @param  resource  $handle
+     */
+    private function exportStockReport(mixed $handle): void
     {
         $suppliers = Supplier::query()
             ->orderBy('name')
@@ -291,11 +328,17 @@ final readonly class ReportController
         fputcsv($handle, ['Total Stock', number_format(Stock::current(), 2)], escape: '\\');
     }
 
-    private function exportCustomerReport($handle, ?string $customerId): void
+    /**
+     * @param  resource  $handle
+     */
+    private function exportCustomerReport(mixed $handle, ?string $customerId): void
     {
         if ($customerId) {
             $customer = Customer::query()
-                ->with(['sales' => fn ($q) => $q->orderByDesc('sale_date')])
+                /** @phpstan-ignore-next-line */
+                ->with(['sales' => function (\Illuminate\Database\Eloquent\Relations\HasMany $q): void {
+                    $q->latest('sale_date');
+                }])
                 ->findOrFail($customerId);
 
             fputcsv($handle, ['Customer Details'], escape: '\\');
@@ -309,14 +352,17 @@ final readonly class ReportController
 
             $outstandingCredits = $customer->sales()
                 ->where('is_credit', true)
-                ->with('payments')
+                ->with(['payments'])
                 ->get()
                 ->filter(fn (Sale $sale): bool => $sale->outstanding_balance > 0);
 
             fputcsv($handle, ['Summary'], escape: '\\');
-            fputcsv($handle, ['Total Sales', $customer->sales()->count()], escape: '\\');
-            fputcsv($handle, ['Total Revenue', number_format($customer->sales()->sum('total_amount'), 2)], escape: '\\');
-            fputcsv($handle, ['Outstanding Credits', number_format($outstandingCredits->sum('outstanding_balance'), 2)], escape: '\\');
+            $totalSales = $customer->sales()->count();
+            $totalRevenue = (float) $customer->sales()->sum('total_amount');
+            $outstandingCreditsSum = (float) $outstandingCredits->sum('outstanding_balance'); // @phpstan-ignore cast.double
+            fputcsv($handle, ['Total Sales', $totalSales], escape: '\\');
+            fputcsv($handle, ['Total Revenue', number_format($totalRevenue, 2)], escape: '\\');
+            fputcsv($handle, ['Outstanding Credits', number_format($outstandingCreditsSum, 2)], escape: '\\');
             fputcsv($handle, ['Credit Count', $outstandingCredits->count()], escape: '\\');
             fputcsv($handle, [], escape: '\\');
 
@@ -344,25 +390,34 @@ final readonly class ReportController
             fputcsv($handle, ['Customer ID', 'Name', 'Email', 'Phone', 'Type', 'Total Sales', 'Total Revenue'], escape: '\\');
 
             foreach ($customers as $customer) {
+                $customerSalesSum = $customer->sales_sum_total_amount ?? null;
+                $customerSalesTotal = is_numeric($customerSalesSum) ? (float) $customerSalesSum : 0.0;
+
                 fputcsv($handle, [
                     $customer->id,
                     $customer->name,
                     $customer->email ?? '',
                     $customer->phone ?? '',
                     $customer->type,
-                    $customer->sales_count,
-                    number_format((float) $customer->sales_sum_total_amount, 2),
+                    $customer->sales_count ?? 0,
+                    number_format($customerSalesTotal, 2),
                 ],
                     escape: '\\');
             }
         }
     }
 
-    private function exportSupplierReport($handle, ?string $supplierId): void
+    /**
+     * @param  resource  $handle
+     */
+    private function exportSupplierReport(mixed $handle, ?string $supplierId): void
     {
         if ($supplierId) {
             $supplier = Supplier::query()
-                ->with(['purchases' => fn ($q) => $q->orderByDesc('purchase_date')])
+                /** @phpstan-ignore-next-line */
+                ->with(['purchases' => function (\Illuminate\Database\Eloquent\Relations\HasMany $q): void {
+                    $q->latest('purchase_date');
+                }])
                 ->findOrFail($supplierId);
 
             fputcsv($handle, ['Supplier Details'], escape: '\\');
@@ -374,9 +429,12 @@ final readonly class ReportController
             fputcsv($handle, [], escape: '\\');
 
             fputcsv($handle, ['Summary'], escape: '\\');
-            fputcsv($handle, ['Total Purchases', $supplier->purchases()->count()], escape: '\\');
-            fputcsv($handle, ['Total Cost', number_format($supplier->purchases()->sum('total_cost'), 2)], escape: '\\');
-            fputcsv($handle, ['Total Quantity (kg)', number_format($supplier->purchases()->sum('quantity_kg'), 2)], escape: '\\');
+            $totalPurchases = $supplier->purchases()->count();
+            $totalCost = (float) $supplier->purchases()->sum('total_cost');
+            $totalQuantity = (float) $supplier->purchases()->sum('quantity_kg');
+            fputcsv($handle, ['Total Purchases', $totalPurchases], escape: '\\');
+            fputcsv($handle, ['Total Cost', number_format($totalCost, 2)], escape: '\\');
+            fputcsv($handle, ['Total Quantity (kg)', number_format($totalQuantity, 2)], escape: '\\');
             fputcsv($handle, ['Remaining Stock (kg)', number_format((float) $supplier->remaining_stock, 2)], escape: '\\');
             fputcsv($handle, [], escape: '\\');
 
@@ -403,13 +461,16 @@ final readonly class ReportController
             fputcsv($handle, ['Supplier ID', 'Name', 'Email', 'Phone', 'Total Purchases', 'Total Cost', 'Remaining Stock (kg)'], escape: '\\');
 
             foreach ($suppliers as $supplier) {
+                $totalCost = $supplier->purchases_sum_total_cost ?? null;
+                $supplierCostTotal = is_numeric($totalCost) ? (float) $totalCost : 0.0;
+
                 fputcsv($handle, [
                     $supplier->id,
                     $supplier->name,
                     $supplier->email ?? '',
                     $supplier->phone ?? '',
-                    $supplier->purchases_count,
-                    number_format((float) $supplier->purchases_sum_total_cost, 2),
+                    $supplier->purchases_count ?? 0,
+                    number_format($supplierCostTotal, 2),
                     number_format((float) $supplier->remaining_stock, 2),
                 ],
                     escape: '\\');

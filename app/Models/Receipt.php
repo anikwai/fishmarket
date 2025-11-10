@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Models;
 
 use Carbon\CarbonInterface;
+use Database\Factories\ReceiptFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -25,6 +26,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 final class Receipt extends Model
 {
+    /**
+     * @use HasFactory<ReceiptFactory>
+     */
     use HasFactory;
 
     /**
@@ -46,11 +50,17 @@ final class Receipt extends Model
         ];
     }
 
+    /**
+     * @return BelongsTo<Sale, $this>
+     */
     public function sale(): BelongsTo
     {
         return $this->belongsTo(Sale::class);
     }
 
+    /**
+     * @return BelongsTo<Receipt, $this>
+     */
     public function reissuedFrom(): BelongsTo
     {
         return $this->belongsTo(self::class, 'reissued_from_id');

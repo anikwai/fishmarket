@@ -10,7 +10,7 @@ use Illuminate\Validation\Rule;
 
 final class UpdatePurchaseRequest extends FormRequest
 {
-    public function authorize(): bool
+    public function authorize(): true
     {
         return true;
     }

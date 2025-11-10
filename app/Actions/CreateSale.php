@@ -16,9 +16,12 @@ final readonly class CreateSale
         private CreateReceiptAction $createReceipt,
     ) {}
 
+    /**
+     * @param  array<string, mixed>  $attributes
+     */
     public function handle(array $attributes): Sale
     {
-        $quantityKg = (float) $attributes['quantity_kg'];
+        $quantityKg = (isset($attributes['quantity_kg']) && is_numeric($attributes['quantity_kg'])) ? (float) $attributes['quantity_kg'] : 0.0;
         $currentStock = Stock::current();
 
         if ($quantityKg > $currentStock) {

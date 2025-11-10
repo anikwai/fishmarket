@@ -19,6 +19,10 @@ final readonly class CreateExpense
             return DB::transaction(function () use ($attributes): Expense {
                 $expenses = [];
                 foreach ($attributes['expenses'] as $expenseData) {
+                    if (! is_array($expenseData)) {
+                        continue;
+                    }
+                    /** @var array<string, mixed> $expenseData */
                     $expenses[] = Expense::query()->create($expenseData);
                 }
 

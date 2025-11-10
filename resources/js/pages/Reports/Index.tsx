@@ -88,6 +88,7 @@ interface SaleSummary {
     quantity: number | string;
     amount: number | string;
     is_credit: boolean;
+    outstanding?: number | string;
 }
 
 interface SalesSummaryData {
@@ -207,6 +208,8 @@ interface CustomerDetail {
     email?: string | null;
     phone?: string | null;
     type: string;
+    total_sales?: number;
+    total_revenue?: number | string;
 }
 
 interface CustomerReportData {
@@ -227,6 +230,9 @@ interface SupplierDetail {
     email?: string | null;
     phone?: string | null;
     address?: string | null;
+    total_purchases?: number;
+    total_cost?: number | string;
+    remaining_stock?: number | string;
 }
 
 interface SupplierReportData {
@@ -346,25 +352,43 @@ export default function ReportsIndex({
     const renderReportContent = () => {
         switch (reportType) {
             case 'sales-summary':
-                return <SalesSummaryReport data={reportData} />;
+                return (
+                    <SalesSummaryReport data={reportData as SalesSummaryData} />
+                );
             case 'sales-by-customer':
-                return <SalesByCustomerReport data={reportData} />;
+                return (
+                    <SalesByCustomerReport
+                        data={reportData as SalesByCustomerData}
+                    />
+                );
             case 'profit-loss':
-                return <ProfitLossReport data={reportData} />;
+                return <ProfitLossReport data={reportData as ProfitLossData} />;
             case 'outstanding-credits':
-                return <OutstandingCreditsReport data={reportData} />;
+                return (
+                    <OutstandingCreditsReport
+                        data={reportData as OutstandingCreditsData}
+                    />
+                );
             case 'expense-report':
-                return <ExpenseReport data={reportData} />;
+                return <ExpenseReport data={reportData as ExpenseReportData} />;
             case 'purchase-report':
-                return <PurchaseReport data={reportData} />;
+                return (
+                    <PurchaseReport data={reportData as PurchaseReportData} />
+                );
             case 'stock-report':
-                return <StockReport data={reportData} />;
+                return <StockReport data={reportData as StockReportData} />;
             case 'customer-report':
-                return <CustomerReport data={reportData} />;
+                return (
+                    <CustomerReport data={reportData as CustomerReportData} />
+                );
             case 'supplier-report':
-                return <SupplierReport data={reportData} />;
+                return (
+                    <SupplierReport data={reportData as SupplierReportData} />
+                );
             default:
-                return <SalesSummaryReport data={reportData} />;
+                return (
+                    <SalesSummaryReport data={reportData as SalesSummaryData} />
+                );
         }
     };
 
@@ -1469,7 +1493,9 @@ function CustomerReport({ data }: { data: CustomerReportData }) {
                                                 </Badge>
                                             </TableCell>
                                             <TableCell className="text-right">
-                                                {sale.outstanding > 0 ? (
+                                                {sale.outstanding !==
+                                                    undefined &&
+                                                Number(sale.outstanding) > 0 ? (
                                                     <span className="font-semibold text-destructive">
                                                         SBD{' '}
                                                         {Number(

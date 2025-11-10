@@ -21,21 +21,21 @@ final readonly class ExpenseController
     public function index(Request $request): Response
     {
         $perPage = $request->get('per_page', 10);
-        $perPage = in_array($perPage, [10, 15, 20, 25, 50]) ? (int) $perPage : 10;
+        $perPage = in_array($perPage, [10, 15, 20, 25, 50], true) ? (int) $perPage : 10;
 
         $query = Expense::query()
-            ->with('purchase.supplier')
-            ->when($request->search, fn ($query, $search) => $query->where('description', 'like', "%{$search}%"))
-            ->when($request->type, fn ($query, $type) => $query->where('type', $type))
-            ->when($request->date_from, fn ($query, $date) => $query->where('expense_date', '>=', $date))
-            ->when($request->date_to, fn ($query, $date) => $query->where('expense_date', '<=', $date))
-            ->when($request->purchase_id, fn ($query, $purchaseId) => $query->where('purchase_id', $purchaseId));
+            ->with(['purchase.supplier'])
+            ->when($request->search, fn (\Illuminate\Database\Eloquent\Builder $query, mixed $search) => $query->where('description', 'like', '%'.(is_string($search) ? $search : '').'%'))
+            ->when($request->type, fn (\Illuminate\Database\Eloquent\Builder $query, mixed $type) => $query->where('type', is_string($type) ? $type : ''))
+            ->when($request->date_from, fn (\Illuminate\Database\Eloquent\Builder $query, mixed $date) => $query->where('expense_date', '>=', is_string($date) ? $date : ''))
+            ->when($request->date_to, fn (\Illuminate\Database\Eloquent\Builder $query, mixed $date) => $query->where('expense_date', '<=', is_string($date) ? $date : ''))
+            ->when($request->purchase_id, fn (\Illuminate\Database\Eloquent\Builder $query, mixed $purchaseId) => $query->where('purchase_id', is_numeric($purchaseId) ? (int) $purchaseId : $purchaseId));
 
         // Handle sorting
         $sortBy = $request->get('sort_by');
         $sortDir = $request->get('sort_dir', 'asc');
 
-        if ($sortBy && in_array($sortDir, ['asc', 'desc'])) {
+        if (is_string($sortBy) && is_string($sortDir) && in_array($sortDir, ['asc', 'desc'], true)) {
             $allowedSortColumns = [
                 'expense_date' => 'expense_date',
                 'type' => 'type',
@@ -68,7 +68,7 @@ final readonly class ExpenseController
     {
         $action->handle($request->validated());
 
-        $count = isset($request->validated()['expenses'])
+        $count = isset($request->validated()['expenses']) && is_array($request->validated()['expenses'])
             ? count($request->validated()['expenses'])
             : 1;
 

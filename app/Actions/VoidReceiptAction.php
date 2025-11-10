@@ -22,7 +22,10 @@ final readonly class VoidReceiptAction
                 'void_reason' => $reason,
             ]);
 
-            return $receipt->fresh();
+            /** @var Receipt */
+            $freshReceipt = $receipt->fresh();
+
+            return $freshReceipt;
         });
     }
 }

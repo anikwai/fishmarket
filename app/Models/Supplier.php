@@ -45,6 +45,9 @@ final class Supplier extends Model
         ];
     }
 
+    /**
+     * @return HasMany<Purchase, $this>
+     */
     public function purchases(): HasMany
     {
         return $this->hasMany(Purchase::class);
@@ -64,10 +67,10 @@ final class Supplier extends Model
             ->groupBy('purchases.id', 'purchases.supplier_id', 'purchases.purchase_date', 'purchases.quantity_kg', 'purchases.price_per_kg', 'purchases.total_cost', 'purchases.notes', 'purchases.created_at', 'purchases.updated_at')
             ->get();
 
-        return $purchases->sum(function ($purchase): float|int {
-            $soldQuantity = (float) ($purchase->sold_quantity ?? 0);
+        return $purchases->sum(function (Purchase $purchase): float {
+            $soldQuantity = isset($purchase->sold_quantity) ? (float) $purchase->sold_quantity : 0.0;
 
-            return max(0, (float) $purchase->quantity_kg - $soldQuantity);
+            return max(0.0, (float) $purchase->quantity_kg - $soldQuantity);
         });
     }
 }

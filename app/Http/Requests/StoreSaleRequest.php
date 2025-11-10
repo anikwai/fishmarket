@@ -6,12 +6,13 @@ namespace App\Http\Requests;
 
 use App\Models\Customer;
 use App\Support\Stock;
+use Closure;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
 final class StoreSaleRequest extends FormRequest
 {
-    public function authorize(): bool
+    public function authorize(): true
     {
         return true;
     }
@@ -28,9 +29,9 @@ final class StoreSaleRequest extends FormRequest
                 'required',
                 'numeric',
                 'min:0.01',
-                function ($attribute, $value, $fail): void {
+                function (string $attribute, mixed $value, Closure $fail): void {
                     $currentStock = Stock::current();
-                    if ((float) $value > $currentStock) {
+                    if (is_numeric($value) && (float) $value > $currentStock) {
                         $fail('Insufficient stock. Available: '.number_format($currentStock, 2).' kg');
                     }
                 },

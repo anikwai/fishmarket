@@ -21,25 +21,28 @@ final readonly class GenerateCustomerReportAction
                     ->withSum('sales', 'total_amount')
                     ->orderBy('name')
                     ->get()
-                    ->map(fn ($customer): array => [
+                    ->map(fn (Customer $customer): array => [
                         'id' => $customer->id,
                         'name' => $customer->name,
                         'email' => $customer->email,
                         'phone' => $customer->phone,
                         'type' => $customer->type,
-                        'total_sales' => (int) $customer->sales_count,
-                        'total_revenue' => (float) $customer->sales_sum_total_amount,
+                        'total_sales' => (int) ($customer->sales_count ?? 0),
+                        'total_revenue' => (isset($customer->sales_sum_total_amount) && is_numeric($customer->sales_sum_total_amount)) ? (float) $customer->sales_sum_total_amount : 0.0,
                     ]),
             ];
         }
 
         $customer = Customer::query()
-            ->with(['sales' => fn ($q) => $q->orderByDesc('sale_date')->limit(20)])
+            /** @phpstan-ignore-next-line */
+            ->with(['sales' => function (\Illuminate\Database\Eloquent\Relations\HasMany $q): void {
+                $q->latest('sale_date')->limit(20);
+            }])
             ->findOrFail($customerId);
 
         $outstandingCredits = $customer->sales()
             ->where('is_credit', true)
-            ->with('payments')
+            ->with(['payments'])
             ->get()
             ->filter(fn (Sale $sale): bool => $sale->outstanding_balance > 0);
 
@@ -54,24 +57,24 @@ final readonly class GenerateCustomerReportAction
             ],
             'summary' => [
                 'total_sales' => $customer->sales()->count(),
-                'total_revenue' => $customer->sales()->sum('total_amount'),
-                'outstanding_credits' => $outstandingCredits->sum('outstanding_balance'),
+                'total_revenue' => (float) $customer->sales()->sum('total_amount'),
+                'outstanding_credits' => (float) $outstandingCredits->sum(fn (Sale $sale): float => (float) $sale->outstanding_balance),
                 'credit_count' => $outstandingCredits->count(),
             ],
-            'recent_sales' => $customer->sales->map(fn ($sale): array => [
+            'recent_sales' => $customer->sales->map(fn (Sale $sale): array => [
                 'id' => $sale->id,
                 'date' => $sale->sale_date->format('Y-m-d'),
-                'amount' => $sale->total_amount,
-                'quantity' => $sale->quantity_kg,
+                'amount' => (float) $sale->total_amount,
+                'quantity' => (float) $sale->quantity_kg,
                 'is_credit' => $sale->is_credit,
-                'outstanding' => $sale->is_credit ? $sale->outstanding_balance : 0,
+                'outstanding' => $sale->is_credit ? (float) $sale->outstanding_balance : 0.0,
             ]),
-            'outstanding_credits' => $outstandingCredits->map(fn ($sale): array => [
+            'outstanding_credits' => $outstandingCredits->map(fn (Sale $sale): array => [
                 'sale_id' => $sale->id,
                 'date' => $sale->sale_date->format('Y-m-d'),
-                'total' => $sale->total_amount,
-                'paid' => $sale->payments->sum('amount'),
-                'outstanding' => $sale->outstanding_balance,
+                'total' => (float) $sale->total_amount,
+                'paid' => (float) $sale->payments->sum('amount'), // @phpstan-ignore cast.double
+                'outstanding' => (float) $sale->outstanding_balance,
             ]),
         ];
     }

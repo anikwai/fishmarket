@@ -26,20 +26,20 @@ final readonly class PurchaseController
     public function index(Request $request): Response
     {
         $perPage = $request->get('per_page', 10);
-        $perPage = in_array($perPage, [10, 15, 20, 25, 50]) ? (int) $perPage : 10;
+        $perPage = in_array($perPage, [10, 15, 20, 25, 50]) ? (int) $perPage : 10; // @phpstan-ignore cast.int
 
         $query = Purchase::query()
             ->with('supplier')
             ->withSum('sales as sold_quantity', 'purchase_sale.quantity_kg')
             ->withSum('expenses as total_expenses', 'amount')
-            ->when($request->search, fn ($query, $search) => $query->whereHas('supplier', fn ($q) => $q->where('name', 'like', "%{$search}%")))
-            ->when($request->supplier_id, fn ($query, $supplierId) => $query->where('supplier_id', $supplierId));
+            ->when($request->search, fn (\Illuminate\Database\Eloquent\Builder $query, mixed $search) => $query->whereHas('supplier', fn (\Illuminate\Database\Eloquent\Builder $q) => $q->where('name', 'like', '%'.(is_string($search) ? $search : '').'%')))
+            ->when($request->supplier_id, fn (\Illuminate\Database\Eloquent\Builder $query, mixed $supplierId) => $query->where('supplier_id', is_numeric($supplierId) ? (int) $supplierId : $supplierId));
 
         // Handle sorting
         $sortBy = $request->get('sort_by');
         $sortDir = $request->get('sort_dir', 'asc');
 
-        if ($sortBy && in_array($sortDir, ['asc', 'desc'])) {
+        if (is_string($sortBy) && is_string($sortDir) && in_array($sortDir, ['asc', 'desc'], true)) {
             $allowedSortColumns = [
                 'purchase_date' => 'purchase_date',
                 'supplier.name' => 'supplier_id', // Will sort by supplier name via join
@@ -63,7 +63,7 @@ final readonly class PurchaseController
 
         $purchases = $query->paginate($perPage);
 
-        $purchases = $this->preparePurchaseIndexData->handle($purchases, $sortBy, $sortDir);
+        $purchases = $this->preparePurchaseIndexData->handle($purchases, is_string($sortBy) ? $sortBy : null, is_string($sortDir) ? $sortDir : null);
 
         $suppliers = Supplier::query()->orderBy('name')->get();
 

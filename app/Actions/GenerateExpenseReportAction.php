@@ -16,7 +16,7 @@ final readonly class GenerateExpenseReportAction
     {
         $expenses = Expense::query()
             ->whereBetween('expense_date', [$startDate, $endDate])
-            ->with('purchase.supplier')
+            ->with(['purchase.supplier'])
             ->orderBy('expense_date', 'desc')
             ->get();
 
@@ -35,24 +35,24 @@ final readonly class GenerateExpenseReportAction
             ->get();
 
         return [
-            'expenses' => $expenses->map(fn ($expense): array => [
+            'expenses' => $expenses->map(fn (Expense $expense): array => [
                 'id' => $expense->id,
                 'date' => $expense->expense_date->format('Y-m-d'),
                 'type' => ucfirst((string) $expense->type),
                 'description' => $expense->description,
-                'amount' => $expense->amount,
+                'amount' => (float) $expense->amount,
                 'supplier' => $expense->purchase?->supplier?->name,
             ]),
-            'breakdown' => $breakdown->map(fn ($item): array => [
-                'type' => ucfirst((string) $item->type),
-                'total' => (float) $item->total,
+            'breakdown' => $breakdown->map(fn (object $item): array => [
+                'type' => ucfirst((string) ($item->type ?? '')),
+                'total' => (isset($item->total) && is_numeric($item->total)) ? (float) $item->total : 0.0,
             ]),
-            'daily_data' => $dailyData->map(fn ($item): array => [
-                'date' => $item->date,
-                'total' => (float) $item->total,
+            'daily_data' => $dailyData->map(fn (object $item): array => [
+                'date' => $item->date ?? '',
+                'total' => (isset($item->total) && is_numeric($item->total)) ? (float) $item->total : 0.0,
             ]),
             'summary' => [
-                'total' => $expenses->sum('amount'),
+                'total' => (float) $expenses->sum('amount'), // @phpstan-ignore cast.double
                 'count' => $expenses->count(),
             ],
         ];

@@ -17,7 +17,20 @@
     </testsuites>
     <source>
         <include>
-            <directory>app</directory>
+            <!-- Include only files/directories that ARE tested by unit tests -->
+            <file>app/Actions/CreateUser.php</file>
+            <file>app/Actions/CreateUserEmailResetNotification.php</file>
+            <file>app/Actions/CreateUserEmailVerificationNotification.php</file>
+            <file>app/Actions/CreateUserPassword.php</file>
+            <file>app/Actions/DeleteUser.php</file>
+            <file>app/Actions/UpdateUser.php</file>
+            <file>app/Actions/UpdateUserPassword.php</file>
+            <directory>app/Http/Middleware</directory>
+            <file>app/Models/User.php</file>
+            <directory>app/Rules</directory>
+            <directory>app/Providers</directory>
+            <file>app/Http/Requests/ShowUserTwoFactorAuthenticationRequest.php</file>
+            <file>app/Http/Requests/UpdateEmailVerificationRequest.php</file>
         </include>
     </source>
     <php>

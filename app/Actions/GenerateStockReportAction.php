@@ -19,14 +19,14 @@ final readonly class GenerateStockReportAction
 
         return [
             'current_stock' => $currentStock,
-            'by_supplier' => $suppliers->map(fn ($supplier): array => [
+            'by_supplier' => $suppliers->map(fn (Supplier $supplier): array => [
                 'id' => $supplier->id,
                 'name' => $supplier->name,
                 'remaining_stock' => (float) $supplier->remaining_stock,
-            ])->filter(fn ($item): bool => $item['remaining_stock'] > 0),
+            ])->filter(fn (array $item): bool => $item['remaining_stock'] > 0),
             'summary' => [
                 'total_suppliers' => $suppliers->count(),
-                'suppliers_with_stock' => $suppliers->filter(fn ($s): bool => $s->remaining_stock > 0)->count(),
+                'suppliers_with_stock' => $suppliers->filter(fn (Supplier $s): bool => $s->remaining_stock > 0)->count(),
             ],
         ];
     }

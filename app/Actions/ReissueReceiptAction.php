@@ -27,7 +27,10 @@ final readonly class ReissueReceiptAction
                 'reissued_from_id' => $originalReceipt->id,
             ]);
 
-            return $newReceipt->fresh();
+            /** @var Receipt */
+            $freshReceipt = $newReceipt->fresh();
+
+            return $freshReceipt;
         });
     }
 }

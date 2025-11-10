@@ -20,9 +20,9 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
  * @property-read float $quantity_kg
  * @property-read float $price_per_kg
  * @property-read float $discount_percentage
- * @property-read float $subtotal
+ * @property float $subtotal
  * @property-read float $delivery_fee
- * @property-read float $total_amount
+ * @property float $total_amount
  * @property-read bool $is_credit
  * @property-read bool $is_delivery
  * @property-read string|null $notes
@@ -61,16 +61,25 @@ final class Sale extends Model
         ];
     }
 
+    /**
+     * @return BelongsTo<Customer, $this>
+     */
     public function customer(): BelongsTo
     {
         return $this->belongsTo(Customer::class);
     }
 
+    /**
+     * @return HasMany<Payment, $this>
+     */
     public function payments(): HasMany
     {
         return $this->hasMany(Payment::class);
     }
 
+    /**
+     * @return BelongsToMany<Purchase, $this>
+     */
     public function purchases(): BelongsToMany
     {
         return $this->belongsToMany(Purchase::class, 'purchase_sale')
@@ -78,11 +87,17 @@ final class Sale extends Model
             ->withTimestamps();
     }
 
+    /**
+     * @return HasMany<Receipt, $this>
+     */
     public function receipts(): HasMany
     {
         return $this->hasMany(Receipt::class);
     }
 
+    /**
+     * @return HasOne<Receipt, $this>
+     */
     public function activeReceipt(): HasOne
     {
         return $this->hasOne(Receipt::class)->where('status', 'active')->latestOfMany();
@@ -103,7 +118,9 @@ final class Sale extends Model
         return $this->purchases()
             ->get()
             ->sum(function (Purchase $purchase): float {
-                $quantityFromThisPurchase = (float) ($purchase->pivot->quantity_kg ?? 0);
+                /** @var \Illuminate\Database\Eloquent\Relations\Pivot|null $pivot */
+                $pivot = $purchase->pivot ?? null;
+                $quantityFromThisPurchase = ($pivot !== null && property_exists($pivot, 'quantity_kg') && is_numeric($pivot->quantity_kg)) ? (float) $pivot->quantity_kg : 0.0;
                 if ($quantityFromThisPurchase <= 0) {
                     return 0.0;
                 }
@@ -121,6 +138,6 @@ final class Sale extends Model
 
         $paidAmount = $this->payments()->sum('amount');
 
-        return max(0, $this->total_amount - $paidAmount);
+        return max(0.0, $this->total_amount - (float) $paidAmount);
     }
 }

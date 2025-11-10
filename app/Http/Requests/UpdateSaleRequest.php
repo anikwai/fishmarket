@@ -5,13 +5,15 @@ declare(strict_types=1);
 namespace App\Http\Requests;
 
 use App\Models\Customer;
+use App\Models\Sale;
 use App\Support\Stock;
+use Closure;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
 final class UpdateSaleRequest extends FormRequest
 {
-    public function authorize(): bool
+    public function authorize(): true
     {
         return true;
     }
@@ -22,7 +24,7 @@ final class UpdateSaleRequest extends FormRequest
     public function rules(): array
     {
         $sale = $this->route('sale');
-        $currentQuantity = $sale instanceof \App\Models\Sale ? $sale->quantity_kg : 0;
+        $currentQuantity = $sale instanceof Sale ? $sale->quantity_kg : 0;
 
         return [
             'customer_id' => ['required', Rule::exists(Customer::class, 'id')],
@@ -31,7 +33,10 @@ final class UpdateSaleRequest extends FormRequest
                 'required',
                 'numeric',
                 'min:0.01',
-                function ($attribute, $value, $fail) use ($currentQuantity): void {
+                function (string $attribute, mixed $value, Closure $fail) use ($currentQuantity): void {
+                    if (! is_numeric($value)) {
+                        return;
+                    }
                     $newQuantity = (float) $value;
                     $quantityDifference = $newQuantity - $currentQuantity;
 

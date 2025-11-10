@@ -9,6 +9,7 @@ use Database\Factories\CustomerFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 
 /**
  * @property-read int $id
@@ -45,12 +46,18 @@ final class Customer extends Model
         ];
     }
 
+    /**
+     * @return HasMany<Sale, $this>
+     */
     public function sales(): HasMany
     {
         return $this->hasMany(Sale::class);
     }
 
-    public function payments(): HasMany
+    /**
+     * @return HasManyThrough<Payment, Sale, $this>
+     */
+    public function payments(): HasManyThrough
     {
         return $this->hasManyThrough(Payment::class, Sale::class);
     }

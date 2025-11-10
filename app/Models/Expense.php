@@ -47,6 +47,9 @@ final class Expense extends Model
         ];
     }
 
+    /**
+     * @return BelongsTo<Purchase, $this>
+     */
     public function purchase(): BelongsTo
     {
         return $this->belongsTo(Purchase::class);

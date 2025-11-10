@@ -25,10 +25,10 @@ final class SaleReceipt extends Mailable
 
     public function envelope(): Envelope
     {
-        $receiptNumber = $this->receipt?->receipt_number ?? '#'.$this->sale->id;
+        $receiptNumber = ($this->receipt instanceof Receipt) ? (string) $this->receipt->receipt_number : '#'.$this->sale->id;
 
         return new Envelope(
-            subject: 'Receipt '.$receiptNumber.' - '.config('app.name'),
+            subject: 'Receipt '.$receiptNumber.' - '.config('app.name'), // @phpstan-ignore binaryOp.invalid
         );
     }
 
@@ -50,12 +50,12 @@ final class SaleReceipt extends Mailable
     {
         $receipt = $this->receipt ?? $this->sale->activeReceipt;
 
-        if (! $receipt) {
+        if (! $receipt instanceof Receipt) {
             return [];
         }
 
         $pdf = (new GenerateReceipt)->handle($receipt);
-        $receiptNumber = $receipt->receipt_number ?? 'receipt-'.$this->sale->id;
+        $receiptNumber = $receipt->receipt_number;
 
         return [
             Attachment::fromData(fn (): string => $pdf->output(), $receiptNumber.'.pdf')

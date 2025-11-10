@@ -43,6 +43,9 @@ final class Payment extends Model
         ];
     }
 
+    /**
+     * @return BelongsTo<Sale, $this>
+     */
     public function sale(): BelongsTo
     {
         return $this->belongsTo(Sale::class);

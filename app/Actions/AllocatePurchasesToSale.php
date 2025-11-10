@@ -35,7 +35,7 @@ final readonly class AllocatePurchasesToSale
                 break;
             }
 
-            $allocatedQuantity = (float) ($purchase->allocated_quantity ?? 0);
+            $allocatedQuantity = (isset($purchase->allocated_quantity) && is_numeric($purchase->allocated_quantity)) ? (float) $purchase->allocated_quantity : 0.0;
             $availableQuantity = $purchase->quantity_kg - $allocatedQuantity;
             $quantityToAllocate = min($remainingQuantity, $availableQuantity);
 

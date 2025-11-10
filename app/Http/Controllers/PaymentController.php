@@ -25,18 +25,18 @@ final readonly class PaymentController
     public function index(Request $request): Response
     {
         $perPage = $request->get('per_page', 10);
-        $perPage = in_array($perPage, [10, 15, 20, 25, 50]) ? (int) $perPage : 10;
+        $perPage = in_array($perPage, [10, 15, 20, 25, 50], true) ? (int) $perPage : 10;
 
         $query = Payment::query()
-            ->with('sale.customer')
-            ->when($request->search, fn ($query, $search) => $query->whereHas('sale.customer', fn ($q) => $q->where('name', 'like', "%{$search}%")))
-            ->when($request->sale_id, fn ($query, $saleId) => $query->where('sale_id', $saleId));
+            ->with(['sale.customer'])
+            ->when($request->search, fn (\Illuminate\Database\Eloquent\Builder $query, mixed $search) => $query->whereHas('sale.customer', fn (\Illuminate\Database\Eloquent\Builder $q) => $q->where('name', 'like', '%'.(is_string($search) ? $search : '').'%')))
+            ->when($request->sale_id, fn (\Illuminate\Database\Eloquent\Builder $query, mixed $saleId) => $query->where('sale_id', is_numeric($saleId) ? (int) $saleId : $saleId));
 
         // Handle sorting
         $sortBy = $request->get('sort_by');
         $sortDir = $request->get('sort_dir', 'asc');
 
-        if ($sortBy && in_array($sortDir, ['asc', 'desc'])) {
+        if (is_string($sortBy) && is_string($sortDir) && in_array($sortDir, ['asc', 'desc'], true)) {
             $allowedSortColumns = [
                 'payment_date' => 'payment_date',
                 'sale_id' => 'sale_id',

@@ -21,21 +21,22 @@ final readonly class ReceiptController
     public function index(Request $request): Response
     {
         $perPage = $request->get('per_page', 10);
-        $perPage = in_array($perPage, [10, 15, 20, 25, 50]) ? (int) $perPage : 10;
+        $perPage = in_array($perPage, [10, 15, 20, 25, 50]) ? (int) $perPage : 10; // @phpstan-ignore cast.int
 
         $query = Receipt::query()
             ->with(['sale.customer'])
-            ->when($request->search, fn ($query, $search) => $query->where(function ($q) use ($search): void {
-                $q->where('receipt_number', 'like', "%{$search}%")
-                    ->orWhereHas('sale.customer', fn ($q) => $q->where('name', 'like', "%{$search}%"));
+            ->when($request->search, fn (\Illuminate\Database\Eloquent\Builder $query, mixed $search) => $query->where(function (\Illuminate\Database\Eloquent\Builder $q) use ($search): void {
+                $searchStr = is_string($search) ? $search : '';
+                $q->where('receipt_number', 'like', '%'.$searchStr.'%')
+                    ->orWhereHas('sale.customer', fn (\Illuminate\Database\Eloquent\Builder $q) => $q->where('name', 'like', '%'.$searchStr.'%'));
             }))
-            ->when($request->status, fn ($query, $status) => $query->where('status', $status));
+            ->when($request->status, fn (\Illuminate\Database\Eloquent\Builder $query, mixed $status) => $query->where('status', is_string($status) ? $status : ''));
 
         // Handle sorting
         $sortBy = $request->get('sort_by');
         $sortDir = $request->get('sort_dir', 'asc');
 
-        if ($sortBy && in_array($sortDir, ['asc', 'desc'])) {
+        if (is_string($sortBy) && is_string($sortDir) && in_array($sortDir, ['asc', 'desc'], true)) {
             $allowedSortColumns = [
                 'receipt_number' => 'receipt_number',
                 'issued_at' => 'issued_at',
@@ -60,8 +61,9 @@ final readonly class ReceiptController
     public function download(Receipt $receipt, GenerateReceipt $action): HttpResponse
     {
         $pdf = $action->handle($receipt);
+        $filename = $receipt->receipt_number.'.pdf';
 
-        return $pdf->download($receipt->receipt_number.'.pdf');
+        return $pdf->download($filename);
     }
 
     public function sendEmail(Receipt $receipt, SendReceiptEmail $action): RedirectResponse
@@ -73,7 +75,14 @@ final readonly class ReceiptController
 
     public function void(VoidReceiptRequest $request, Receipt $receipt, VoidReceiptAction $action): RedirectResponse
     {
-        $action->handle($receipt, $request->validated()['reason']);
+        $validated = $request->validated();
+        $reason = $validated['reason'] ?? '';
+
+        if (! is_string($reason)) {
+            $reason = '';
+        }
+
+        $action->handle($receipt, $reason);
 
         return back()->with('success', 'Receipt voided successfully.');
     }
@@ -81,7 +90,8 @@ final readonly class ReceiptController
     public function reissue(Receipt $receipt, ReissueReceiptAction $action): RedirectResponse
     {
         $newReceipt = $action->handle($receipt);
+        $receiptNumber = $newReceipt->receipt_number;
 
-        return back()->with('success', 'Receipt reissued successfully. New receipt number: '.$newReceipt->receipt_number);
+        return back()->with('success', 'Receipt reissued successfully. New receipt number: '.$receiptNumber);
     }
 }

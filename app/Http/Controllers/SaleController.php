@@ -25,19 +25,19 @@ final readonly class SaleController
     public function index(Request $request): Response
     {
         $perPage = $request->get('per_page', 10);
-        $perPage = in_array($perPage, [10, 15, 20, 25, 50]) ? (int) $perPage : 10;
+        $perPage = in_array($perPage, [10, 15, 20, 25, 50]) ? (int) $perPage : 10; // @phpstan-ignore cast.int
 
         $query = Sale::query()
             ->with(['customer', 'payments'])
-            ->when($request->search, fn ($query, $search) => $query->whereHas('customer', fn ($q) => $q->where('name', 'like', "%{$search}%")))
-            ->when($request->customer_id, fn ($query, $customerId) => $query->where('customer_id', $customerId))
-            ->when($request->has('is_credit'), fn ($query) => $query->where('is_credit', $request->boolean('is_credit')));
+            ->when($request->search, fn (\Illuminate\Database\Eloquent\Builder $query, mixed $search) => $query->whereHas('customer', fn (\Illuminate\Database\Eloquent\Builder $q) => $q->where('name', 'like', '%'.(is_string($search) ? $search : '').'%')))
+            ->when($request->customer_id, fn (\Illuminate\Database\Eloquent\Builder $query, mixed $customerId) => $query->where('customer_id', is_numeric($customerId) ? (int) $customerId : $customerId))
+            ->when($request->has('is_credit'), fn (\Illuminate\Database\Eloquent\Builder $query) => $query->where('is_credit', $request->boolean('is_credit')));
 
         // Handle sorting
         $sortBy = $request->get('sort_by');
         $sortDir = $request->get('sort_dir', 'asc');
 
-        if ($sortBy && in_array($sortDir, ['asc', 'desc'])) {
+        if (is_string($sortBy) && is_string($sortDir) && in_array($sortDir, ['asc', 'desc'], true)) {
             $allowedSortColumns = [
                 'sale_date' => 'sale_date',
                 'customer.name' => 'customer_id', // Will sort by customer name via join
@@ -92,24 +92,25 @@ final readonly class SaleController
         return back()->with('success', 'Sale deleted successfully.');
     }
 
-    public function downloadReceipt(Sale $sale, GenerateReceipt $action): HttpResponse
+    public function downloadReceipt(Sale $sale, GenerateReceipt $action): HttpResponse|RedirectResponse
     {
         $receipt = $sale->activeReceipt ?? $sale->receipts()->latest()->first();
 
-        if (! $receipt) {
+        if (! $receipt instanceof \App\Models\Receipt) {
             return back()->with('error', 'No receipt found for this sale.');
         }
 
         $pdf = $action->handle($receipt);
+        $filename = $receipt->receipt_number.'.pdf';
 
-        return $pdf->download($receipt->receipt_number.'.pdf');
+        return $pdf->download($filename);
     }
 
     public function sendReceiptEmail(Sale $sale, SendReceiptEmail $action): RedirectResponse
     {
         $receipt = $sale->activeReceipt ?? $sale->receipts()->latest()->first();
 
-        if (! $receipt) {
+        if (! $receipt instanceof \App\Models\Receipt) {
             return back()->with('error', 'No receipt found for this sale.');
         }
 

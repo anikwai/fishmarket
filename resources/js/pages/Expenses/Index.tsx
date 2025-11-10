@@ -347,7 +347,7 @@ export default function ExpensesIndex({
         if (!selectedExpense) return;
         const data = {
             ...editForm.data,
-            purchase_id: editForm.data.purchase_id || null,
+            purchase_id: editForm.data.purchase_id || undefined,
         };
         editForm.setData(data);
         editForm.put(`/expenses/${selectedExpense.id}`, {

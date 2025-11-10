@@ -15,9 +15,12 @@ final readonly class UpdateSale
         private AllocatePurchasesToSale $allocatePurchases,
     ) {}
 
+    /**
+     * @param  array<string, mixed>  $attributes
+     */
     public function handle(Sale $sale, array $attributes): void
     {
-        $newQuantityKg = isset($attributes['quantity_kg']) ? (float) $attributes['quantity_kg'] : $sale->quantity_kg;
+        $newQuantityKg = (isset($attributes['quantity_kg']) && is_numeric($attributes['quantity_kg'])) ? (float) $attributes['quantity_kg'] : $sale->quantity_kg;
         $quantityDifference = $newQuantityKg - $sale->quantity_kg;
 
         if ($quantityDifference > 0) {

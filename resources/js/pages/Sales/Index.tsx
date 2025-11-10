@@ -90,6 +90,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 interface Customer {
     id: number;
     name: string;
+    email?: string | null;
 }
 
 interface Payment {
