@@ -30,7 +30,7 @@ final class AppServiceProvider extends ServiceProvider
         // This ensures users without roles cannot access any protected areas
         Gate::before(function (?User $user, string $ability): ?bool {
             // If no user is authenticated (guest), deny all access
-            if (! $user) {
+            if (! $user instanceof User) {
                 return false;
             }
 

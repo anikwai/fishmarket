@@ -1,3 +1,4 @@
+import UserController from '@/actions/App/Http/Controllers/UserController';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import {
@@ -10,7 +11,6 @@ import {
 } from '@/components/ui/dialog';
 import {
     Empty,
-    EmptyContent,
     EmptyDescription,
     EmptyHeader,
     EmptyMedia,
@@ -50,7 +50,7 @@ import {
 } from '@/components/ui/table';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
-import { Head, Form, router } from '@inertiajs/react';
+import { Form, Head, router } from '@inertiajs/react';
 import {
     ColumnDef,
     flexRender,
@@ -61,6 +61,7 @@ import {
 } from '@tanstack/react-table';
 import {
     ArrowUpDown,
+    CheckCircle2,
     Eye,
     EyeOff,
     InfoIcon,
@@ -74,11 +75,9 @@ import {
     TrashIcon,
     User,
     Users,
-    CheckCircle2,
 } from 'lucide-react';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import UserController from '@/actions/App/Http/Controllers/UserController';
 import * as React from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { toast } from 'sonner';
 
 // RoleSelect component that works with native form submission
@@ -98,7 +97,7 @@ function RoleSelect({
     return (
         <div className="relative">
             <input type="hidden" name="role" value={value} />
-            <div className="absolute left-3 top-1/2 -translate-y-1/2 z-10 pointer-events-none">
+            <div className="pointer-events-none absolute top-1/2 left-3 z-10 -translate-y-1/2">
                 <Shield className="h-4 w-4 text-muted-foreground" />
             </div>
             <Select value={value} onValueChange={setValue}>
@@ -140,14 +139,14 @@ function PasswordInputWithIcon({
 
     return (
         <div className="relative">
-            <div className="absolute left-3 top-1/2 -translate-y-1/2 z-10">
+            <div className="absolute top-1/2 left-3 z-10 -translate-y-1/2">
                 <Icon className="h-4 w-4 text-muted-foreground" />
             </div>
             <Input
                 id={id}
                 name={name}
                 type={showPassword ? 'text' : 'password'}
-                className="pl-9 pr-9"
+                className="pr-9 pl-9"
                 placeholder={placeholder}
                 required={required}
                 defaultValue={defaultValue}
@@ -157,7 +156,7 @@ function PasswordInputWithIcon({
             <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                className="absolute top-1/2 right-3 -translate-y-1/2 text-muted-foreground transition-colors hover:text-foreground"
                 tabIndex={-1}
             >
                 {showPassword ? (
@@ -172,7 +171,9 @@ function PasswordInputWithIcon({
 
 // Password strength indicator
 function PasswordStrength({ password }: { password: string }) {
-    const getStrength = (pwd: string): {
+    const getStrength = (
+        pwd: string,
+    ): {
         score: number;
         label: string;
         color: string;
@@ -215,7 +216,8 @@ function PasswordStrength({ password }: { password: string }) {
                 />
             </div>
             <p className="text-xs text-muted-foreground">
-                Password strength: <span className="font-medium">{strength.label}</span>
+                Password strength:{' '}
+                <span className="font-medium">{strength.label}</span>
             </p>
         </div>
     );
@@ -233,7 +235,7 @@ function InputWithIcon({
 }) {
     return (
         <div className="relative">
-            <div className="absolute left-3 top-1/2 -translate-y-1/2 z-10">
+            <div className="absolute top-1/2 left-3 z-10 -translate-y-1/2">
                 <Icon className="h-4 w-4 text-muted-foreground" />
             </div>
             <Input
@@ -376,7 +378,9 @@ export default function UsersIndex({ users, roles, filters }: UsersProps) {
         router.delete(UserController.destroy(selectedUser.id), {
             preserveScroll: true,
             onSuccess: () => {
-                toast.success(`User "${selectedUser.name}" deleted successfully!`);
+                toast.success(
+                    `User "${selectedUser.name}" deleted successfully!`,
+                );
                 setDeleteOpen(false);
                 setSelectedUser(null);
             },
@@ -403,7 +407,9 @@ export default function UsersIndex({ users, roles, filters }: UsersProps) {
                         <Button
                             variant="ghost"
                             onClick={() =>
-                                column.toggleSorting(column.getIsSorted() === 'asc')
+                                column.toggleSorting(
+                                    column.getIsSorted() === 'asc',
+                                )
                             }
                             className="-ml-3 h-8 data-[state=open]:bg-accent"
                         >
@@ -425,7 +431,9 @@ export default function UsersIndex({ users, roles, filters }: UsersProps) {
                         <Button
                             variant="ghost"
                             onClick={() =>
-                                column.toggleSorting(column.getIsSorted() === 'asc')
+                                column.toggleSorting(
+                                    column.getIsSorted() === 'asc',
+                                )
                             }
                             className="-ml-3 h-8 data-[state=open]:bg-accent"
                         >
@@ -451,20 +459,21 @@ export default function UsersIndex({ users, roles, filters }: UsersProps) {
                                     <span className="inline-flex items-center rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-medium text-primary">
                                         {role.name}
                                     </span>
-                                    {fullRole?.permissions && fullRole.permissions.length > 0 && (
-                                        <Button
-                                            variant="ghost"
-                                            size="icon"
-                                            className="h-6 w-6"
-                                            onClick={() => {
-                                                setSelectedRole(fullRole);
-                                                setPermissionsOpen(true);
-                                            }}
-                                            title="View permissions"
-                                        >
-                                            <Shield className="h-3 w-3" />
-                                        </Button>
-                                    )}
+                                    {fullRole?.permissions &&
+                                        fullRole.permissions.length > 0 && (
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                className="h-6 w-6"
+                                                onClick={() => {
+                                                    setSelectedRole(fullRole);
+                                                    setPermissionsOpen(true);
+                                                }}
+                                                title="View permissions"
+                                            >
+                                                <Shield className="h-3 w-3" />
+                                            </Button>
+                                        )}
                                 </>
                             ) : (
                                 <span className="text-muted-foreground">
@@ -501,7 +510,9 @@ export default function UsersIndex({ users, roles, filters }: UsersProps) {
                         <Button
                             variant="ghost"
                             onClick={() =>
-                                column.toggleSorting(column.getIsSorted() === 'asc')
+                                column.toggleSorting(
+                                    column.getIsSorted() === 'asc',
+                                )
                             }
                             className="-ml-3 h-8 data-[state=open]:bg-accent"
                         >
@@ -513,7 +524,9 @@ export default function UsersIndex({ users, roles, filters }: UsersProps) {
                 cell: ({ row }) => {
                     return (
                         <div className="text-sm text-muted-foreground">
-                            {new Date(row.original.created_at).toLocaleDateString()}
+                            {new Date(
+                                row.original.created_at,
+                            ).toLocaleDateString()}
                         </div>
                     );
                 },
@@ -591,8 +604,8 @@ export default function UsersIndex({ users, roles, filters }: UsersProps) {
 
                 {/* Filters and Table Controls */}
                 <div className="flex items-center justify-between gap-4">
-                    <div className="relative flex-1 max-w-sm">
-                        <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                    <div className="relative max-w-sm flex-1">
+                        <Search className="absolute top-2.5 left-2.5 h-4 w-4 text-muted-foreground" />
                         <Input
                             placeholder="Search users..."
                             value={searchValue}
@@ -621,24 +634,21 @@ export default function UsersIndex({ users, roles, filters }: UsersProps) {
                     <div className="rounded-md border">
                         <Table>
                             <TableHeader>
-                                {table
-                                    .getHeaderGroups()
-                                    .map((headerGroup) => (
-                                        <TableRow key={headerGroup.id}>
-                                            {headerGroup.headers.map((header) => (
-                                                <TableHead key={header.id}>
-                                                    {header.isPlaceholder
-                                                        ? null
-                                                        : flexRender(
-                                                              header.column
-                                                                  .columnDef
-                                                                  .header,
-                                                              header.getContext(),
-                                                          )}
-                                                </TableHead>
-                                            ))}
-                                        </TableRow>
-                                    ))}
+                                {table.getHeaderGroups().map((headerGroup) => (
+                                    <TableRow key={headerGroup.id}>
+                                        {headerGroup.headers.map((header) => (
+                                            <TableHead key={header.id}>
+                                                {header.isPlaceholder
+                                                    ? null
+                                                    : flexRender(
+                                                          header.column
+                                                              .columnDef.header,
+                                                          header.getContext(),
+                                                      )}
+                                            </TableHead>
+                                        ))}
+                                    </TableRow>
+                                ))}
                             </TableHeader>
                             <TableBody>
                                 {table.getRowModel().rows?.length ? (
@@ -682,8 +692,8 @@ export default function UsersIndex({ users, roles, filters }: UsersProps) {
                 {users.last_page > 1 && (
                     <div className="flex items-center justify-between">
                         <div className="text-sm text-muted-foreground">
-                            Showing {users.from} to {users.to} of{' '}
-                            {users.total} users
+                            Showing {users.from} to {users.to} of {users.total}{' '}
+                            users
                         </div>
                         <Pagination>
                             <PaginationContent>
@@ -703,9 +713,7 @@ export default function UsersIndex({ users, roles, filters }: UsersProps) {
                                         );
                                     }
 
-                                    if (
-                                        index === users.links.length - 1
-                                    ) {
+                                    if (index === users.links.length - 1) {
                                         return (
                                             <PaginationItem key={index}>
                                                 <PaginationNext
@@ -759,7 +767,9 @@ export default function UsersIndex({ users, roles, filters }: UsersProps) {
                                 setPasswordValue('');
                             }}
                             onError={() => {
-                                toast.error('Failed to create user. Please check the form for errors.');
+                                toast.error(
+                                    'Failed to create user. Please check the form for errors.',
+                                );
                             }}
                             resetOnSuccess
                         >
@@ -768,8 +778,9 @@ export default function UsersIndex({ users, roles, filters }: UsersProps) {
                                     <DialogHeader>
                                         <DialogTitle>Create User</DialogTitle>
                                         <DialogDescription>
-                                            Create a new user account and assign a
-                                            role. All fields marked with * are required.
+                                            Create a new user account and assign
+                                            a role. All fields marked with * are
+                                            required.
                                         </DialogDescription>
                                     </DialogHeader>
                                     <FieldGroup>
@@ -786,7 +797,9 @@ export default function UsersIndex({ users, roles, filters }: UsersProps) {
                                                 autoFocus
                                                 hasError={!!errors.name}
                                             />
-                                            <FieldError>{errors.name}</FieldError>
+                                            <FieldError>
+                                                {errors.name}
+                                            </FieldError>
                                         </Field>
                                         <Field data-invalid={!!errors.email}>
                                             <FieldLabel htmlFor="create-email">
@@ -801,7 +814,9 @@ export default function UsersIndex({ users, roles, filters }: UsersProps) {
                                                 required
                                                 hasError={!!errors.email}
                                             />
-                                            <FieldError>{errors.email}</FieldError>
+                                            <FieldError>
+                                                {errors.email}
+                                            </FieldError>
                                         </Field>
                                         <Field data-invalid={!!errors.password}>
                                             <FieldLabel htmlFor="create-password">
@@ -815,13 +830,23 @@ export default function UsersIndex({ users, roles, filters }: UsersProps) {
                                                 required
                                                 hasError={!!errors.password}
                                                 onChange={(e) =>
-                                                    setPasswordValue(e.target.value)
+                                                    setPasswordValue(
+                                                        e.target.value,
+                                                    )
                                                 }
                                             />
-                                            <PasswordStrength password={passwordValue} />
-                                            <FieldError>{errors.password}</FieldError>
+                                            <PasswordStrength
+                                                password={passwordValue}
+                                            />
+                                            <FieldError>
+                                                {errors.password}
+                                            </FieldError>
                                         </Field>
-                                        <Field data-invalid={!!errors.password_confirmation}>
+                                        <Field
+                                            data-invalid={
+                                                !!errors.password_confirmation
+                                            }
+                                        >
                                             <FieldLabel htmlFor="create-password-confirmation">
                                                 Confirm Password *
                                             </FieldLabel>
@@ -831,7 +856,9 @@ export default function UsersIndex({ users, roles, filters }: UsersProps) {
                                                 icon={Lock}
                                                 placeholder="Re-enter the password"
                                                 required
-                                                hasError={!!errors.password_confirmation}
+                                                hasError={
+                                                    !!errors.password_confirmation
+                                                }
                                             />
                                             <FieldError>
                                                 {errors.password_confirmation}
@@ -848,9 +875,13 @@ export default function UsersIndex({ users, roles, filters }: UsersProps) {
                                                 hasError={!!errors.role}
                                             />
                                             <FieldDescription>
-                                                Select a role to assign permissions. Leave empty for no role.
+                                                Select a role to assign
+                                                permissions. Leave empty for no
+                                                role.
                                             </FieldDescription>
-                                            <FieldError>{errors.role}</FieldError>
+                                            <FieldError>
+                                                {errors.role}
+                                            </FieldError>
                                         </Field>
                                     </FieldGroup>
                                     <DialogFooter>
@@ -898,12 +929,16 @@ export default function UsersIndex({ users, roles, filters }: UsersProps) {
                                     preserveScroll: true,
                                 }}
                                 onSuccess={() => {
-                                    toast.success(`User "${selectedUser.name}" updated successfully!`);
+                                    toast.success(
+                                        `User "${selectedUser.name}" updated successfully!`,
+                                    );
                                     setEditOpen(false);
                                     setSelectedUser(null);
                                 }}
                                 onError={() => {
-                                    toast.error('Failed to update user. Please check the form for errors.');
+                                    toast.error(
+                                        'Failed to update user. Please check the form for errors.',
+                                    );
                                 }}
                                 resetOnSuccess
                             >
@@ -913,7 +948,8 @@ export default function UsersIndex({ users, roles, filters }: UsersProps) {
                                             <DialogTitle>Edit User</DialogTitle>
                                             <DialogDescription>
                                                 Update user information and role
-                                                assignment. Changes will take effect immediately.
+                                                assignment. Changes will take
+                                                effect immediately.
                                             </DialogDescription>
                                         </DialogHeader>
                                         <FieldGroup>
@@ -925,14 +961,20 @@ export default function UsersIndex({ users, roles, filters }: UsersProps) {
                                                     id="edit-name"
                                                     name="name"
                                                     icon={User}
-                                                    defaultValue={selectedUser.name}
+                                                    defaultValue={
+                                                        selectedUser.name
+                                                    }
                                                     placeholder="John Doe"
                                                     required
                                                     hasError={!!errors.name}
                                                 />
-                                                <FieldError>{errors.name}</FieldError>
+                                                <FieldError>
+                                                    {errors.name}
+                                                </FieldError>
                                             </Field>
-                                            <Field data-invalid={!!errors.email}>
+                                            <Field
+                                                data-invalid={!!errors.email}
+                                            >
                                                 <FieldLabel htmlFor="edit-email">
                                                     Email Address *
                                                 </FieldLabel>
@@ -941,12 +983,16 @@ export default function UsersIndex({ users, roles, filters }: UsersProps) {
                                                     type="email"
                                                     name="email"
                                                     icon={Mail}
-                                                    defaultValue={selectedUser.email}
+                                                    defaultValue={
+                                                        selectedUser.email
+                                                    }
                                                     placeholder="john.doe@example.com"
                                                     required
                                                     hasError={!!errors.email}
                                                 />
-                                                <FieldError>{errors.email}</FieldError>
+                                                <FieldError>
+                                                    {errors.email}
+                                                </FieldError>
                                             </Field>
                                             <Field data-invalid={!!errors.role}>
                                                 <FieldLabel htmlFor="edit-role">
@@ -962,9 +1008,12 @@ export default function UsersIndex({ users, roles, filters }: UsersProps) {
                                                     hasError={!!errors.role}
                                                 />
                                                 <FieldDescription>
-                                                    Change the user's role to modify their permissions.
+                                                    Change the user's role to
+                                                    modify their permissions.
                                                 </FieldDescription>
-                                                <FieldError>{errors.role}</FieldError>
+                                                <FieldError>
+                                                    {errors.role}
+                                                </FieldError>
                                             </Field>
                                         </FieldGroup>
                                         <DialogFooter>
@@ -1004,35 +1053,47 @@ export default function UsersIndex({ users, roles, filters }: UsersProps) {
 
                 {/* Permissions Viewer Modal */}
                 {selectedRole && (
-                    <Dialog open={permissionsOpen} onOpenChange={setPermissionsOpen}>
+                    <Dialog
+                        open={permissionsOpen}
+                        onOpenChange={setPermissionsOpen}
+                    >
                         <DialogContent className="sm:max-w-[600px]">
                             <DialogHeader>
                                 <DialogTitle>
-                                    Permissions for {selectedRole.name.charAt(0).toUpperCase() + selectedRole.name.slice(1)}
+                                    Permissions for{' '}
+                                    {selectedRole.name.charAt(0).toUpperCase() +
+                                        selectedRole.name.slice(1)}
                                 </DialogTitle>
                                 <DialogDescription>
-                                    View all permissions associated with this role.
+                                    View all permissions associated with this
+                                    role.
                                 </DialogDescription>
                             </DialogHeader>
                             <div className="max-h-[400px] overflow-y-auto">
-                                {selectedRole.permissions && selectedRole.permissions.length > 0 ? (
+                                {selectedRole.permissions &&
+                                selectedRole.permissions.length > 0 ? (
                                     <div className="space-y-2">
-                                        {selectedRole.permissions.map((permission) => (
-                                            <div
-                                                key={permission.id}
-                                                className="flex items-center gap-2 rounded-md border p-3"
-                                            >
-                                                <CheckCircle2 className="h-4 w-4 text-green-600 shrink-0" />
-                                                <span className="text-sm font-medium">
-                                                    {permission.name}
-                                                </span>
-                                            </div>
-                                        ))}
+                                        {selectedRole.permissions.map(
+                                            (permission) => (
+                                                <div
+                                                    key={permission.id}
+                                                    className="flex items-center gap-2 rounded-md border p-3"
+                                                >
+                                                    <CheckCircle2 className="h-4 w-4 shrink-0 text-green-600" />
+                                                    <span className="text-sm font-medium">
+                                                        {permission.name}
+                                                    </span>
+                                                </div>
+                                            ),
+                                        )}
                                     </div>
                                 ) : (
-                                    <div className="text-center py-8 text-muted-foreground">
-                                        <Shield className="h-12 w-12 mx-auto mb-2 opacity-50" />
-                                        <p>No permissions assigned to this role.</p>
+                                    <div className="py-8 text-center text-muted-foreground">
+                                        <Shield className="mx-auto mb-2 h-12 w-12 opacity-50" />
+                                        <p>
+                                            No permissions assigned to this
+                                            role.
+                                        </p>
                                     </div>
                                 )}
                             </div>
@@ -1087,4 +1148,3 @@ export default function UsersIndex({ users, roles, filters }: UsersProps) {
         </AppLayout>
     );
 }
-

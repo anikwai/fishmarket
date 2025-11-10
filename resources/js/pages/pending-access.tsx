@@ -1,9 +1,9 @@
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Button } from '@/components/ui/button';
+import AuthLayout from '@/layouts/auth-layout';
+import { logout } from '@/routes';
 import { Head, Link } from '@inertiajs/react';
 import { AlertCircle, Shield } from 'lucide-react';
-import AuthLayout from '@/layouts/auth-layout';
-import { Button } from '@/components/ui/button';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { logout } from '@/routes';
 
 export default function PendingAccess() {
     return (
@@ -13,13 +13,18 @@ export default function PendingAccess() {
         >
             <Head title="Access Pending" />
             <div className="space-y-6">
-                <Alert variant="default" className="border-yellow-200 bg-yellow-50 dark:border-yellow-900 dark:bg-yellow-950">
+                <Alert
+                    variant="default"
+                    className="border-yellow-200 bg-yellow-50 dark:border-yellow-900 dark:bg-yellow-950"
+                >
                     <AlertCircle className="h-4 w-4 text-yellow-600 dark:text-yellow-400" />
                     <AlertTitle className="text-yellow-800 dark:text-yellow-200">
                         Account Verification Required
                     </AlertTitle>
                     <AlertDescription className="text-yellow-700 dark:text-yellow-300">
-                        Your account has been created successfully, but you need to be assigned a role by an administrator before you can access the system.
+                        Your account has been created successfully, but you need
+                        to be assigned a role by an administrator before you can
+                        access the system.
                     </AlertDescription>
                 </Alert>
 
@@ -33,15 +38,26 @@ export default function PendingAccess() {
                                 What happens next?
                             </h2>
                             <p className="text-sm text-muted-foreground">
-                                An administrator will review your account and assign you an appropriate role with the necessary permissions.
+                                An administrator will review your account and
+                                assign you an appropriate role with the
+                                necessary permissions.
                             </p>
                         </div>
                     </div>
 
                     <div className="space-y-2 text-sm text-muted-foreground">
-                        <p>• You will receive an email notification once your account has been approved</p>
-                        <p>• After approval, you'll be able to access all features based on your assigned role</p>
-                        <p>• If you have any questions, please contact your system administrator</p>
+                        <p>
+                            • You will receive an email notification once your
+                            account has been approved
+                        </p>
+                        <p>
+                            • After approval, you'll be able to access all
+                            features based on your assigned role
+                        </p>
+                        <p>
+                            • If you have any questions, please contact your
+                            system administrator
+                        </p>
                     </div>
                 </div>
 
@@ -60,4 +76,3 @@ export default function PendingAccess() {
         </AuthLayout>
     );
 }
-

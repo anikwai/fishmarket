@@ -10,9 +10,9 @@ use Spatie\Permission\Models\Role;
 
 beforeEach(function (): void {
     // Ensure roles exist for tests
-    Role::firstOrCreate(['name' => 'admin']);
-    Role::firstOrCreate(['name' => 'manager']);
-    Role::firstOrCreate(['name' => 'cashier']);
+    Role::query()->firstOrCreate(['name' => 'admin']);
+    Role::query()->firstOrCreate(['name' => 'manager']);
+    Role::query()->firstOrCreate(['name' => 'cashier']);
 });
 
 it('renders registration page', function (): void {

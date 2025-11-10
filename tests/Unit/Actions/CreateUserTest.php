@@ -10,9 +10,9 @@ use Spatie\Permission\Models\Role;
 
 beforeEach(function (): void {
     // Ensure roles exist for tests
-    Role::firstOrCreate(['name' => 'admin']);
-    Role::firstOrCreate(['name' => 'manager']);
-    Role::firstOrCreate(['name' => 'cashier']);
+    Role::query()->firstOrCreate(['name' => 'admin']);
+    Role::query()->firstOrCreate(['name' => 'manager']);
+    Role::query()->firstOrCreate(['name' => 'cashier']);
 });
 
 it('may create a user', function (): void {
@@ -56,7 +56,7 @@ it('does not assign role when role name is null', function (): void {
     $user = $action->handle([
         'name' => 'Test User',
         'email' => 'example@email.com',
-    ], 'password', null);
+    ], 'password');
 
     expect($user->refresh()->roles()->count())->toBe(0);
 
