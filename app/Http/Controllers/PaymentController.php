@@ -13,6 +13,7 @@ use App\Http\Requests\UpdatePaymentRequest;
 use App\Models\Payment;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -24,6 +25,8 @@ final readonly class PaymentController
 
     public function index(Request $request): Response
     {
+        Gate::authorize('view payments');
+
         $perPage = $request->get('per_page', 10);
         $perPage = in_array($perPage, [10, 15, 20, 25, 50], true) ? (int) $perPage : 10;
 
@@ -63,6 +66,8 @@ final readonly class PaymentController
 
     public function store(StorePaymentRequest $request, CreatePayment $action): RedirectResponse
     {
+        Gate::authorize('create payments');
+
         $action->handle($request->validated());
 
         return back()->with('success', 'Payment created successfully.');
@@ -70,6 +75,8 @@ final readonly class PaymentController
 
     public function update(UpdatePaymentRequest $request, Payment $payment, UpdatePayment $action): RedirectResponse
     {
+        Gate::authorize('update payments');
+
         $action->handle($payment, $request->validated());
 
         return back()->with('success', 'Payment updated successfully.');
@@ -77,6 +84,8 @@ final readonly class PaymentController
 
     public function destroy(Payment $payment, DeletePayment $action): RedirectResponse
     {
+        Gate::authorize('delete payments');
+
         $action->handle($payment);
 
         return back()->with('success', 'Payment deleted successfully.');

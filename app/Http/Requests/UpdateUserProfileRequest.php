@@ -8,13 +8,13 @@ use App\Models\User;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
-use Spatie\Permission\Models\Role;
 
-final class UpdateUserRequest extends FormRequest
+final class UpdateUserProfileRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user()?->can('update users') ?? false;
+        // Users can always update their own profile
+        return $this->user() !== null;
     }
 
     /**
@@ -22,7 +22,7 @@ final class UpdateUserRequest extends FormRequest
      */
     public function rules(): array
     {
-        $user = $this->route('user');
+        $user = $this->user();
         assert($user instanceof User);
 
         return [
@@ -35,7 +35,6 @@ final class UpdateUserRequest extends FormRequest
                 'max:255',
                 Rule::unique(User::class)->ignore($user->id),
             ],
-            'role' => ['nullable', 'string', Rule::exists(Role::class, 'name')],
         ];
     }
 }

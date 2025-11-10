@@ -6,6 +6,14 @@ use App\Models\User;
 use Illuminate\Auth\Events\Lockout;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Hash;
+use Spatie\Permission\Models\Role;
+
+beforeEach(function (): void {
+    // Ensure roles exist for tests
+    Role::query()->firstOrCreate(['name' => 'admin']);
+    Role::query()->firstOrCreate(['name' => 'manager']);
+    Role::query()->firstOrCreate(['name' => 'cashier']);
+});
 
 it('renders login page', function (): void {
     $response = $this->fromRoute('home')
@@ -23,6 +31,7 @@ it('may create a session', function (): void {
         'email' => 'test@example.com',
         'password' => Hash::make('password'),
     ]);
+    $user->assignRole('admin');
 
     $response = $this->fromRoute('login')
         ->post(route('login.store'), [
@@ -40,6 +49,7 @@ it('may create a session with remember me', function (): void {
         'email' => 'test@example.com',
         'password' => Hash::make('password'),
     ]);
+    $user->assignRole('admin');
 
     $response = $this->fromRoute('login')
         ->post(route('login.store'), [
@@ -113,6 +123,7 @@ it('requires password', function (): void {
 
 it('may destroy a session', function (): void {
     $user = User::factory()->create();
+    $user->assignRole('admin');
 
     $response = $this->actingAs($user)
         ->fromRoute('dashboard')
@@ -125,6 +136,7 @@ it('may destroy a session', function (): void {
 
 it('redirects authenticated users away from login', function (): void {
     $user = User::factory()->create();
+    $user->assignRole('admin');
 
     $response = $this->actingAs($user)
         ->fromRoute('dashboard')
@@ -167,6 +179,7 @@ it('clears rate limit after successful login', function (): void {
         'email' => 'test@example.com',
         'password' => Hash::make('password'),
     ]);
+    $user->assignRole('admin');
 
     // Make a few failed attempts
     for ($i = 0; $i < 3; $i++) {

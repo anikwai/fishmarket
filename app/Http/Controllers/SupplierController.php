@@ -13,6 +13,7 @@ use App\Http\Requests\UpdateSupplierRequest;
 use App\Models\Supplier;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -24,6 +25,8 @@ final readonly class SupplierController
 
     public function index(Request $request): Response
     {
+        Gate::authorize('view suppliers');
+
         $perPage = $request->get('per_page', 10);
         $perPage = in_array($perPage, [10, 15, 20, 25, 50]) ? (int) $perPage : 10; // @phpstan-ignore cast.int
 
@@ -68,6 +71,8 @@ final readonly class SupplierController
 
     public function store(StoreSupplierRequest $request, CreateSupplier $action): RedirectResponse
     {
+        Gate::authorize('create suppliers');
+
         $action->handle($request->validated());
 
         return back()->with('success', 'Supplier created successfully.');
@@ -75,6 +80,8 @@ final readonly class SupplierController
 
     public function update(UpdateSupplierRequest $request, Supplier $supplier, UpdateSupplier $action): RedirectResponse
     {
+        Gate::authorize('update suppliers');
+
         $action->handle($supplier, $request->validated());
 
         return back()->with('success', 'Supplier updated successfully.');
@@ -82,6 +89,8 @@ final readonly class SupplierController
 
     public function destroy(Supplier $supplier, DeleteSupplier $action): RedirectResponse
     {
+        Gate::authorize('delete suppliers');
+
         $action->handle($supplier);
 
         return back()->with('success', 'Supplier deleted successfully.');

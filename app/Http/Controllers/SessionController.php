@@ -17,6 +17,12 @@ final readonly class SessionController
     public function create(Request $request): Response|RedirectResponse
     {
         if (Auth::check()) {
+            $user = Auth::user();
+            // Redirect users without roles to pending access page
+            if ($user && $user->roles()->count() === 0) {
+                return to_route('pending-access');
+            }
+
             return to_route('dashboard');
         }
 
@@ -42,6 +48,11 @@ final readonly class SessionController
         Auth::login($user, $request->boolean('remember'));
 
         $request->session()->regenerate();
+
+        // Redirect users without roles to pending access page
+        if ($user->roles()->count() === 0) {
+            return to_route('pending-access');
+        }
 
         return redirect()->intended(route('dashboard', absolute: false));
     }

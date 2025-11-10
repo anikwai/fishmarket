@@ -17,6 +17,7 @@ use App\Support\Stock;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response as HttpResponse;
+use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -24,6 +25,8 @@ final readonly class SaleController
 {
     public function index(Request $request): Response
     {
+        Gate::authorize('view sales');
+
         $perPage = $request->get('per_page', 10);
         $perPage = in_array($perPage, [10, 15, 20, 25, 50]) ? (int) $perPage : 10; // @phpstan-ignore cast.int
 
@@ -73,6 +76,7 @@ final readonly class SaleController
 
     public function store(StoreSaleRequest $request, CreateSale $action): RedirectResponse
     {
+        // Authorization handled in StoreSaleRequest::authorize()
         $action->handle($request->validated());
 
         return back()->with('success', 'Sale created successfully.');
@@ -80,6 +84,7 @@ final readonly class SaleController
 
     public function update(UpdateSaleRequest $request, Sale $sale, UpdateSale $action): RedirectResponse
     {
+        // Authorization handled in UpdateSaleRequest::authorize()
         $action->handle($sale, $request->validated());
 
         return back()->with('success', 'Sale updated successfully.');
@@ -87,6 +92,8 @@ final readonly class SaleController
 
     public function destroy(Sale $sale, DeleteSale $action): RedirectResponse
     {
+        Gate::authorize('delete sales');
+
         $action->handle($sale);
 
         return back()->with('success', 'Sale deleted successfully.');
@@ -94,6 +101,8 @@ final readonly class SaleController
 
     public function downloadReceipt(Sale $sale, GenerateReceipt $action): HttpResponse|RedirectResponse
     {
+        Gate::authorize('download sales receipts');
+
         $receipt = $sale->activeReceipt ?? $sale->receipts()->latest()->first();
 
         if (! $receipt instanceof \App\Models\Receipt) {
@@ -108,6 +117,8 @@ final readonly class SaleController
 
     public function sendReceiptEmail(Sale $sale, SendReceiptEmail $action): RedirectResponse
     {
+        Gate::authorize('email sales receipts');
+
         $receipt = $sale->activeReceipt ?? $sale->receipts()->latest()->first();
 
         if (! $receipt instanceof \App\Models\Receipt) {

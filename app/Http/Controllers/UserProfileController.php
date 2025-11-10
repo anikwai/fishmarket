@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Actions\UpdateUser;
-use App\Http\Requests\UpdateUserRequest;
+use App\Http\Requests\UpdateUserProfileRequest;
 use App\Models\User;
 use Illuminate\Container\Attributes\CurrentUser;
 use Illuminate\Http\RedirectResponse;
@@ -22,7 +22,7 @@ final readonly class UserProfileController
         ]);
     }
 
-    public function update(UpdateUserRequest $request, #[CurrentUser] User $user, UpdateUser $action): RedirectResponse
+    public function update(UpdateUserProfileRequest $request, #[CurrentUser] User $user, UpdateUser $action): RedirectResponse
     {
         $action->handle($user, $request->validated());
 
