@@ -96,3 +96,17 @@ it('creates admin role if it does not exist', function (): void {
     expect(Role::query()->where('name', 'admin')->exists())->toBeTrue()
         ->and(User::role('admin')->count())->toBe(1);
 });
+
+it('creates all roles (admin, manager, cashier) when they do not exist', function (): void {
+    Role::query()->whereIn('name', ['admin', 'manager', 'cashier'])->delete();
+
+    Artisan::call('users:ensure-admin', [
+        '--email' => 'admin@example.com',
+        '--name' => 'Admin User',
+        '--password' => 'password123',
+    ]);
+
+    expect(Role::query()->where('name', 'admin')->exists())->toBeTrue()
+        ->and(Role::query()->where('name', 'manager')->exists())->toBeTrue()
+        ->and(Role::query()->where('name', 'cashier')->exists())->toBeTrue();
+});
