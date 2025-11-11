@@ -1198,7 +1198,7 @@ export default function PurchasesIndex({
                                         </FieldError>
                                     </Field>
                                 </div>
-                                <Field>
+                                <Field data-invalid={!!createForm.errors.notes}>
                                     <FieldLabel htmlFor="notes">
                                         Notes
                                     </FieldLabel>
@@ -1220,6 +1220,9 @@ export default function PurchasesIndex({
                                     <FieldDescription>
                                         Optional notes for internal reference.
                                     </FieldDescription>
+                                    <FieldError>
+                                        {createForm.errors.notes}
+                                    </FieldError>
                                 </Field>
                             </FieldGroup>
                         </div>
@@ -1401,7 +1404,7 @@ export default function PurchasesIndex({
                                         </FieldError>
                                     </Field>
                                 </div>
-                                <Field>
+                                <Field data-invalid={!!editForm.errors.notes}>
                                     <FieldLabel htmlFor="edit-notes">
                                         Notes
                                     </FieldLabel>
@@ -1423,6 +1426,9 @@ export default function PurchasesIndex({
                                     <FieldDescription>
                                         Optional notes for internal reference.
                                     </FieldDescription>
+                                    <FieldError>
+                                        {editForm.errors.notes}
+                                    </FieldError>
                                 </Field>
                             </FieldGroup>
                         </div>
