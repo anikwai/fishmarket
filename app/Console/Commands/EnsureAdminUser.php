@@ -9,7 +9,9 @@ use App\Models\User;
 use Exception;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Validator;
+use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
+use Spatie\Permission\PermissionRegistrar;
 
 final class EnsureAdminUser extends Command
 {
@@ -110,9 +112,102 @@ final class EnsureAdminUser extends Command
 
     private function ensureAdminRoleExists(): void
     {
+        // Reset cached roles and permissions
+        app()->make(PermissionRegistrar::class)->forgetCachedPermissions();
+
+        // Ensure all permissions exist
+        $this->ensurePermissionsExist();
+
+        // Ensure admin role exists
         if (! Role::query()->where('name', 'admin')->exists()) {
-            $this->warn('Admin role does not exist. Creating roles and permissions...');
-            $this->call('db:seed', ['--class' => 'RolePermissionSeeder', '--no-interaction' => true]);
+            $this->warn('Admin role does not exist. Creating admin role...');
+
+            // Create admin role directly
+            $adminRole = Role::query()->firstOrCreate(['name' => 'admin']);
+
+            // Assign all permissions to admin role
+            $permissions = Permission::all();
+            if ($permissions->isNotEmpty()) {
+                $adminRole->syncPermissions($permissions);
+            }
+
+            $this->info('Admin role created successfully.');
+        } else {
+            // Ensure admin role has all permissions (in case permissions were added later)
+            $adminRole = Role::query()->where('name', 'admin')->first();
+            if ($adminRole !== null) {
+                $permissions = Permission::all();
+                if ($permissions->isNotEmpty()) {
+                    $adminRole->syncPermissions($permissions);
+                }
+            }
+        }
+    }
+
+    private function ensurePermissionsExist(): void
+    {
+        $permissions = [
+            // Dashboard
+            'view dashboard',
+
+            // Suppliers
+            'view suppliers',
+            'create suppliers',
+            'update suppliers',
+            'delete suppliers',
+
+            // Customers
+            'view customers',
+            'create customers',
+            'update customers',
+            'delete customers',
+
+            // Purchases
+            'view purchases',
+            'create purchases',
+            'update purchases',
+            'delete purchases',
+
+            // Sales
+            'view sales',
+            'create sales',
+            'update sales',
+            'delete sales',
+            'download sales receipts',
+            'email sales receipts',
+
+            // Expenses
+            'view expenses',
+            'create expenses',
+            'update expenses',
+            'delete expenses',
+
+            // Payments
+            'view payments',
+            'create payments',
+            'update payments',
+            'delete payments',
+
+            // Receipts
+            'view receipts',
+            'download receipts',
+            'email receipts',
+            'void receipts',
+            'reissue receipts',
+
+            // Reports
+            'view reports',
+            'export reports',
+
+            // Users
+            'view users',
+            'create users',
+            'update users',
+            'delete users',
+        ];
+
+        foreach ($permissions as $permission) {
+            Permission::query()->firstOrCreate(['name' => $permission]);
         }
     }
 }
