@@ -38,21 +38,39 @@ final class EnsureAdminUser extends Command
 
         $this->warn('No admin users found. Creating one...');
 
-        // Get credentials from options or prompt
-        $email = $this->option('email');
-        $name = $this->option('name');
-        $password = $this->option('password');
+        // Get credentials from options, config (via environment variables), or prompt
+        $email = $this->option('email') ?: config('admin.email');
+        $name = $this->option('name') ?: config('admin.name');
+        $password = $this->option('password') ?: config('admin.password');
 
-        // If not provided via options or config, prompt interactively
+        // Check if running in non-interactive mode
+        $isNonInteractive = $this->option('no-interaction') || ! $this->input->isInteractive();
+
+        // If not provided via options or environment, prompt interactively (only if interactive)
         if (! $email) {
+            if ($isNonInteractive) {
+                $this->error('Admin email is required. Provide --email option or set ADMIN_EMAIL in your .env file.');
+
+                return self::FAILURE;
+            }
             $email = $this->ask('Admin email address');
         }
 
         if (! $name) {
+            if ($isNonInteractive) {
+                $this->error('Admin name is required. Provide --name option or set ADMIN_NAME in your .env file.');
+
+                return self::FAILURE;
+            }
             $name = $this->ask('Admin name');
         }
 
         if (! $password) {
+            if ($isNonInteractive) {
+                $this->error('Admin password is required. Provide --password option or set ADMIN_PASSWORD in your .env file.');
+
+                return self::FAILURE;
+            }
             $password = $this->secret('Admin password');
             $passwordConfirmation = $this->secret('Confirm admin password');
 
