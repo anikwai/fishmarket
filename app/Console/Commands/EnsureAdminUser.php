@@ -118,20 +118,15 @@ final class EnsureAdminUser extends Command
         // Ensure all permissions exist
         $this->ensurePermissionsExist();
 
-        // Ensure admin role exists
-        if (! Role::query()->where('name', 'admin')->exists()) {
-            $this->warn('Admin role does not exist. Creating admin role...');
+        // Check if roles need to be created
+        $adminExists = Role::query()->where('name', 'admin')->exists();
+        $managerExists = Role::query()->where('name', 'manager')->exists();
+        $cashierExists = Role::query()->where('name', 'cashier')->exists();
 
-            // Create admin role directly
-            $adminRole = Role::query()->firstOrCreate(['name' => 'admin']);
-
-            // Assign all permissions to admin role
-            $permissions = Permission::all();
-            if ($permissions->isNotEmpty()) {
-                $adminRole->syncPermissions($permissions);
-            }
-
-            $this->info('Admin role created successfully.');
+        if (! $adminExists || ! $managerExists || ! $cashierExists) {
+            $this->warn('Roles do not exist. Creating roles and permissions...');
+            $this->ensureRolesExist();
+            $this->info('Roles created successfully.');
         } else {
             // Ensure admin role has all permissions (in case permissions were added later)
             $adminRole = Role::query()->where('name', 'admin')->first();
@@ -142,6 +137,70 @@ final class EnsureAdminUser extends Command
                 }
             }
         }
+    }
+
+    private function ensureRolesExist(): void
+    {
+        // Admin - Full access
+        $admin = Role::query()->firstOrCreate(['name' => 'admin']);
+        $admin->syncPermissions(Permission::all());
+
+        // Manager - Can manage operations but not users
+        $manager = Role::query()->firstOrCreate(['name' => 'manager']);
+        $manager->syncPermissions([
+            'view dashboard',
+            'view suppliers',
+            'create suppliers',
+            'update suppliers',
+            'delete suppliers',
+            'view customers',
+            'create customers',
+            'update customers',
+            'delete customers',
+            'view purchases',
+            'create purchases',
+            'update purchases',
+            'delete purchases',
+            'view sales',
+            'create sales',
+            'update sales',
+            'delete sales',
+            'download sales receipts',
+            'email sales receipts',
+            'view expenses',
+            'create expenses',
+            'update expenses',
+            'delete expenses',
+            'view payments',
+            'create payments',
+            'update payments',
+            'delete payments',
+            'view receipts',
+            'download receipts',
+            'email receipts',
+            'void receipts',
+            'reissue receipts',
+            'view reports',
+            'export reports',
+        ]);
+
+        // Cashier - Can create sales and view limited data
+        $cashier = Role::query()->firstOrCreate(['name' => 'cashier']);
+        $cashier->syncPermissions([
+            'view dashboard',
+            'view customers',
+            'create customers',
+            'view sales',
+            'create sales',
+            'update sales',
+            'download sales receipts',
+            'email sales receipts',
+            'view payments',
+            'create payments',
+            'view receipts',
+            'download receipts',
+            'email receipts',
+        ]);
     }
 
     private function ensurePermissionsExist(): void
