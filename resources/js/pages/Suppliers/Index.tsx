@@ -948,7 +948,7 @@ export default function SuppliersIndex({
                                         {createForm.errors.email}
                                     </FieldError>
                                 </Field>
-                                <Field>
+                                <Field data-invalid={!!createForm.errors.phone}>
                                     <FieldLabel htmlFor="phone">
                                         Phone Number
                                     </FieldLabel>
@@ -967,8 +967,13 @@ export default function SuppliersIndex({
                                             placeholder="+1 (555) 123-4567"
                                         />
                                     </div>
+                                    <FieldError>
+                                        {createForm.errors.phone}
+                                    </FieldError>
                                 </Field>
-                                <Field>
+                                <Field
+                                    data-invalid={!!createForm.errors.address}
+                                >
                                     <FieldLabel htmlFor="address">
                                         Address
                                     </FieldLabel>
@@ -987,8 +992,11 @@ export default function SuppliersIndex({
                                             placeholder="123 Harbor St, City, State ZIP"
                                         />
                                     </div>
+                                    <FieldError>
+                                        {createForm.errors.address}
+                                    </FieldError>
                                 </Field>
-                                <Field>
+                                <Field data-invalid={!!createForm.errors.notes}>
                                     <FieldLabel htmlFor="notes">
                                         Notes
                                     </FieldLabel>
@@ -1010,6 +1018,9 @@ export default function SuppliersIndex({
                                     <FieldDescription>
                                         Optional notes for internal reference.
                                     </FieldDescription>
+                                    <FieldError>
+                                        {createForm.errors.notes}
+                                    </FieldError>
                                 </Field>
                             </FieldGroup>
                         </div>
@@ -1099,7 +1110,7 @@ export default function SuppliersIndex({
                                         {editForm.errors.email}
                                     </FieldError>
                                 </Field>
-                                <Field>
+                                <Field data-invalid={!!editForm.errors.phone}>
                                     <FieldLabel htmlFor="edit-phone">
                                         Phone Number
                                     </FieldLabel>
@@ -1118,8 +1129,11 @@ export default function SuppliersIndex({
                                             placeholder="+1 (555) 123-4567"
                                         />
                                     </div>
+                                    <FieldError>
+                                        {editForm.errors.phone}
+                                    </FieldError>
                                 </Field>
-                                <Field>
+                                <Field data-invalid={!!editForm.errors.address}>
                                     <FieldLabel htmlFor="edit-address">
                                         Address
                                     </FieldLabel>
@@ -1138,8 +1152,11 @@ export default function SuppliersIndex({
                                             placeholder="123 Harbor St, City, State ZIP"
                                         />
                                     </div>
+                                    <FieldError>
+                                        {editForm.errors.address}
+                                    </FieldError>
                                 </Field>
-                                <Field>
+                                <Field data-invalid={!!editForm.errors.notes}>
                                     <FieldLabel htmlFor="edit-notes">
                                         Notes
                                     </FieldLabel>
@@ -1161,6 +1178,9 @@ export default function SuppliersIndex({
                                     <FieldDescription>
                                         Optional notes for internal reference.
                                     </FieldDescription>
+                                    <FieldError>
+                                        {editForm.errors.notes}
+                                    </FieldError>
                                 </Field>
                             </FieldGroup>
                         </div>
