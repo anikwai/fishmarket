@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Models\User;
 use Illuminate\Support\Facades\Artisan;
+use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 
 beforeEach(function (): void {
@@ -109,4 +110,38 @@ it('creates all roles (admin, manager, cashier) when they do not exist', functio
     expect(Role::query()->where('name', 'admin')->exists())->toBeTrue()
         ->and(Role::query()->where('name', 'manager')->exists())->toBeTrue()
         ->and(Role::query()->where('name', 'cashier')->exists())->toBeTrue();
+});
+
+it('syncs permissions for all roles when they already exist', function (): void {
+    // Ensure roles exist
+    $adminRole = Role::query()->firstOrCreate(['name' => 'admin']);
+    $managerRole = Role::query()->firstOrCreate(['name' => 'manager']);
+    $cashierRole = Role::query()->firstOrCreate(['name' => 'cashier']);
+
+    // Clear all permissions from roles
+    $adminRole->syncPermissions([]);
+    $managerRole->syncPermissions([]);
+    $cashierRole->syncPermissions([]);
+
+    // Ensure permissions exist
+    Permission::query()->firstOrCreate(['name' => 'view dashboard']);
+    Permission::query()->firstOrCreate(['name' => 'view users']);
+
+    Artisan::call('users:ensure-admin', [
+        '--email' => 'admin@example.com',
+        '--name' => 'Admin User',
+        '--password' => 'password123',
+    ]);
+
+    // Verify all roles have their permissions synced
+    $adminRole->refresh();
+    $managerRole->refresh();
+    $cashierRole->refresh();
+
+    expect($adminRole->permissions->pluck('name')->toArray())->toContain('view dashboard')
+        ->and($adminRole->permissions->pluck('name')->toArray())->toContain('view users')
+        ->and($managerRole->permissions->pluck('name')->toArray())->toContain('view dashboard')
+        ->and($managerRole->permissions->pluck('name')->toArray())->not->toContain('view users')
+        ->and($cashierRole->permissions->pluck('name')->toArray())->toContain('view dashboard')
+        ->and($cashierRole->permissions->pluck('name')->toArray())->not->toContain('view users');
 });
