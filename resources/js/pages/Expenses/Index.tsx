@@ -26,7 +26,24 @@ import {
     EmptyMedia,
     EmptyTitle,
 } from '@/components/ui/empty';
+import {
+    Field,
+    FieldDescription,
+    FieldError,
+    FieldGroup,
+    FieldLabel,
+    FieldLegend,
+    FieldSet,
+} from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
+import {
+    Item,
+    ItemContent,
+    ItemDescription,
+    ItemGroup,
+    ItemMedia,
+    ItemTitle,
+} from '@/components/ui/item';
 import { Label } from '@/components/ui/label';
 import {
     Select,
@@ -58,20 +75,26 @@ import {
 } from '@tanstack/react-table';
 import {
     ArrowUpDown,
+    Calendar,
     ChevronDown,
     ChevronLeft,
     ChevronRight,
     ChevronsLeft,
     ChevronsRight,
     Columns,
+    DollarSign,
     EyeIcon,
+    FileText,
     InfoIcon,
     MoreHorizontal,
+    Package,
     PencilIcon,
     PlusIcon,
     Receipt,
     Search,
+    ShoppingCart,
     TrashIcon,
+    Truck,
     XIcon,
 } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -970,240 +993,368 @@ export default function ExpensesIndex({
 
                 {/* Create Modal */}
                 <Dialog open={createOpen} onOpenChange={setCreateOpen}>
-                    <DialogContent className="max-h-[90vh] max-w-4xl overflow-y-auto">
-                        <DialogHeader>
+                    <DialogContent className="flex max-h-[90vh] max-w-4xl flex-col gap-0">
+                        <DialogHeader className="flex-shrink-0 pb-4">
                             <DialogTitle>Create Expenses</DialogTitle>
                             <DialogDescription>
                                 Add one or more expenses. Click "Add Another" to
-                                add multiple expenses at once.
+                                add multiple expenses at once. All fields marked
+                                with * are required.
                             </DialogDescription>
                         </DialogHeader>
-                        <div className="space-y-6">
-                            {(createForm.data.expenses || []).map(
-                                (expense, index) => (
-                                    <div
-                                        key={index}
-                                        className="space-y-4 rounded-lg border p-4"
-                                    >
-                                        <div className="mb-2 flex items-center justify-between">
-                                            <h3 className="text-sm font-semibold">
-                                                Expense {index + 1}
-                                            </h3>
-                                            {(createForm.data.expenses || [])
-                                                .length > 1 && (
-                                                <Button
-                                                    type="button"
-                                                    variant="ghost"
-                                                    size="icon"
-                                                    onClick={() =>
-                                                        removeExpenseRow(index)
-                                                    }
-                                                    className="h-8 w-8"
-                                                >
-                                                    <XIcon className="h-4 w-4" />
-                                                </Button>
-                                            )}
-                                        </div>
-                                        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                                            <div>
-                                                <Label>
-                                                    Purchase (Optional)
-                                                </Label>
-                                                <Select
-                                                    value={
-                                                        expense.purchase_id ||
-                                                        ''
-                                                    }
-                                                    onValueChange={(value) =>
-                                                        updateExpenseRow(
-                                                            index,
-                                                            'purchase_id',
-                                                            value || '',
-                                                        )
-                                                    }
-                                                >
-                                                    <SelectTrigger className="mt-1">
-                                                        <SelectValue placeholder="Select a purchase (optional)" />
-                                                    </SelectTrigger>
-                                                    <SelectContent>
-                                                        {purchases.length >
-                                                        0 ? (
-                                                            purchases.map(
-                                                                (purchase) => (
-                                                                    <SelectItem
-                                                                        key={
-                                                                            purchase.id
+                        <div className="flex-1 overflow-y-auto px-1">
+                            <FieldGroup className="gap-6">
+                                {(createForm.data.expenses || []).map(
+                                    (expense, index) => (
+                                        <div
+                                            key={index}
+                                            className="space-y-5 rounded-lg border bg-muted/30 p-5"
+                                        >
+                                            <Item className="pb-2">
+                                                <ItemMedia variant="icon">
+                                                    <Receipt className="h-5 w-5" />
+                                                </ItemMedia>
+                                                <ItemContent>
+                                                    <ItemTitle>
+                                                        {expense.type
+                                                            ? expense.type
+                                                                  .charAt(0)
+                                                                  .toUpperCase() +
+                                                              expense.type.slice(
+                                                                  1,
+                                                              )
+                                                            : `Expense ${index + 1}`}
+                                                    </ItemTitle>
+                                                    {(
+                                                        createForm.data
+                                                            .expenses || []
+                                                    ).length > 1 && (
+                                                        <ItemDescription className="mt-1">
+                                                            <Button
+                                                                type="button"
+                                                                variant="ghost"
+                                                                size="sm"
+                                                                onClick={() =>
+                                                                    removeExpenseRow(
+                                                                        index,
+                                                                    )
+                                                                }
+                                                                className="h-auto p-0 text-destructive hover:text-destructive"
+                                                            >
+                                                                <XIcon className="mr-1 h-3 w-3" />
+                                                                Remove
+                                                            </Button>
+                                                        </ItemDescription>
+                                                    )}
+                                                </ItemContent>
+                                            </Item>
+                                            <FieldGroup className="gap-6">
+                                                {/* Essential Information */}
+                                                <FieldSet>
+                                                    <FieldLegend variant="label">
+                                                        Essential Information
+                                                    </FieldLegend>
+                                                    <FieldGroup className="gap-5">
+                                                        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                                                            <Field
+                                                                data-invalid={
+                                                                    !!createForm
+                                                                        .errors[
+                                                                        `expenses.${index}.expense_date`
+                                                                    ]
+                                                                }
+                                                                className="space-y-2"
+                                                            >
+                                                                <FieldLabel>
+                                                                    Expense Date
+                                                                    *
+                                                                </FieldLabel>
+                                                                <div className="relative">
+                                                                    <Calendar className="absolute top-1/2 left-3 z-10 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                                                                    <DatePicker
+                                                                        value={
+                                                                            expense.expense_date
                                                                         }
-                                                                        value={purchase.id.toString()}
+                                                                        onChange={(
+                                                                            value,
+                                                                        ) =>
+                                                                            updateExpenseRow(
+                                                                                index,
+                                                                                'expense_date',
+                                                                                value,
+                                                                            )
+                                                                        }
+                                                                        placeholder="Select expense date"
+                                                                        className="pl-9"
+                                                                    />
+                                                                </div>
+                                                                <FieldError>
+                                                                    {
+                                                                        createForm
+                                                                            .errors[
+                                                                            `expenses.${index}.expense_date`
+                                                                        ]
+                                                                    }
+                                                                </FieldError>
+                                                            </Field>
+                                                            <Field
+                                                                data-invalid={
+                                                                    !!createForm
+                                                                        .errors[
+                                                                        `expenses.${index}.type`
+                                                                    ]
+                                                                }
+                                                                className="space-y-2"
+                                                            >
+                                                                <FieldLabel>
+                                                                    Type *
+                                                                </FieldLabel>
+                                                                <div className="relative">
+                                                                    <Select
+                                                                        value={
+                                                                            expense.type
+                                                                        }
+                                                                        onValueChange={(
+                                                                            value:
+                                                                                | 'shipping'
+                                                                                | 'ice'
+                                                                                | 'other',
+                                                                        ) =>
+                                                                            updateExpenseRow(
+                                                                                index,
+                                                                                'type',
+                                                                                value,
+                                                                            )
+                                                                        }
                                                                     >
-                                                                        {new Date(
-                                                                            purchase.purchase_date,
-                                                                        ).toLocaleDateString()}{' '}
-                                                                        -{' '}
-                                                                        {
-                                                                            purchase
-                                                                                .supplier
-                                                                                .name
-                                                                        }
-                                                                    </SelectItem>
-                                                                ),
-                                                            )
-                                                        ) : (
-                                                            <div className="px-2 py-1.5 text-sm text-muted-foreground">
-                                                                No purchases
-                                                                available
+                                                                        <SelectTrigger>
+                                                                            <SelectValue />
+                                                                        </SelectTrigger>
+                                                                        <SelectContent>
+                                                                            <SelectItem value="shipping">
+                                                                                <div className="flex items-center gap-2">
+                                                                                    <Truck className="h-4 w-4" />
+                                                                                    Shipping
+                                                                                </div>
+                                                                            </SelectItem>
+                                                                            <SelectItem value="ice">
+                                                                                <div className="flex items-center gap-2">
+                                                                                    <Package className="h-4 w-4" />
+                                                                                    Ice
+                                                                                </div>
+                                                                            </SelectItem>
+                                                                            <SelectItem value="other">
+                                                                                <div className="flex items-center gap-2">
+                                                                                    <FileText className="h-4 w-4" />
+                                                                                    Other
+                                                                                </div>
+                                                                            </SelectItem>
+                                                                        </SelectContent>
+                                                                    </Select>
+                                                                </div>
+                                                                <FieldError>
+                                                                    {
+                                                                        createForm
+                                                                            .errors[
+                                                                            `expenses.${index}.type`
+                                                                        ]
+                                                                    }
+                                                                </FieldError>
+                                                            </Field>
+                                                        </div>
+                                                    </FieldGroup>
+                                                </FieldSet>
+
+                                                {/* Financial Details */}
+                                                <FieldSet>
+                                                    <FieldLegend variant="label">
+                                                        Financial Details
+                                                    </FieldLegend>
+                                                    <FieldGroup className="gap-5">
+                                                        <Field
+                                                            data-invalid={
+                                                                !!createForm
+                                                                    .errors[
+                                                                    `expenses.${index}.amount`
+                                                                ]
+                                                            }
+                                                            className="max-w-md space-y-2"
+                                                        >
+                                                            <FieldLabel>
+                                                                Amount (SBD) *
+                                                            </FieldLabel>
+                                                            <div className="relative">
+                                                                <DollarSign className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                                                                <Input
+                                                                    type="number"
+                                                                    step="0.01"
+                                                                    min="0"
+                                                                    value={
+                                                                        expense.amount
+                                                                    }
+                                                                    onChange={(
+                                                                        e,
+                                                                    ) =>
+                                                                        updateExpenseRow(
+                                                                            index,
+                                                                            'amount',
+                                                                            e
+                                                                                .target
+                                                                                .value,
+                                                                        )
+                                                                    }
+                                                                    className="pl-9"
+                                                                    placeholder="0.00"
+                                                                />
                                                             </div>
-                                                        )}
-                                                    </SelectContent>
-                                                </Select>
-                                            </div>
-                                            <div>
-                                                <Label>Expense Date *</Label>
-                                                <DatePicker
-                                                    value={expense.expense_date}
-                                                    onChange={(value) =>
-                                                        updateExpenseRow(
-                                                            index,
-                                                            'expense_date',
-                                                            value,
-                                                        )
-                                                    }
-                                                    placeholder="Select expense date"
-                                                    className="mt-1"
-                                                />
-                                                {createForm.errors[
-                                                    `expenses.${index}.expense_date`
-                                                ] && (
-                                                    <p className="mt-1 text-sm text-destructive">
-                                                        {
-                                                            createForm.errors[
-                                                                `expenses.${index}.expense_date`
-                                                            ]
-                                                        }
-                                                    </p>
-                                                )}
-                                            </div>
-                                            <div>
-                                                <Label>Type *</Label>
-                                                <Select
-                                                    value={expense.type}
-                                                    onValueChange={(
-                                                        value:
-                                                            | 'shipping'
-                                                            | 'ice'
-                                                            | 'other',
-                                                    ) =>
-                                                        updateExpenseRow(
-                                                            index,
-                                                            'type',
-                                                            value,
-                                                        )
-                                                    }
-                                                >
-                                                    <SelectTrigger className="mt-1">
-                                                        <SelectValue />
-                                                    </SelectTrigger>
-                                                    <SelectContent>
-                                                        <SelectItem value="shipping">
-                                                            Shipping
-                                                        </SelectItem>
-                                                        <SelectItem value="ice">
-                                                            Ice
-                                                        </SelectItem>
-                                                        <SelectItem value="other">
-                                                            Other
-                                                        </SelectItem>
-                                                    </SelectContent>
-                                                </Select>
-                                                {createForm.errors[
-                                                    `expenses.${index}.type`
-                                                ] && (
-                                                    <p className="mt-1 text-sm text-destructive">
-                                                        {
-                                                            createForm.errors[
-                                                                `expenses.${index}.type`
-                                                            ]
-                                                        }
-                                                    </p>
-                                                )}
-                                            </div>
-                                            <div>
-                                                <Label>Amount (SBD) *</Label>
-                                                <Input
-                                                    type="number"
-                                                    step="0.01"
-                                                    min="0"
-                                                    value={expense.amount}
-                                                    onChange={(e) =>
-                                                        updateExpenseRow(
-                                                            index,
-                                                            'amount',
-                                                            e.target.value,
-                                                        )
-                                                    }
-                                                    className="mt-1"
-                                                />
-                                                {createForm.errors[
-                                                    `expenses.${index}.amount`
-                                                ] && (
-                                                    <p className="mt-1 text-sm text-destructive">
-                                                        {
-                                                            createForm.errors[
-                                                                `expenses.${index}.amount`
-                                                            ]
-                                                        }
-                                                    </p>
-                                                )}
-                                            </div>
+                                                            <FieldError>
+                                                                {
+                                                                    createForm
+                                                                        .errors[
+                                                                        `expenses.${index}.amount`
+                                                                    ]
+                                                                }
+                                                            </FieldError>
+                                                        </Field>
+                                                    </FieldGroup>
+                                                </FieldSet>
+
+                                                {/* Additional Information */}
+                                                <FieldSet>
+                                                    <FieldLegend variant="label">
+                                                        Additional Information
+                                                    </FieldLegend>
+                                                    <FieldGroup className="gap-5">
+                                                        <Field className="space-y-2">
+                                                            <FieldLabel>
+                                                                Purchase
+                                                                (Optional)
+                                                            </FieldLabel>
+                                                            <Select
+                                                                value={
+                                                                    expense.purchase_id ||
+                                                                    ''
+                                                                }
+                                                                onValueChange={(
+                                                                    value,
+                                                                ) =>
+                                                                    updateExpenseRow(
+                                                                        index,
+                                                                        'purchase_id',
+                                                                        value ||
+                                                                            '',
+                                                                    )
+                                                                }
+                                                            >
+                                                                <SelectTrigger>
+                                                                    <SelectValue placeholder="Select a purchase (optional)" />
+                                                                </SelectTrigger>
+                                                                <SelectContent>
+                                                                    {purchases.length >
+                                                                    0 ? (
+                                                                        purchases.map(
+                                                                            (
+                                                                                purchase,
+                                                                            ) => (
+                                                                                <SelectItem
+                                                                                    key={
+                                                                                        purchase.id
+                                                                                    }
+                                                                                    value={purchase.id.toString()}
+                                                                                >
+                                                                                    {new Date(
+                                                                                        purchase.purchase_date,
+                                                                                    ).toLocaleDateString()}{' '}
+                                                                                    -{' '}
+                                                                                    {
+                                                                                        purchase
+                                                                                            .supplier
+                                                                                            .name
+                                                                                    }
+                                                                                </SelectItem>
+                                                                            ),
+                                                                        )
+                                                                    ) : (
+                                                                        <div className="px-2 py-1.5 text-sm text-muted-foreground">
+                                                                            No
+                                                                            purchases
+                                                                            available
+                                                                        </div>
+                                                                    )}
+                                                                </SelectContent>
+                                                            </Select>
+                                                        </Field>
+                                                        <Field
+                                                            data-invalid={
+                                                                !!createForm
+                                                                    .errors[
+                                                                    `expenses.${index}.description`
+                                                                ]
+                                                            }
+                                                            className="space-y-2"
+                                                        >
+                                                            <FieldLabel>
+                                                                Description *
+                                                            </FieldLabel>
+                                                            <div className="relative">
+                                                                <FileText className="absolute top-3 left-3 h-4 w-4 text-muted-foreground" />
+                                                                <textarea
+                                                                    value={
+                                                                        expense.description
+                                                                    }
+                                                                    onChange={(
+                                                                        e,
+                                                                    ) =>
+                                                                        updateExpenseRow(
+                                                                            index,
+                                                                            'description',
+                                                                            e
+                                                                                .target
+                                                                                .value,
+                                                                        )
+                                                                    }
+                                                                    className="flex min-h-[80px] w-full rounded-md border border-input bg-transparent px-3 py-2 pl-9 text-sm"
+                                                                    placeholder="Enter expense description"
+                                                                />
+                                                            </div>
+                                                            <FieldError>
+                                                                {
+                                                                    createForm
+                                                                        .errors[
+                                                                        `expenses.${index}.description`
+                                                                    ]
+                                                                }
+                                                            </FieldError>
+                                                        </Field>
+                                                    </FieldGroup>
+                                                </FieldSet>
+                                            </FieldGroup>
                                         </div>
-                                        <div>
-                                            <Label>Description *</Label>
-                                            <textarea
-                                                value={expense.description}
-                                                onChange={(e) =>
-                                                    updateExpenseRow(
-                                                        index,
-                                                        'description',
-                                                        e.target.value,
-                                                    )
-                                                }
-                                                className="mt-1 flex min-h-[80px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm"
-                                                placeholder="Enter expense description"
-                                            />
-                                            {createForm.errors[
-                                                `expenses.${index}.description`
-                                            ] && (
-                                                <p className="mt-1 text-sm text-destructive">
-                                                    {
-                                                        createForm.errors[
-                                                            `expenses.${index}.description`
-                                                        ]
-                                                    }
-                                                </p>
-                                            )}
-                                        </div>
-                                    </div>
-                                ),
-                            )}
-                            <div className="flex justify-end">
-                                <Button
-                                    type="button"
-                                    variant="outline"
-                                    onClick={addExpenseRow}
-                                >
-                                    <PlusIcon className="mr-2 h-4 w-4" />
-                                    Add Another Expense
-                                </Button>
-                            </div>
-                            {createForm.errors.expenses &&
-                                typeof createForm.errors.expenses ===
-                                    'string' && (
-                                    <p className="text-sm text-destructive">
-                                        {createForm.errors.expenses}
-                                    </p>
+                                    ),
                                 )}
+                                <div className="pt-2">
+                                    <Button
+                                        type="button"
+                                        variant="ghost"
+                                        onClick={addExpenseRow}
+                                        className="h-auto p-0 text-muted-foreground hover:text-foreground"
+                                    >
+                                        <PlusIcon className="mr-1.5 h-4 w-4" />
+                                        Add Another Expense
+                                    </Button>
+                                </div>
+                                {createForm.errors.expenses &&
+                                    typeof createForm.errors.expenses ===
+                                        'string' && (
+                                        <div className="rounded-md border border-destructive bg-destructive/10 p-4">
+                                            <p className="text-sm text-destructive">
+                                                {createForm.errors.expenses}
+                                            </p>
+                                        </div>
+                                    )}
+                            </FieldGroup>
                         </div>
-                        <DialogFooter>
+                        <DialogFooter className="flex-shrink-0 border-t pt-4">
                             <Button
                                 variant="outline"
                                 onClick={() => {
@@ -1230,11 +1381,24 @@ export default function ExpensesIndex({
                                 onClick={handleCreate}
                                 disabled={createForm.processing}
                             >
-                                Create {createForm.data.expenses?.length || 1}{' '}
-                                Expense
-                                {(createForm.data.expenses?.length || 1) !== 1
-                                    ? 's'
-                                    : ''}
+                                {createForm.processing ? (
+                                    <>
+                                        <PlusIcon className="mr-2 h-4 w-4 animate-spin" />
+                                        Creating...
+                                    </>
+                                ) : (
+                                    <>
+                                        <Receipt className="mr-2 h-4 w-4" />
+                                        Create{' '}
+                                        {createForm.data.expenses?.length ||
+                                            1}{' '}
+                                        Expense
+                                        {(createForm.data.expenses?.length ||
+                                            1) !== 1
+                                            ? 's'
+                                            : ''}
+                                    </>
+                                )}
                             </Button>
                         </DialogFooter>
                     </DialogContent>
@@ -1242,155 +1406,199 @@ export default function ExpensesIndex({
 
                 {/* Edit Modal */}
                 <Dialog open={editOpen} onOpenChange={setEditOpen}>
-                    <DialogContent>
-                        <DialogHeader>
+                    <DialogContent className="flex max-h-[90vh] flex-col gap-0 sm:max-w-[500px]">
+                        <DialogHeader className="flex-shrink-0 pb-4">
                             <DialogTitle>Edit Expense</DialogTitle>
                             <DialogDescription>
-                                Update expense information.
+                                Update expense information. All fields marked
+                                with * are required.
                             </DialogDescription>
                         </DialogHeader>
-                        <div className="space-y-4">
-                            <div>
-                                <Label htmlFor="edit-purchase_id">
-                                    Purchase (Optional)
-                                </Label>
-                                <Select
-                                    value={editForm.data.purchase_id || ''}
-                                    onValueChange={(value) =>
-                                        editForm.setData(
-                                            'purchase_id',
-                                            value || '',
-                                        )
-                                    }
-                                >
-                                    <SelectTrigger className="mt-1">
-                                        <SelectValue placeholder="Select a purchase (optional)" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {purchases.length > 0 ? (
-                                            purchases.map((purchase) => (
-                                                <SelectItem
-                                                    key={purchase.id}
-                                                    value={purchase.id.toString()}
-                                                >
-                                                    {new Date(
-                                                        purchase.purchase_date,
-                                                    ).toLocaleDateString()}{' '}
-                                                    - {purchase.supplier.name}
-                                                </SelectItem>
-                                            ))
-                                        ) : (
-                                            <div className="px-2 py-1.5 text-sm text-muted-foreground">
-                                                No purchases available
-                                            </div>
-                                        )}
-                                    </SelectContent>
-                                </Select>
-                                <p className="mt-1 text-xs text-muted-foreground">
-                                    Link this expense to a specific purchase
-                                    (e.g., freight, ice, fuel for this
-                                    purchase). Leave empty for general expenses
-                                    not tied to a specific purchase.
-                                </p>
-                                {editForm.errors.purchase_id && (
-                                    <p className="mt-1 text-sm text-destructive">
+                        <div className="flex-1 overflow-y-auto px-1">
+                            <FieldGroup className="gap-6">
+                                <Field>
+                                    <FieldLabel htmlFor="edit-purchase_id">
+                                        Purchase (Optional)
+                                    </FieldLabel>
+                                    <div className="relative">
+                                        <ShoppingCart className="absolute top-1/2 left-3 z-10 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                                        <Select
+                                            value={
+                                                editForm.data.purchase_id || ''
+                                            }
+                                            onValueChange={(value) =>
+                                                editForm.setData(
+                                                    'purchase_id',
+                                                    value || '',
+                                                )
+                                            }
+                                        >
+                                            <SelectTrigger
+                                                id="edit-purchase_id"
+                                                className="pl-9"
+                                            >
+                                                <SelectValue placeholder="Select a purchase (optional)" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                {purchases.length > 0 ? (
+                                                    purchases.map(
+                                                        (purchase) => (
+                                                            <SelectItem
+                                                                key={
+                                                                    purchase.id
+                                                                }
+                                                                value={purchase.id.toString()}
+                                                            >
+                                                                {new Date(
+                                                                    purchase.purchase_date,
+                                                                ).toLocaleDateString()}{' '}
+                                                                -{' '}
+                                                                {
+                                                                    purchase
+                                                                        .supplier
+                                                                        .name
+                                                                }
+                                                            </SelectItem>
+                                                        ),
+                                                    )
+                                                ) : (
+                                                    <div className="px-2 py-1.5 text-sm text-muted-foreground">
+                                                        No purchases available
+                                                    </div>
+                                                )}
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                    <FieldDescription>
+                                        Link this expense to a specific purchase
+                                        (e.g., freight, ice, fuel for this
+                                        purchase). Leave empty for general
+                                        expenses not tied to a specific
+                                        purchase.
+                                    </FieldDescription>
+                                    <FieldError>
                                         {editForm.errors.purchase_id}
-                                    </p>
-                                )}
-                            </div>
-                            <div>
-                                <Label htmlFor="edit-expense_date">
-                                    Expense Date *
-                                </Label>
-                                <DatePicker
-                                    id="edit-expense_date"
-                                    value={editForm.data.expense_date}
-                                    onChange={(value) =>
-                                        editForm.setData('expense_date', value)
+                                    </FieldError>
+                                </Field>
+                                <Field
+                                    data-invalid={
+                                        !!editForm.errors.expense_date
                                     }
-                                    placeholder="Select expense date"
-                                    className="mt-1"
-                                />
-                                {editForm.errors.expense_date && (
-                                    <p className="mt-1 text-sm text-destructive">
-                                        {editForm.errors.expense_date}
-                                    </p>
-                                )}
-                            </div>
-                            <div>
-                                <Label htmlFor="edit-type">Type *</Label>
-                                <Select
-                                    value={editForm.data.type}
-                                    onValueChange={(
-                                        value: 'shipping' | 'ice' | 'other',
-                                    ) => editForm.setData('type', value)}
                                 >
-                                    <SelectTrigger className="mt-1">
-                                        <SelectValue />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="shipping">
-                                            Shipping
-                                        </SelectItem>
-                                        <SelectItem value="ice">Ice</SelectItem>
-                                        <SelectItem value="other">
-                                            Other
-                                        </SelectItem>
-                                    </SelectContent>
-                                </Select>
-                                {editForm.errors.type && (
-                                    <p className="mt-1 text-sm text-destructive">
+                                    <FieldLabel htmlFor="edit-expense_date">
+                                        Expense Date *
+                                    </FieldLabel>
+                                    <div className="relative">
+                                        <Calendar className="absolute top-1/2 left-3 z-10 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                                        <DatePicker
+                                            id="edit-expense_date"
+                                            value={editForm.data.expense_date}
+                                            onChange={(value) =>
+                                                editForm.setData(
+                                                    'expense_date',
+                                                    value,
+                                                )
+                                            }
+                                            placeholder="Select expense date"
+                                            className="pl-9"
+                                        />
+                                    </div>
+                                    <FieldError>
+                                        {editForm.errors.expense_date}
+                                    </FieldError>
+                                </Field>
+                                <Field data-invalid={!!editForm.errors.type}>
+                                    <FieldLabel htmlFor="edit-type">
+                                        Type *
+                                    </FieldLabel>
+                                    <Select
+                                        value={editForm.data.type}
+                                        onValueChange={(
+                                            value: 'shipping' | 'ice' | 'other',
+                                        ) => editForm.setData('type', value)}
+                                    >
+                                        <SelectTrigger id="edit-type">
+                                            <SelectValue />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="shipping">
+                                                <div className="flex items-center gap-2">
+                                                    <Truck className="h-4 w-4" />
+                                                    Shipping
+                                                </div>
+                                            </SelectItem>
+                                            <SelectItem value="ice">
+                                                <div className="flex items-center gap-2">
+                                                    <Package className="h-4 w-4" />
+                                                    Ice
+                                                </div>
+                                            </SelectItem>
+                                            <SelectItem value="other">
+                                                <div className="flex items-center gap-2">
+                                                    <FileText className="h-4 w-4" />
+                                                    Other
+                                                </div>
+                                            </SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                    <FieldError>
                                         {editForm.errors.type}
-                                    </p>
-                                )}
-                            </div>
-                            <div>
-                                <Label htmlFor="edit-description">
-                                    Description *
-                                </Label>
-                                <textarea
-                                    id="edit-description"
-                                    value={editForm.data.description}
-                                    onChange={(e) =>
-                                        editForm.setData(
-                                            'description',
-                                            e.target.value,
-                                        )
-                                    }
-                                    className="mt-1 flex min-h-[80px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm"
-                                />
-                                {editForm.errors.description && (
-                                    <p className="mt-1 text-sm text-destructive">
+                                    </FieldError>
+                                </Field>
+                                <Field
+                                    data-invalid={!!editForm.errors.description}
+                                >
+                                    <FieldLabel htmlFor="edit-description">
+                                        Description *
+                                    </FieldLabel>
+                                    <div className="relative">
+                                        <FileText className="absolute top-3 left-3 h-4 w-4 text-muted-foreground" />
+                                        <textarea
+                                            id="edit-description"
+                                            value={editForm.data.description}
+                                            onChange={(e) =>
+                                                editForm.setData(
+                                                    'description',
+                                                    e.target.value,
+                                                )
+                                            }
+                                            className="flex min-h-[80px] w-full rounded-md border border-input bg-transparent px-3 py-2 pl-9 text-sm"
+                                            placeholder="Enter expense description"
+                                        />
+                                    </div>
+                                    <FieldError>
                                         {editForm.errors.description}
-                                    </p>
-                                )}
-                            </div>
-                            <div>
-                                <Label htmlFor="edit-amount">
-                                    Amount (SBD) *
-                                </Label>
-                                <Input
-                                    id="edit-amount"
-                                    type="number"
-                                    step="0.01"
-                                    min="0"
-                                    value={editForm.data.amount}
-                                    onChange={(e) =>
-                                        editForm.setData(
-                                            'amount',
-                                            e.target.value,
-                                        )
-                                    }
-                                    className="mt-1"
-                                />
-                                {editForm.errors.amount && (
-                                    <p className="mt-1 text-sm text-destructive">
+                                    </FieldError>
+                                </Field>
+                                <Field data-invalid={!!editForm.errors.amount}>
+                                    <FieldLabel htmlFor="edit-amount">
+                                        Amount (SBD) *
+                                    </FieldLabel>
+                                    <div className="relative">
+                                        <DollarSign className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                                        <Input
+                                            id="edit-amount"
+                                            type="number"
+                                            step="0.01"
+                                            min="0"
+                                            value={editForm.data.amount}
+                                            onChange={(e) =>
+                                                editForm.setData(
+                                                    'amount',
+                                                    e.target.value,
+                                                )
+                                            }
+                                            className="pl-9"
+                                            placeholder="0.00"
+                                        />
+                                    </div>
+                                    <FieldError>
                                         {editForm.errors.amount}
-                                    </p>
-                                )}
-                            </div>
+                                    </FieldError>
+                                </Field>
+                            </FieldGroup>
                         </div>
-                        <DialogFooter>
+                        <DialogFooter className="flex-shrink-0 border-t pt-4">
                             <Button
                                 variant="outline"
                                 onClick={() => setEditOpen(false)}
@@ -1401,7 +1609,17 @@ export default function ExpensesIndex({
                                 onClick={handleUpdate}
                                 disabled={editForm.processing}
                             >
-                                Update
+                                {editForm.processing ? (
+                                    <>
+                                        <PencilIcon className="mr-2 h-4 w-4 animate-spin" />
+                                        Updating...
+                                    </>
+                                ) : (
+                                    <>
+                                        <PencilIcon className="mr-2 h-4 w-4" />
+                                        Update Expense
+                                    </>
+                                )}
                             </Button>
                         </DialogFooter>
                     </DialogContent>
@@ -1409,57 +1627,101 @@ export default function ExpensesIndex({
 
                 {/* Show Modal */}
                 <Dialog open={showOpen} onOpenChange={setShowOpen}>
-                    <DialogContent>
+                    <DialogContent className="sm:max-w-[500px]">
                         <DialogHeader>
                             <DialogTitle>Expense Details</DialogTitle>
+                            <DialogDescription>
+                                View complete expense information.
+                            </DialogDescription>
                         </DialogHeader>
                         {selectedExpense && (
-                            <div className="space-y-4">
+                            <ItemGroup>
                                 {selectedExpense.purchase && (
-                                    <div>
-                                        <Label>Purchase</Label>
-                                        <p className="mt-1">
-                                            {new Date(
-                                                selectedExpense.purchase.purchase_date,
-                                            ).toLocaleDateString()}{' '}
-                                            -{' '}
-                                            {
-                                                selectedExpense.purchase
-                                                    .supplier.name
-                                            }
-                                        </p>
-                                    </div>
+                                    <Item>
+                                        <ItemMedia variant="icon">
+                                            <ShoppingCart className="h-5 w-5" />
+                                        </ItemMedia>
+                                        <ItemContent>
+                                            <ItemTitle>Purchase</ItemTitle>
+                                            <ItemDescription>
+                                                {new Date(
+                                                    selectedExpense.purchase.purchase_date,
+                                                ).toLocaleDateString('en-US', {
+                                                    year: 'numeric',
+                                                    month: 'long',
+                                                    day: 'numeric',
+                                                })}{' '}
+                                                -{' '}
+                                                {
+                                                    selectedExpense.purchase
+                                                        .supplier.name
+                                                }
+                                            </ItemDescription>
+                                        </ItemContent>
+                                    </Item>
                                 )}
-                                <div>
-                                    <Label>Date</Label>
-                                    <p className="mt-1">
-                                        {new Date(
-                                            selectedExpense.expense_date,
-                                        ).toLocaleDateString()}
-                                    </p>
-                                </div>
-                                <div>
-                                    <Label>Type</Label>
-                                    <p className="mt-1 capitalize">
-                                        {selectedExpense.type}
-                                    </p>
-                                </div>
-                                <div>
-                                    <Label>Description</Label>
-                                    <p className="mt-1">
-                                        {selectedExpense.description}
-                                    </p>
-                                </div>
-                                <div>
-                                    <Label>Amount</Label>
-                                    <p className="mt-1 font-semibold">
-                                        SBD{' '}
-                                        {Number(selectedExpense.amount).toFixed(
-                                            2,
+                                <Item>
+                                    <ItemMedia variant="icon">
+                                        <Calendar className="h-5 w-5" />
+                                    </ItemMedia>
+                                    <ItemContent>
+                                        <ItemTitle>Expense Date</ItemTitle>
+                                        <ItemDescription>
+                                            {new Date(
+                                                selectedExpense.expense_date,
+                                            ).toLocaleDateString('en-US', {
+                                                year: 'numeric',
+                                                month: 'long',
+                                                day: 'numeric',
+                                            })}
+                                        </ItemDescription>
+                                    </ItemContent>
+                                </Item>
+                                <Item>
+                                    <ItemMedia variant="icon">
+                                        {selectedExpense.type === 'shipping' ? (
+                                            <Truck className="h-5 w-5" />
+                                        ) : selectedExpense.type === 'ice' ? (
+                                            <Package className="h-5 w-5" />
+                                        ) : (
+                                            <Receipt className="h-5 w-5" />
                                         )}
-                                    </p>
-                                </div>
-                            </div>
+                                    </ItemMedia>
+                                    <ItemContent>
+                                        <ItemTitle>Type</ItemTitle>
+                                        <ItemDescription className="capitalize">
+                                            {selectedExpense.type}
+                                        </ItemDescription>
+                                    </ItemContent>
+                                </Item>
+                                <Item>
+                                    <ItemMedia variant="icon">
+                                        <FileText className="h-5 w-5" />
+                                    </ItemMedia>
+                                    <ItemContent>
+                                        <ItemTitle>Description</ItemTitle>
+                                        <ItemDescription>
+                                            {selectedExpense.description}
+                                        </ItemDescription>
+                                    </ItemContent>
+                                </Item>
+                                <Item>
+                                    <ItemMedia variant="icon">
+                                        <DollarSign className="h-5 w-5" />
+                                    </ItemMedia>
+                                    <ItemContent>
+                                        <ItemTitle>Amount</ItemTitle>
+                                        <ItemDescription>
+                                            <span className="font-semibold">
+                                                SBD{' '}
+                                                {Number(
+                                                    selectedExpense.amount,
+                                                ).toFixed(2)}
+                                            </span>
+                                        </ItemDescription>
+                                    </ItemContent>
+                                </Item>
+                            </ItemGroup>
                         )}
                         <DialogFooter>
                             <Button

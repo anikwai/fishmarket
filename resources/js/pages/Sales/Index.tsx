@@ -27,7 +27,22 @@ import {
     EmptyMedia,
     EmptyTitle,
 } from '@/components/ui/empty';
+import {
+    Field,
+    FieldDescription,
+    FieldError,
+    FieldGroup,
+    FieldLabel,
+} from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
+import {
+    Item,
+    ItemContent,
+    ItemDescription,
+    ItemGroup,
+    ItemMedia,
+    ItemTitle,
+} from '@/components/ui/item';
 import { Label } from '@/components/ui/label';
 import {
     Select,
@@ -60,6 +75,7 @@ import {
 import {
     AlertCircle,
     ArrowUpDown,
+    Calendar,
     ChevronDown,
     ChevronLeft,
     ChevronRight,
@@ -67,16 +83,23 @@ import {
     ChevronsRight,
     CircleCheck,
     Columns,
+    CreditCard,
     DollarSign,
     DownloadIcon,
     EyeIcon,
+    FileText,
     InfoIcon,
     MailIcon,
     MoreHorizontal,
+    Package,
     PencilIcon,
+    Percent,
     PlusIcon,
     Search,
     TrashIcon,
+    TrendingUp,
+    Truck,
+    User,
 } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
@@ -1072,253 +1095,334 @@ export default function SalesIndex({
 
                 {/* Create Modal */}
                 <Dialog open={createOpen} onOpenChange={setCreateOpen}>
-                    <DialogContent className="max-w-2xl">
-                        <DialogHeader>
+                    <DialogContent className="flex max-h-[90vh] max-w-2xl flex-col gap-0">
+                        <DialogHeader className="flex-shrink-0 pb-4">
                             <DialogTitle>Create Sale</DialogTitle>
                             <DialogDescription>
                                 Record a new sale. Available stock:{' '}
-                                {currentStock.toFixed(2)} kg
+                                <span className="font-semibold">
+                                    {currentStock.toFixed(2)} kg
+                                </span>
+                                . All fields marked with * are required.
                             </DialogDescription>
                         </DialogHeader>
-                        <div className="space-y-4">
-                            <div>
-                                <Label htmlFor="customer_id">Customer *</Label>
-                                <Select
-                                    value={createForm.data.customer_id}
-                                    onValueChange={(value) =>
-                                        createForm.setData('customer_id', value)
+                        <div className="flex-1 overflow-y-auto px-1">
+                            <FieldGroup className="gap-6">
+                                <Field
+                                    data-invalid={
+                                        !!createForm.errors.customer_id
                                     }
                                 >
-                                    <SelectTrigger className="mt-1">
-                                        <SelectValue placeholder="Select customer" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {customers.map((customer) => (
-                                            <SelectItem
-                                                key={customer.id}
-                                                value={customer.id.toString()}
+                                    <FieldLabel htmlFor="customer_id">
+                                        Customer *
+                                    </FieldLabel>
+                                    <div className="relative">
+                                        <User className="absolute top-1/2 left-3 z-10 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                                        <Select
+                                            value={createForm.data.customer_id}
+                                            onValueChange={(value) =>
+                                                createForm.setData(
+                                                    'customer_id',
+                                                    value,
+                                                )
+                                            }
+                                        >
+                                            <SelectTrigger
+                                                id="customer_id"
+                                                className="pl-9"
                                             >
-                                                {customer.name}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                                {createForm.errors.customer_id && (
-                                    <p className="mt-1 text-sm text-destructive">
+                                                <SelectValue placeholder="Select customer" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                {customers.map((customer) => (
+                                                    <SelectItem
+                                                        key={customer.id}
+                                                        value={customer.id.toString()}
+                                                    >
+                                                        {customer.name}
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                    <FieldError>
                                         {createForm.errors.customer_id}
-                                    </p>
-                                )}
-                            </div>
-                            <div>
-                                <Label htmlFor="sale_date">Sale Date *</Label>
-                                <DatePicker
-                                    id="sale_date"
-                                    value={createForm.data.sale_date}
-                                    onChange={(value) =>
-                                        createForm.setData('sale_date', value)
-                                    }
-                                    placeholder="Select sale date"
-                                    className="mt-1"
-                                />
-                                {createForm.errors.sale_date && (
-                                    <p className="mt-1 text-sm text-destructive">
+                                    </FieldError>
+                                </Field>
+                                <Field
+                                    data-invalid={!!createForm.errors.sale_date}
+                                >
+                                    <FieldLabel htmlFor="sale_date">
+                                        Sale Date *
+                                    </FieldLabel>
+                                    <div className="relative">
+                                        <Calendar className="absolute top-1/2 left-3 z-10 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                                        <DatePicker
+                                            id="sale_date"
+                                            value={createForm.data.sale_date}
+                                            onChange={(value) =>
+                                                createForm.setData(
+                                                    'sale_date',
+                                                    value,
+                                                )
+                                            }
+                                            placeholder="Select sale date"
+                                            className="pl-9"
+                                        />
+                                    </div>
+                                    <FieldError>
                                         {createForm.errors.sale_date}
-                                    </p>
-                                )}
-                            </div>
-                            <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                    <Label htmlFor="quantity_kg">
-                                        Quantity (kg) *
-                                    </Label>
-                                    <Input
-                                        id="quantity_kg"
-                                        type="number"
-                                        step="0.01"
-                                        value={createForm.data.quantity_kg}
-                                        onChange={(e) =>
-                                            createForm.setData(
-                                                'quantity_kg',
-                                                e.target.value,
-                                            )
+                                    </FieldError>
+                                </Field>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <Field
+                                        data-invalid={
+                                            !!createForm.errors.quantity_kg
                                         }
-                                        className="mt-1"
-                                    />
-                                    {createForm.errors.quantity_kg && (
-                                        <p className="mt-1 text-sm text-destructive">
-                                            {createForm.errors.quantity_kg}
-                                        </p>
-                                    )}
-                                </div>
-                                <div>
-                                    <Label htmlFor="price_per_kg">
-                                        Price per kg (SBD) *
-                                    </Label>
-                                    <Input
-                                        id="price_per_kg"
-                                        type="number"
-                                        step="0.01"
-                                        value={createForm.data.price_per_kg}
-                                        onChange={(e) =>
-                                            createForm.setData(
-                                                'price_per_kg',
-                                                e.target.value,
-                                            )
-                                        }
-                                        className="mt-1"
-                                    />
-                                    {createForm.errors.price_per_kg && (
-                                        <p className="mt-1 text-sm text-destructive">
-                                            {createForm.errors.price_per_kg}
-                                        </p>
-                                    )}
-                                </div>
-                            </div>
-                            <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                    <Label htmlFor="discount_percentage">
-                                        Discount (%)
-                                    </Label>
-                                    <Input
-                                        id="discount_percentage"
-                                        type="number"
-                                        step="0.01"
-                                        min="0"
-                                        max="100"
-                                        value={
-                                            createForm.data.discount_percentage
-                                        }
-                                        onChange={(e) =>
-                                            createForm.setData(
-                                                'discount_percentage',
-                                                e.target.value,
-                                            )
-                                        }
-                                        className="mt-1"
-                                    />
-                                </div>
-                                <div>
-                                    <Label htmlFor="delivery_fee">
-                                        Delivery Fee (SBD)
-                                    </Label>
-                                    <Input
-                                        id="delivery_fee"
-                                        type="number"
-                                        step="0.01"
-                                        min="0"
-                                        value={createForm.data.delivery_fee}
-                                        onChange={(e) =>
-                                            createForm.setData(
-                                                'delivery_fee',
-                                                e.target.value,
-                                            )
-                                        }
-                                        className="mt-1"
-                                    />
-                                </div>
-                            </div>
-                            <div className="space-y-2">
-                                <div className="flex items-center space-x-2">
-                                    <Checkbox
-                                        id="is_credit"
-                                        checked={createForm.data.is_credit}
-                                        onCheckedChange={(checked) =>
-                                            createForm.setData(
-                                                'is_credit',
-                                                checked === true,
-                                            )
-                                        }
-                                    />
-                                    <Label
-                                        htmlFor="is_credit"
-                                        className="cursor-pointer"
                                     >
-                                        Credit Sale
-                                    </Label>
-                                </div>
-                                <div className="flex items-center space-x-2">
-                                    <Checkbox
-                                        id="is_delivery"
-                                        checked={createForm.data.is_delivery}
-                                        onCheckedChange={(checked) =>
-                                            createForm.setData(
-                                                'is_delivery',
-                                                checked === true,
-                                            )
-                                        }
-                                    />
-                                    <Label
-                                        htmlFor="is_delivery"
-                                        className="cursor-pointer"
-                                    >
-                                        Requires Delivery
-                                    </Label>
-                                </div>
-                            </div>
-                            <Card>
-                                <CardContent className="pt-4">
-                                    <div className="space-y-2 text-sm">
-                                        <div className="flex justify-between">
-                                            <span>Subtotal:</span>
-                                            <span>
-                                                SBD{' '}
-                                                {calculateSubtotal(
-                                                    createForm.data.quantity_kg,
-                                                    createForm.data
-                                                        .price_per_kg,
-                                                    createForm.data
-                                                        .discount_percentage,
-                                                ).toFixed(2)}
-                                            </span>
+                                        <FieldLabel htmlFor="quantity_kg">
+                                            Quantity (kg) *
+                                        </FieldLabel>
+                                        <div className="relative">
+                                            <Package className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                                            <Input
+                                                id="quantity_kg"
+                                                type="number"
+                                                step="0.01"
+                                                value={
+                                                    createForm.data.quantity_kg
+                                                }
+                                                onChange={(e) =>
+                                                    createForm.setData(
+                                                        'quantity_kg',
+                                                        e.target.value,
+                                                    )
+                                                }
+                                                className="pl-9"
+                                                placeholder="0.00"
+                                                autoFocus
+                                            />
                                         </div>
-                                        {parseFloat(
-                                            createForm.data.delivery_fee,
-                                        ) > 0 && (
+                                        <FieldError>
+                                            {createForm.errors.quantity_kg}
+                                        </FieldError>
+                                    </Field>
+                                    <Field
+                                        data-invalid={
+                                            !!createForm.errors.price_per_kg
+                                        }
+                                    >
+                                        <FieldLabel htmlFor="price_per_kg">
+                                            Price per kg (SBD) *
+                                        </FieldLabel>
+                                        <div className="relative">
+                                            <DollarSign className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                                            <Input
+                                                id="price_per_kg"
+                                                type="number"
+                                                step="0.01"
+                                                value={
+                                                    createForm.data.price_per_kg
+                                                }
+                                                onChange={(e) =>
+                                                    createForm.setData(
+                                                        'price_per_kg',
+                                                        e.target.value,
+                                                    )
+                                                }
+                                                className="pl-9"
+                                                placeholder="0.00"
+                                            />
+                                        </div>
+                                        <FieldError>
+                                            {createForm.errors.price_per_kg}
+                                        </FieldError>
+                                    </Field>
+                                </div>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <Field>
+                                        <FieldLabel htmlFor="discount_percentage">
+                                            Discount (%)
+                                        </FieldLabel>
+                                        <div className="relative">
+                                            <Percent className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                                            <Input
+                                                id="discount_percentage"
+                                                type="number"
+                                                step="0.01"
+                                                min="0"
+                                                max="100"
+                                                value={
+                                                    createForm.data
+                                                        .discount_percentage
+                                                }
+                                                onChange={(e) =>
+                                                    createForm.setData(
+                                                        'discount_percentage',
+                                                        e.target.value,
+                                                    )
+                                                }
+                                                className="pl-9"
+                                                placeholder="0.00"
+                                            />
+                                        </div>
+                                    </Field>
+                                    <Field>
+                                        <FieldLabel htmlFor="delivery_fee">
+                                            Delivery Fee (SBD)
+                                        </FieldLabel>
+                                        <div className="relative">
+                                            <Truck className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                                            <Input
+                                                id="delivery_fee"
+                                                type="number"
+                                                step="0.01"
+                                                min="0"
+                                                value={
+                                                    createForm.data.delivery_fee
+                                                }
+                                                onChange={(e) =>
+                                                    createForm.setData(
+                                                        'delivery_fee',
+                                                        e.target.value,
+                                                    )
+                                                }
+                                                className="pl-9"
+                                                placeholder="0.00"
+                                            />
+                                        </div>
+                                    </Field>
+                                </div>
+                                <Field>
+                                    <FieldLabel>
+                                        Payment & Delivery Options
+                                    </FieldLabel>
+                                    <div className="space-y-3 rounded-md border p-4">
+                                        <div className="flex items-center space-x-2">
+                                            <Checkbox
+                                                id="is_credit"
+                                                checked={
+                                                    createForm.data.is_credit
+                                                }
+                                                onCheckedChange={(checked) =>
+                                                    createForm.setData(
+                                                        'is_credit',
+                                                        checked === true,
+                                                    )
+                                                }
+                                            />
+                                            <Label
+                                                htmlFor="is_credit"
+                                                className="flex cursor-pointer items-center gap-2"
+                                            >
+                                                <CreditCard className="h-4 w-4" />
+                                                Credit Sale
+                                            </Label>
+                                        </div>
+                                        <div className="flex items-center space-x-2">
+                                            <Checkbox
+                                                id="is_delivery"
+                                                checked={
+                                                    createForm.data.is_delivery
+                                                }
+                                                onCheckedChange={(checked) =>
+                                                    createForm.setData(
+                                                        'is_delivery',
+                                                        checked === true,
+                                                    )
+                                                }
+                                            />
+                                            <Label
+                                                htmlFor="is_delivery"
+                                                className="flex cursor-pointer items-center gap-2"
+                                            >
+                                                <Truck className="h-4 w-4" />
+                                                Requires Delivery
+                                            </Label>
+                                        </div>
+                                    </div>
+                                </Field>
+                                <Card>
+                                    <CardHeader>
+                                        <CardTitle className="text-sm font-medium">
+                                            Order Summary
+                                        </CardTitle>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <div className="space-y-2 text-sm">
                                             <div className="flex justify-between">
-                                                <span>Delivery Fee:</span>
+                                                <span>Subtotal:</span>
                                                 <span>
                                                     SBD{' '}
-                                                    {parseFloat(
+                                                    {calculateSubtotal(
+                                                        createForm.data
+                                                            .quantity_kg,
+                                                        createForm.data
+                                                            .price_per_kg,
+                                                        createForm.data
+                                                            .discount_percentage,
+                                                    ).toFixed(2)}
+                                                </span>
+                                            </div>
+                                            {parseFloat(
+                                                createForm.data.delivery_fee,
+                                            ) > 0 && (
+                                                <div className="flex justify-between">
+                                                    <span>Delivery Fee:</span>
+                                                    <span>
+                                                        SBD{' '}
+                                                        {parseFloat(
+                                                            createForm.data
+                                                                .delivery_fee,
+                                                        ).toFixed(2)}
+                                                    </span>
+                                                </div>
+                                            )}
+                                            <div className="flex justify-between border-t pt-2 font-bold">
+                                                <span>Total:</span>
+                                                <span>
+                                                    SBD{' '}
+                                                    {calculateTotal(
+                                                        createForm.data
+                                                            .quantity_kg,
+                                                        createForm.data
+                                                            .price_per_kg,
+                                                        createForm.data
+                                                            .discount_percentage,
                                                         createForm.data
                                                             .delivery_fee,
                                                     ).toFixed(2)}
                                                 </span>
                                             </div>
-                                        )}
-                                        <div className="flex justify-between font-bold">
-                                            <span>Total:</span>
-                                            <span>
-                                                SBD{' '}
-                                                {calculateTotal(
-                                                    createForm.data.quantity_kg,
-                                                    createForm.data
-                                                        .price_per_kg,
-                                                    createForm.data
-                                                        .discount_percentage,
-                                                    createForm.data
-                                                        .delivery_fee,
-                                                ).toFixed(2)}
-                                            </span>
                                         </div>
+                                    </CardContent>
+                                </Card>
+                                <Field>
+                                    <FieldLabel htmlFor="notes">
+                                        Notes
+                                    </FieldLabel>
+                                    <div className="relative">
+                                        <FileText className="absolute top-3 left-3 h-4 w-4 text-muted-foreground" />
+                                        <textarea
+                                            id="notes"
+                                            value={createForm.data.notes}
+                                            onChange={(e) =>
+                                                createForm.setData(
+                                                    'notes',
+                                                    e.target.value,
+                                                )
+                                            }
+                                            className="flex min-h-[80px] w-full rounded-md border border-input bg-transparent px-3 py-2 pl-9 text-sm"
+                                            placeholder="Additional notes about this sale..."
+                                        />
                                     </div>
-                                </CardContent>
-                            </Card>
-                            <div>
-                                <Label htmlFor="notes">Notes</Label>
-                                <textarea
-                                    id="notes"
-                                    value={createForm.data.notes}
-                                    onChange={(e) =>
-                                        createForm.setData(
-                                            'notes',
-                                            e.target.value,
-                                        )
-                                    }
-                                    className="mt-1 flex min-h-[80px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm"
-                                />
-                            </div>
+                                    <FieldDescription>
+                                        Optional notes for internal reference.
+                                    </FieldDescription>
+                                </Field>
+                            </FieldGroup>
                         </div>
-                        <DialogFooter>
+                        <DialogFooter className="flex-shrink-0 border-t pt-4">
                             <Button
                                 variant="outline"
                                 onClick={() => setCreateOpen(false)}
@@ -1329,7 +1433,17 @@ export default function SalesIndex({
                                 onClick={handleCreate}
                                 disabled={createForm.processing}
                             >
-                                Create
+                                {createForm.processing ? (
+                                    <>
+                                        <PlusIcon className="mr-2 h-4 w-4 animate-spin" />
+                                        Creating...
+                                    </>
+                                ) : (
+                                    <>
+                                        <TrendingUp className="mr-2 h-4 w-4" />
+                                        Create Sale
+                                    </>
+                                )}
                             </Button>
                         </DialogFooter>
                     </DialogContent>
@@ -1337,253 +1451,328 @@ export default function SalesIndex({
 
                 {/* Edit Modal - Similar structure but with editForm */}
                 <Dialog open={editOpen} onOpenChange={setEditOpen}>
-                    <DialogContent className="max-w-2xl">
-                        <DialogHeader>
+                    <DialogContent className="flex max-h-[90vh] max-w-2xl flex-col gap-0">
+                        <DialogHeader className="flex-shrink-0 pb-4">
                             <DialogTitle>Edit Sale</DialogTitle>
                             <DialogDescription>
-                                Update sale information.
+                                Update sale information. All fields marked with
+                                * are required.
                             </DialogDescription>
                         </DialogHeader>
-                        <div className="space-y-4">
-                            <div>
-                                <Label htmlFor="edit-customer_id">
-                                    Customer *
-                                </Label>
-                                <Select
-                                    value={editForm.data.customer_id}
-                                    onValueChange={(value) =>
-                                        editForm.setData('customer_id', value)
-                                    }
+                        <div className="flex-1 overflow-y-auto px-1">
+                            <FieldGroup className="gap-6">
+                                <Field
+                                    data-invalid={!!editForm.errors.customer_id}
                                 >
-                                    <SelectTrigger className="mt-1">
-                                        <SelectValue placeholder="Select customer" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {customers.map((customer) => (
-                                            <SelectItem
-                                                key={customer.id}
-                                                value={customer.id.toString()}
+                                    <FieldLabel htmlFor="edit-customer_id">
+                                        Customer *
+                                    </FieldLabel>
+                                    <div className="relative">
+                                        <User className="absolute top-1/2 left-3 z-10 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                                        <Select
+                                            value={editForm.data.customer_id}
+                                            onValueChange={(value) =>
+                                                editForm.setData(
+                                                    'customer_id',
+                                                    value,
+                                                )
+                                            }
+                                        >
+                                            <SelectTrigger
+                                                id="edit-customer_id"
+                                                className="pl-9"
                                             >
-                                                {customer.name}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                                {editForm.errors.customer_id && (
-                                    <p className="mt-1 text-sm text-destructive">
+                                                <SelectValue placeholder="Select customer" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                {customers.map((customer) => (
+                                                    <SelectItem
+                                                        key={customer.id}
+                                                        value={customer.id.toString()}
+                                                    >
+                                                        {customer.name}
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                    <FieldError>
                                         {editForm.errors.customer_id}
-                                    </p>
-                                )}
-                            </div>
-                            <div>
-                                <Label htmlFor="edit-sale_date">
-                                    Sale Date *
-                                </Label>
-                                <DatePicker
-                                    id="edit-sale_date"
-                                    value={editForm.data.sale_date}
-                                    onChange={(value) =>
-                                        editForm.setData('sale_date', value)
-                                    }
-                                    placeholder="Select sale date"
-                                    className="mt-1"
-                                />
-                                {editForm.errors.sale_date && (
-                                    <p className="mt-1 text-sm text-destructive">
+                                    </FieldError>
+                                </Field>
+                                <Field
+                                    data-invalid={!!editForm.errors.sale_date}
+                                >
+                                    <FieldLabel htmlFor="edit-sale_date">
+                                        Sale Date *
+                                    </FieldLabel>
+                                    <div className="relative">
+                                        <Calendar className="absolute top-1/2 left-3 z-10 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                                        <DatePicker
+                                            id="edit-sale_date"
+                                            value={editForm.data.sale_date}
+                                            onChange={(value) =>
+                                                editForm.setData(
+                                                    'sale_date',
+                                                    value,
+                                                )
+                                            }
+                                            placeholder="Select sale date"
+                                            className="pl-9"
+                                        />
+                                    </div>
+                                    <FieldError>
                                         {editForm.errors.sale_date}
-                                    </p>
-                                )}
-                            </div>
-                            <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                    <Label htmlFor="edit-quantity_kg">
-                                        Quantity (kg) *
-                                    </Label>
-                                    <Input
-                                        id="edit-quantity_kg"
-                                        type="number"
-                                        step="0.01"
-                                        value={editForm.data.quantity_kg}
-                                        onChange={(e) =>
-                                            editForm.setData(
-                                                'quantity_kg',
-                                                e.target.value,
-                                            )
+                                    </FieldError>
+                                </Field>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <Field
+                                        data-invalid={
+                                            !!editForm.errors.quantity_kg
                                         }
-                                        className="mt-1"
-                                    />
-                                    {editForm.errors.quantity_kg && (
-                                        <p className="mt-1 text-sm text-destructive">
-                                            {editForm.errors.quantity_kg}
-                                        </p>
-                                    )}
-                                </div>
-                                <div>
-                                    <Label htmlFor="edit-price_per_kg">
-                                        Price per kg (SBD) *
-                                    </Label>
-                                    <Input
-                                        id="edit-price_per_kg"
-                                        type="number"
-                                        step="0.01"
-                                        value={editForm.data.price_per_kg}
-                                        onChange={(e) =>
-                                            editForm.setData(
-                                                'price_per_kg',
-                                                e.target.value,
-                                            )
-                                        }
-                                        className="mt-1"
-                                    />
-                                    {editForm.errors.price_per_kg && (
-                                        <p className="mt-1 text-sm text-destructive">
-                                            {editForm.errors.price_per_kg}
-                                        </p>
-                                    )}
-                                </div>
-                            </div>
-                            <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                    <Label htmlFor="edit-discount_percentage">
-                                        Discount (%)
-                                    </Label>
-                                    <Input
-                                        id="edit-discount_percentage"
-                                        type="number"
-                                        step="0.01"
-                                        min="0"
-                                        max="100"
-                                        value={
-                                            editForm.data.discount_percentage
-                                        }
-                                        onChange={(e) =>
-                                            editForm.setData(
-                                                'discount_percentage',
-                                                e.target.value,
-                                            )
-                                        }
-                                        className="mt-1"
-                                    />
-                                </div>
-                                <div>
-                                    <Label htmlFor="edit-delivery_fee">
-                                        Delivery Fee (SBD)
-                                    </Label>
-                                    <Input
-                                        id="edit-delivery_fee"
-                                        type="number"
-                                        step="0.01"
-                                        min="0"
-                                        value={editForm.data.delivery_fee}
-                                        onChange={(e) =>
-                                            editForm.setData(
-                                                'delivery_fee',
-                                                e.target.value,
-                                            )
-                                        }
-                                        className="mt-1"
-                                    />
-                                </div>
-                            </div>
-                            <div className="space-y-2">
-                                <div className="flex items-center space-x-2">
-                                    <Checkbox
-                                        id="edit-is_credit"
-                                        checked={editForm.data.is_credit}
-                                        onCheckedChange={(checked) =>
-                                            editForm.setData(
-                                                'is_credit',
-                                                checked === true,
-                                            )
-                                        }
-                                    />
-                                    <Label
-                                        htmlFor="edit-is_credit"
-                                        className="cursor-pointer"
                                     >
-                                        Credit Sale
-                                    </Label>
-                                </div>
-                                <div className="flex items-center space-x-2">
-                                    <Checkbox
-                                        id="edit-is_delivery"
-                                        checked={editForm.data.is_delivery}
-                                        onCheckedChange={(checked) =>
-                                            editForm.setData(
-                                                'is_delivery',
-                                                checked === true,
-                                            )
-                                        }
-                                    />
-                                    <Label
-                                        htmlFor="edit-is_delivery"
-                                        className="cursor-pointer"
-                                    >
-                                        Requires Delivery
-                                    </Label>
-                                </div>
-                            </div>
-                            <Card>
-                                <CardContent className="pt-4">
-                                    <div className="space-y-2 text-sm">
-                                        <div className="flex justify-between">
-                                            <span>Subtotal:</span>
-                                            <span>
-                                                SBD{' '}
-                                                {calculateSubtotal(
-                                                    editForm.data.quantity_kg,
-                                                    editForm.data.price_per_kg,
-                                                    editForm.data
-                                                        .discount_percentage,
-                                                ).toFixed(2)}
-                                            </span>
+                                        <FieldLabel htmlFor="edit-quantity_kg">
+                                            Quantity (kg) *
+                                        </FieldLabel>
+                                        <div className="relative">
+                                            <Package className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                                            <Input
+                                                id="edit-quantity_kg"
+                                                type="number"
+                                                step="0.01"
+                                                value={
+                                                    editForm.data.quantity_kg
+                                                }
+                                                onChange={(e) =>
+                                                    editForm.setData(
+                                                        'quantity_kg',
+                                                        e.target.value,
+                                                    )
+                                                }
+                                                className="pl-9"
+                                                placeholder="0.00"
+                                            />
                                         </div>
-                                        {parseFloat(
-                                            editForm.data.delivery_fee,
-                                        ) > 0 && (
+                                        <FieldError>
+                                            {editForm.errors.quantity_kg}
+                                        </FieldError>
+                                    </Field>
+                                    <Field
+                                        data-invalid={
+                                            !!editForm.errors.price_per_kg
+                                        }
+                                    >
+                                        <FieldLabel htmlFor="edit-price_per_kg">
+                                            Price per kg (SBD) *
+                                        </FieldLabel>
+                                        <div className="relative">
+                                            <DollarSign className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                                            <Input
+                                                id="edit-price_per_kg"
+                                                type="number"
+                                                step="0.01"
+                                                value={
+                                                    editForm.data.price_per_kg
+                                                }
+                                                onChange={(e) =>
+                                                    editForm.setData(
+                                                        'price_per_kg',
+                                                        e.target.value,
+                                                    )
+                                                }
+                                                className="pl-9"
+                                                placeholder="0.00"
+                                            />
+                                        </div>
+                                        <FieldError>
+                                            {editForm.errors.price_per_kg}
+                                        </FieldError>
+                                    </Field>
+                                </div>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <Field>
+                                        <FieldLabel htmlFor="edit-discount_percentage">
+                                            Discount (%)
+                                        </FieldLabel>
+                                        <div className="relative">
+                                            <Percent className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                                            <Input
+                                                id="edit-discount_percentage"
+                                                type="number"
+                                                step="0.01"
+                                                min="0"
+                                                max="100"
+                                                value={
+                                                    editForm.data
+                                                        .discount_percentage
+                                                }
+                                                onChange={(e) =>
+                                                    editForm.setData(
+                                                        'discount_percentage',
+                                                        e.target.value,
+                                                    )
+                                                }
+                                                className="pl-9"
+                                                placeholder="0.00"
+                                            />
+                                        </div>
+                                    </Field>
+                                    <Field>
+                                        <FieldLabel htmlFor="edit-delivery_fee">
+                                            Delivery Fee (SBD)
+                                        </FieldLabel>
+                                        <div className="relative">
+                                            <Truck className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                                            <Input
+                                                id="edit-delivery_fee"
+                                                type="number"
+                                                step="0.01"
+                                                min="0"
+                                                value={
+                                                    editForm.data.delivery_fee
+                                                }
+                                                onChange={(e) =>
+                                                    editForm.setData(
+                                                        'delivery_fee',
+                                                        e.target.value,
+                                                    )
+                                                }
+                                                className="pl-9"
+                                                placeholder="0.00"
+                                            />
+                                        </div>
+                                    </Field>
+                                </div>
+                                <Field>
+                                    <FieldLabel>
+                                        Payment & Delivery Options
+                                    </FieldLabel>
+                                    <div className="space-y-3 rounded-md border p-4">
+                                        <div className="flex items-center space-x-2">
+                                            <Checkbox
+                                                id="edit-is_credit"
+                                                checked={
+                                                    editForm.data.is_credit
+                                                }
+                                                onCheckedChange={(checked) =>
+                                                    editForm.setData(
+                                                        'is_credit',
+                                                        checked === true,
+                                                    )
+                                                }
+                                            />
+                                            <Label
+                                                htmlFor="edit-is_credit"
+                                                className="flex cursor-pointer items-center gap-2"
+                                            >
+                                                <CreditCard className="h-4 w-4" />
+                                                Credit Sale
+                                            </Label>
+                                        </div>
+                                        <div className="flex items-center space-x-2">
+                                            <Checkbox
+                                                id="edit-is_delivery"
+                                                checked={
+                                                    editForm.data.is_delivery
+                                                }
+                                                onCheckedChange={(checked) =>
+                                                    editForm.setData(
+                                                        'is_delivery',
+                                                        checked === true,
+                                                    )
+                                                }
+                                            />
+                                            <Label
+                                                htmlFor="edit-is_delivery"
+                                                className="flex cursor-pointer items-center gap-2"
+                                            >
+                                                <Truck className="h-4 w-4" />
+                                                Requires Delivery
+                                            </Label>
+                                        </div>
+                                    </div>
+                                </Field>
+                                <Card>
+                                    <CardHeader>
+                                        <CardTitle className="text-sm font-medium">
+                                            Order Summary
+                                        </CardTitle>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <div className="space-y-2 text-sm">
                                             <div className="flex justify-between">
-                                                <span>Delivery Fee:</span>
+                                                <span>Subtotal:</span>
                                                 <span>
                                                     SBD{' '}
-                                                    {parseFloat(
+                                                    {calculateSubtotal(
+                                                        editForm.data
+                                                            .quantity_kg,
+                                                        editForm.data
+                                                            .price_per_kg,
+                                                        editForm.data
+                                                            .discount_percentage,
+                                                    ).toFixed(2)}
+                                                </span>
+                                            </div>
+                                            {parseFloat(
+                                                editForm.data.delivery_fee,
+                                            ) > 0 && (
+                                                <div className="flex justify-between">
+                                                    <span>Delivery Fee:</span>
+                                                    <span>
+                                                        SBD{' '}
+                                                        {parseFloat(
+                                                            editForm.data
+                                                                .delivery_fee,
+                                                        ).toFixed(2)}
+                                                    </span>
+                                                </div>
+                                            )}
+                                            <div className="flex justify-between border-t pt-2 font-bold">
+                                                <span>Total:</span>
+                                                <span>
+                                                    SBD{' '}
+                                                    {calculateTotal(
+                                                        editForm.data
+                                                            .quantity_kg,
+                                                        editForm.data
+                                                            .price_per_kg,
+                                                        editForm.data
+                                                            .discount_percentage,
                                                         editForm.data
                                                             .delivery_fee,
                                                     ).toFixed(2)}
                                                 </span>
                                             </div>
-                                        )}
-                                        <div className="flex justify-between font-bold">
-                                            <span>Total:</span>
-                                            <span>
-                                                SBD{' '}
-                                                {calculateTotal(
-                                                    editForm.data.quantity_kg,
-                                                    editForm.data.price_per_kg,
-                                                    editForm.data
-                                                        .discount_percentage,
-                                                    editForm.data.delivery_fee,
-                                                ).toFixed(2)}
-                                            </span>
                                         </div>
+                                    </CardContent>
+                                </Card>
+                                <Field>
+                                    <FieldLabel htmlFor="edit-notes">
+                                        Notes
+                                    </FieldLabel>
+                                    <div className="relative">
+                                        <FileText className="absolute top-3 left-3 h-4 w-4 text-muted-foreground" />
+                                        <textarea
+                                            id="edit-notes"
+                                            value={editForm.data.notes}
+                                            onChange={(e) =>
+                                                editForm.setData(
+                                                    'notes',
+                                                    e.target.value,
+                                                )
+                                            }
+                                            className="flex min-h-[80px] w-full rounded-md border border-input bg-transparent px-3 py-2 pl-9 text-sm"
+                                            placeholder="Additional notes about this sale..."
+                                        />
                                     </div>
-                                </CardContent>
-                            </Card>
-                            <div>
-                                <Label htmlFor="edit-notes">Notes</Label>
-                                <textarea
-                                    id="edit-notes"
-                                    value={editForm.data.notes}
-                                    onChange={(e) =>
-                                        editForm.setData(
-                                            'notes',
-                                            e.target.value,
-                                        )
-                                    }
-                                    className="mt-1 flex min-h-[80px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm"
-                                />
-                            </div>
+                                    <FieldDescription>
+                                        Optional notes for internal reference.
+                                    </FieldDescription>
+                                </Field>
+                            </FieldGroup>
                         </div>
-                        <DialogFooter>
+                        <DialogFooter className="flex-shrink-0 border-t pt-4">
                             <Button
                                 variant="outline"
                                 onClick={() => setEditOpen(false)}
@@ -1594,7 +1783,17 @@ export default function SalesIndex({
                                 onClick={handleUpdate}
                                 disabled={editForm.processing}
                             >
-                                Update
+                                {editForm.processing ? (
+                                    <>
+                                        <PencilIcon className="mr-2 h-4 w-4 animate-spin" />
+                                        Updating...
+                                    </>
+                                ) : (
+                                    <>
+                                        <PencilIcon className="mr-2 h-4 w-4" />
+                                        Update Sale
+                                    </>
+                                )}
                             </Button>
                         </DialogFooter>
                     </DialogContent>
@@ -1602,142 +1801,215 @@ export default function SalesIndex({
 
                 {/* Show Modal */}
                 <Dialog open={showOpen} onOpenChange={setShowOpen}>
-                    <DialogContent className="max-w-2xl">
+                    <DialogContent className="sm:max-w-[600px]">
                         <DialogHeader>
                             <DialogTitle>Sale Details</DialogTitle>
+                            <DialogDescription>
+                                View complete sale information, payment status,
+                                and transaction history.
+                            </DialogDescription>
                         </DialogHeader>
                         {selectedSale && (
-                            <div className="space-y-4">
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div>
-                                        <Label>Date</Label>
-                                        <p className="mt-1">
+                            <ItemGroup>
+                                <Item>
+                                    <ItemMedia variant="icon">
+                                        <Calendar className="h-5 w-5" />
+                                    </ItemMedia>
+                                    <ItemContent>
+                                        <ItemTitle>Sale Date</ItemTitle>
+                                        <ItemDescription>
                                             {new Date(
                                                 selectedSale.sale_date,
-                                            ).toLocaleDateString()}
-                                        </p>
-                                    </div>
-                                    <div>
-                                        <Label>Customer</Label>
-                                        <p className="mt-1">
+                                            ).toLocaleDateString('en-US', {
+                                                year: 'numeric',
+                                                month: 'long',
+                                                day: 'numeric',
+                                            })}
+                                        </ItemDescription>
+                                    </ItemContent>
+                                </Item>
+                                <Item>
+                                    <ItemMedia variant="icon">
+                                        <User className="h-5 w-5" />
+                                    </ItemMedia>
+                                    <ItemContent>
+                                        <ItemTitle>Customer</ItemTitle>
+                                        <ItemDescription>
                                             {selectedSale.customer.name}
-                                        </p>
-                                    </div>
-                                </div>
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div>
-                                        <Label>Quantity</Label>
-                                        <p className="mt-1">
+                                        </ItemDescription>
+                                    </ItemContent>
+                                </Item>
+                                <Item>
+                                    <ItemMedia variant="icon">
+                                        <Package className="h-5 w-5" />
+                                    </ItemMedia>
+                                    <ItemContent>
+                                        <ItemTitle>Quantity</ItemTitle>
+                                        <ItemDescription>
                                             {Number(
                                                 selectedSale.quantity_kg,
                                             ).toFixed(2)}{' '}
                                             kg
-                                        </p>
-                                    </div>
-                                    <div>
-                                        <Label>Price per kg</Label>
-                                        <p className="mt-1">
+                                        </ItemDescription>
+                                    </ItemContent>
+                                </Item>
+                                <Item>
+                                    <ItemMedia variant="icon">
+                                        <DollarSign className="h-5 w-5" />
+                                    </ItemMedia>
+                                    <ItemContent>
+                                        <ItemTitle>Price per kg</ItemTitle>
+                                        <ItemDescription>
                                             SBD{' '}
                                             {Number(
                                                 selectedSale.price_per_kg,
                                             ).toFixed(2)}
-                                        </p>
-                                    </div>
-                                </div>
+                                        </ItemDescription>
+                                    </ItemContent>
+                                </Item>
                                 {Number(selectedSale.discount_percentage) >
                                     0 && (
-                                    <div>
-                                        <Label>Discount</Label>
-                                        <p className="mt-1">
-                                            {Number(
-                                                selectedSale.discount_percentage,
-                                            ).toFixed(2)}
-                                            %
-                                        </p>
-                                    </div>
+                                    <Item>
+                                        <ItemMedia variant="icon">
+                                            <Percent className="h-5 w-5" />
+                                        </ItemMedia>
+                                        <ItemContent>
+                                            <ItemTitle>Discount</ItemTitle>
+                                            <ItemDescription>
+                                                {Number(
+                                                    selectedSale.discount_percentage,
+                                                ).toFixed(2)}
+                                                %
+                                            </ItemDescription>
+                                        </ItemContent>
+                                    </Item>
                                 )}
                                 {Number(selectedSale.delivery_fee) > 0 && (
-                                    <div>
-                                        <Label>Delivery Fee</Label>
-                                        <p className="mt-1">
-                                            SBD{' '}
-                                            {Number(
-                                                selectedSale.delivery_fee,
-                                            ).toFixed(2)}
-                                        </p>
-                                    </div>
+                                    <Item>
+                                        <ItemMedia variant="icon">
+                                            <Truck className="h-5 w-5" />
+                                        </ItemMedia>
+                                        <ItemContent>
+                                            <ItemTitle>Delivery Fee</ItemTitle>
+                                            <ItemDescription>
+                                                SBD{' '}
+                                                {Number(
+                                                    selectedSale.delivery_fee,
+                                                ).toFixed(2)}
+                                            </ItemDescription>
+                                        </ItemContent>
+                                    </Item>
                                 )}
-                                <div>
-                                    <Label>Total Amount</Label>
-                                    <p className="mt-1 text-lg font-semibold">
-                                        SBD{' '}
-                                        {Number(
-                                            selectedSale.total_amount,
-                                        ).toFixed(2)}
-                                    </p>
-                                </div>
-                                <div>
-                                    <Label>Status</Label>
-                                    <p className="mt-1">
+                                <Item>
+                                    <ItemMedia variant="icon">
+                                        <DollarSign className="h-5 w-5" />
+                                    </ItemMedia>
+                                    <ItemContent>
+                                        <ItemTitle>Total Amount</ItemTitle>
+                                        <ItemDescription>
+                                            <span className="text-lg font-semibold">
+                                                SBD{' '}
+                                                {Number(
+                                                    selectedSale.total_amount,
+                                                ).toFixed(2)}
+                                            </span>
+                                        </ItemDescription>
+                                    </ItemContent>
+                                </Item>
+                                <Item>
+                                    <ItemMedia variant="icon">
                                         {selectedSale.is_credit ? (
                                             outstandingBalance(selectedSale) >
                                             0 ? (
-                                                <span className="font-medium text-destructive">
-                                                    Credit Sale - Outstanding:
-                                                    SBD{' '}
-                                                    {outstandingBalance(
-                                                        selectedSale,
-                                                    ).toFixed(2)}
-                                                </span>
+                                                <AlertCircle className="h-5 w-5 text-destructive" />
                                             ) : (
-                                                <span className="font-medium text-green-600">
-                                                    Paid (Credit Sale)
-                                                </span>
+                                                <CircleCheck className="h-5 w-5 text-green-600" />
                                             )
                                         ) : (
-                                            <span className="font-medium text-green-600">
-                                                Paid
-                                            </span>
+                                            <CircleCheck className="h-5 w-5 text-green-600" />
                                         )}
-                                    </p>
-                                </div>
+                                    </ItemMedia>
+                                    <ItemContent>
+                                        <ItemTitle>Payment Status</ItemTitle>
+                                        <ItemDescription>
+                                            {selectedSale.is_credit ? (
+                                                outstandingBalance(
+                                                    selectedSale,
+                                                ) > 0 ? (
+                                                    <span className="font-medium text-destructive">
+                                                        Credit Sale -
+                                                        Outstanding: SBD{' '}
+                                                        {outstandingBalance(
+                                                            selectedSale,
+                                                        ).toFixed(2)}
+                                                    </span>
+                                                ) : (
+                                                    <span className="font-medium text-green-600">
+                                                        Paid (Credit Sale)
+                                                    </span>
+                                                )
+                                            ) : (
+                                                <span className="font-medium text-green-600">
+                                                    Paid
+                                                </span>
+                                            )}
+                                        </ItemDescription>
+                                    </ItemContent>
+                                </Item>
                                 {selectedSale.payments &&
                                     selectedSale.payments.length > 0 && (
-                                        <div>
-                                            <Label>Payments</Label>
-                                            <div className="mt-2 space-y-1">
-                                                {selectedSale.payments.map(
-                                                    (payment) => (
-                                                        <div
-                                                            key={payment.id}
-                                                            className="flex justify-between text-sm"
-                                                        >
-                                                            <span>
-                                                                {new Date(
-                                                                    payment.payment_date,
-                                                                ).toLocaleDateString()}
-                                                            </span>
-                                                            <span>
-                                                                SBD{' '}
-                                                                {Number(
-                                                                    payment.amount,
-                                                                ).toFixed(2)}
-                                                            </span>
-                                                        </div>
-                                                    ),
-                                                )}
-                                            </div>
-                                        </div>
+                                        <Item>
+                                            <ItemMedia variant="icon">
+                                                <CreditCard className="h-5 w-5" />
+                                            </ItemMedia>
+                                            <ItemContent>
+                                                <ItemTitle>Payments</ItemTitle>
+                                                <ItemDescription>
+                                                    <div className="mt-2 space-y-2">
+                                                        {selectedSale.payments.map(
+                                                            (payment) => (
+                                                                <div
+                                                                    key={
+                                                                        payment.id
+                                                                    }
+                                                                    className="flex items-center justify-between rounded-md border p-2 text-sm"
+                                                                >
+                                                                    <span className="flex items-center gap-2">
+                                                                        <Calendar className="h-3 w-3" />
+                                                                        {new Date(
+                                                                            payment.payment_date,
+                                                                        ).toLocaleDateString()}
+                                                                    </span>
+                                                                    <span className="font-medium">
+                                                                        SBD{' '}
+                                                                        {Number(
+                                                                            payment.amount,
+                                                                        ).toFixed(
+                                                                            2,
+                                                                        )}
+                                                                    </span>
+                                                                </div>
+                                                            ),
+                                                        )}
+                                                    </div>
+                                                </ItemDescription>
+                                            </ItemContent>
+                                        </Item>
                                     )}
                                 {selectedSale.notes && (
-                                    <div>
-                                        <Label>Notes</Label>
-                                        <p className="mt-1">
-                                            {selectedSale.notes}
-                                        </p>
-                                    </div>
+                                    <Item>
+                                        <ItemMedia variant="icon">
+                                            <FileText className="h-5 w-5" />
+                                        </ItemMedia>
+                                        <ItemContent>
+                                            <ItemTitle>Notes</ItemTitle>
+                                            <ItemDescription>
+                                                {selectedSale.notes}
+                                            </ItemDescription>
+                                        </ItemContent>
+                                    </Item>
                                 )}
-                            </div>
+                            </ItemGroup>
                         )}
                         <DialogFooter>
                             <Button

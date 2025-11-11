@@ -26,7 +26,22 @@ import {
     EmptyMedia,
     EmptyTitle,
 } from '@/components/ui/empty';
+import {
+    Field,
+    FieldDescription,
+    FieldError,
+    FieldGroup,
+    FieldLabel,
+} from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
+import {
+    Item,
+    ItemContent,
+    ItemDescription,
+    ItemGroup,
+    ItemMedia,
+    ItemTitle,
+} from '@/components/ui/item';
 import { Label } from '@/components/ui/label';
 import {
     Select,
@@ -58,6 +73,7 @@ import {
 } from '@tanstack/react-table';
 import {
     ArrowUpDown,
+    Calendar,
     ChevronDown,
     ChevronLeft,
     ChevronRight,
@@ -65,13 +81,17 @@ import {
     ChevronsRight,
     Columns,
     CreditCard,
+    DollarSign,
     EyeIcon,
+    FileText,
     InfoIcon,
     MoreHorizontal,
     PencilIcon,
     PlusIcon,
     Search,
     TrashIcon,
+    TrendingUp,
+    User,
 } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
@@ -872,110 +892,154 @@ export default function PaymentsIndex({
 
                 {/* Create Modal */}
                 <Dialog open={createOpen} onOpenChange={setCreateOpen}>
-                    <DialogContent>
-                        <DialogHeader>
+                    <DialogContent className="flex max-h-[90vh] flex-col gap-0 sm:max-w-[500px]">
+                        <DialogHeader className="flex-shrink-0 pb-4">
                             <DialogTitle>Create Payment</DialogTitle>
                             <DialogDescription>
-                                Record a payment for a credit sale.
+                                Record a payment for a credit sale. All fields
+                                marked with * are required.
                             </DialogDescription>
                         </DialogHeader>
-                        <div className="space-y-4">
-                            <div>
-                                <Label htmlFor="sale_id">Sale *</Label>
-                                <Select
-                                    value={createForm.data.sale_id}
-                                    onValueChange={(value) =>
-                                        createForm.setData('sale_id', value)
+                        <div className="flex-1 overflow-y-auto px-1">
+                            <FieldGroup className="gap-6">
+                                <Field
+                                    data-invalid={!!createForm.errors.sale_id}
+                                >
+                                    <FieldLabel htmlFor="sale_id">
+                                        Sale *
+                                    </FieldLabel>
+                                    <div className="relative">
+                                        <TrendingUp className="absolute top-1/2 left-3 z-10 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                                        <Select
+                                            value={createForm.data.sale_id}
+                                            onValueChange={(value) =>
+                                                createForm.setData(
+                                                    'sale_id',
+                                                    value,
+                                                )
+                                            }
+                                        >
+                                            <SelectTrigger
+                                                id="sale_id"
+                                                className="pl-9"
+                                            >
+                                                <SelectValue placeholder="Select sale" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                {creditSales.length > 0
+                                                    ? creditSales.map(
+                                                          (sale) => (
+                                                              <SelectItem
+                                                                  key={sale.id}
+                                                                  value={sale.id.toString()}
+                                                              >
+                                                                  Sale #
+                                                                  {sale.id} -{' '}
+                                                                  {
+                                                                      sale.customer_name
+                                                                  }{' '}
+                                                                  (Outstanding:
+                                                                  SBD{' '}
+                                                                  {Number(
+                                                                      sale.outstanding_balance,
+                                                                  ).toFixed(2)}
+                                                                  )
+                                                              </SelectItem>
+                                                          ),
+                                                      )
+                                                    : null}
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                    <FieldError>
+                                        {createForm.errors.sale_id}
+                                    </FieldError>
+                                </Field>
+                                <Field
+                                    data-invalid={
+                                        !!createForm.errors.payment_date
                                     }
                                 >
-                                    <SelectTrigger className="mt-1">
-                                        <SelectValue placeholder="Select sale" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {creditSales.length > 0
-                                            ? creditSales.map((sale) => (
-                                                  <SelectItem
-                                                      key={sale.id}
-                                                      value={sale.id.toString()}
-                                                  >
-                                                      Sale #{sale.id} -{' '}
-                                                      {sale.customer_name}{' '}
-                                                      (Outstanding: SBD{' '}
-                                                      {Number(
-                                                          sale.outstanding_balance,
-                                                      ).toFixed(2)}
-                                                      )
-                                                  </SelectItem>
-                                              ))
-                                            : null}
-                                    </SelectContent>
-                                </Select>
-                                {createForm.errors.sale_id && (
-                                    <p className="mt-1 text-sm text-destructive">
-                                        {createForm.errors.sale_id}
-                                    </p>
-                                )}
-                            </div>
-                            <div>
-                                <Label htmlFor="payment_date">
-                                    Payment Date *
-                                </Label>
-                                <DatePicker
-                                    id="payment_date"
-                                    value={createForm.data.payment_date}
-                                    onChange={(value) =>
-                                        createForm.setData(
-                                            'payment_date',
-                                            value,
-                                        )
-                                    }
-                                    placeholder="Select payment date"
-                                    className="mt-1"
-                                />
-                                {createForm.errors.payment_date && (
-                                    <p className="mt-1 text-sm text-destructive">
+                                    <FieldLabel htmlFor="payment_date">
+                                        Payment Date *
+                                    </FieldLabel>
+                                    <div className="relative">
+                                        <Calendar className="absolute top-1/2 left-3 z-10 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                                        <DatePicker
+                                            id="payment_date"
+                                            value={createForm.data.payment_date}
+                                            onChange={(value) =>
+                                                createForm.setData(
+                                                    'payment_date',
+                                                    value,
+                                                )
+                                            }
+                                            placeholder="Select payment date"
+                                            className="pl-9"
+                                        />
+                                    </div>
+                                    <FieldError>
                                         {createForm.errors.payment_date}
-                                    </p>
-                                )}
-                            </div>
-                            <div>
-                                <Label htmlFor="amount">Amount (SBD) *</Label>
-                                <Input
-                                    id="amount"
-                                    type="number"
-                                    step="0.01"
-                                    min="0.01"
-                                    value={createForm.data.amount}
-                                    onChange={(e) =>
-                                        createForm.setData(
-                                            'amount',
-                                            e.target.value,
-                                        )
-                                    }
-                                    className="mt-1"
-                                />
-                                {createForm.errors.amount && (
-                                    <p className="mt-1 text-sm text-destructive">
+                                    </FieldError>
+                                </Field>
+                                <Field
+                                    data-invalid={!!createForm.errors.amount}
+                                >
+                                    <FieldLabel htmlFor="amount">
+                                        Amount (SBD) *
+                                    </FieldLabel>
+                                    <div className="relative">
+                                        <DollarSign className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                                        <Input
+                                            id="amount"
+                                            type="number"
+                                            step="0.01"
+                                            min="0.01"
+                                            value={createForm.data.amount}
+                                            onChange={(e) =>
+                                                createForm.setData(
+                                                    'amount',
+                                                    e.target.value,
+                                                )
+                                            }
+                                            className="pl-9"
+                                            placeholder="0.00"
+                                            autoFocus
+                                        />
+                                    </div>
+                                    <FieldError>
                                         {createForm.errors.amount}
-                                    </p>
-                                )}
-                            </div>
-                            <div>
-                                <Label htmlFor="notes">Notes</Label>
-                                <textarea
-                                    id="notes"
-                                    value={createForm.data.notes}
-                                    onChange={(e) =>
-                                        createForm.setData(
-                                            'notes',
-                                            e.target.value,
-                                        )
-                                    }
-                                    className="mt-1 flex min-h-[80px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm"
-                                />
-                            </div>
+                                    </FieldError>
+                                </Field>
+                                <Field data-invalid={!!createForm.errors.notes}>
+                                    <FieldLabel htmlFor="notes">
+                                        Notes
+                                    </FieldLabel>
+                                    <div className="relative">
+                                        <FileText className="absolute top-3 left-3 h-4 w-4 text-muted-foreground" />
+                                        <textarea
+                                            id="notes"
+                                            value={createForm.data.notes}
+                                            onChange={(e) =>
+                                                createForm.setData(
+                                                    'notes',
+                                                    e.target.value,
+                                                )
+                                            }
+                                            className="flex min-h-[80px] w-full rounded-md border border-input bg-transparent px-3 py-2 pl-9 text-sm"
+                                            placeholder="Additional notes about this payment..."
+                                        />
+                                    </div>
+                                    <FieldDescription>
+                                        Optional notes for internal reference.
+                                    </FieldDescription>
+                                    <FieldError>
+                                        {createForm.errors.notes}
+                                    </FieldError>
+                                </Field>
+                            </FieldGroup>
                         </div>
-                        <DialogFooter>
+                        <DialogFooter className="flex-shrink-0 border-t pt-4">
                             <Button
                                 variant="outline"
                                 onClick={() => setCreateOpen(false)}
@@ -986,7 +1050,17 @@ export default function PaymentsIndex({
                                 onClick={handleCreate}
                                 disabled={createForm.processing}
                             >
-                                Create
+                                {createForm.processing ? (
+                                    <>
+                                        <PlusIcon className="mr-2 h-4 w-4 animate-spin" />
+                                        Creating...
+                                    </>
+                                ) : (
+                                    <>
+                                        <CreditCard className="mr-2 h-4 w-4" />
+                                        Create Payment
+                                    </>
+                                )}
                             </Button>
                         </DialogFooter>
                     </DialogContent>
@@ -994,73 +1068,98 @@ export default function PaymentsIndex({
 
                 {/* Edit Modal */}
                 <Dialog open={editOpen} onOpenChange={setEditOpen}>
-                    <DialogContent>
-                        <DialogHeader>
+                    <DialogContent className="flex max-h-[90vh] flex-col gap-0 sm:max-w-[500px]">
+                        <DialogHeader className="flex-shrink-0 pb-4">
                             <DialogTitle>Edit Payment</DialogTitle>
                             <DialogDescription>
-                                Update payment information.
+                                Update payment information. All fields marked
+                                with * are required.
                             </DialogDescription>
                         </DialogHeader>
-                        <div className="space-y-4">
-                            <div>
-                                <Label htmlFor="edit-payment_date">
-                                    Payment Date *
-                                </Label>
-                                <DatePicker
-                                    id="edit-payment_date"
-                                    value={editForm.data.payment_date}
-                                    onChange={(value) =>
-                                        editForm.setData('payment_date', value)
+                        <div className="flex-1 overflow-y-auto px-1">
+                            <FieldGroup className="gap-6">
+                                <Field
+                                    data-invalid={
+                                        !!editForm.errors.payment_date
                                     }
-                                    placeholder="Select payment date"
-                                    className="mt-1"
-                                />
-                                {editForm.errors.payment_date && (
-                                    <p className="mt-1 text-sm text-destructive">
+                                >
+                                    <FieldLabel htmlFor="edit-payment_date">
+                                        Payment Date *
+                                    </FieldLabel>
+                                    <div className="relative">
+                                        <Calendar className="absolute top-1/2 left-3 z-10 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                                        <DatePicker
+                                            id="edit-payment_date"
+                                            value={editForm.data.payment_date}
+                                            onChange={(value) =>
+                                                editForm.setData(
+                                                    'payment_date',
+                                                    value,
+                                                )
+                                            }
+                                            placeholder="Select payment date"
+                                            className="pl-9"
+                                        />
+                                    </div>
+                                    <FieldError>
                                         {editForm.errors.payment_date}
-                                    </p>
-                                )}
-                            </div>
-                            <div>
-                                <Label htmlFor="edit-amount">
-                                    Amount (SBD) *
-                                </Label>
-                                <Input
-                                    id="edit-amount"
-                                    type="number"
-                                    step="0.01"
-                                    min="0.01"
-                                    value={editForm.data.amount}
-                                    onChange={(e) =>
-                                        editForm.setData(
-                                            'amount',
-                                            e.target.value,
-                                        )
-                                    }
-                                    className="mt-1"
-                                />
-                                {editForm.errors.amount && (
-                                    <p className="mt-1 text-sm text-destructive">
+                                    </FieldError>
+                                </Field>
+                                <Field data-invalid={!!editForm.errors.amount}>
+                                    <FieldLabel htmlFor="edit-amount">
+                                        Amount (SBD) *
+                                    </FieldLabel>
+                                    <div className="relative">
+                                        <DollarSign className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                                        <Input
+                                            id="edit-amount"
+                                            type="number"
+                                            step="0.01"
+                                            min="0.01"
+                                            value={editForm.data.amount}
+                                            onChange={(e) =>
+                                                editForm.setData(
+                                                    'amount',
+                                                    e.target.value,
+                                                )
+                                            }
+                                            className="pl-9"
+                                            placeholder="0.00"
+                                        />
+                                    </div>
+                                    <FieldError>
                                         {editForm.errors.amount}
-                                    </p>
-                                )}
-                            </div>
-                            <div>
-                                <Label htmlFor="edit-notes">Notes</Label>
-                                <textarea
-                                    id="edit-notes"
-                                    value={editForm.data.notes}
-                                    onChange={(e) =>
-                                        editForm.setData(
-                                            'notes',
-                                            e.target.value,
-                                        )
-                                    }
-                                    className="mt-1 flex min-h-[80px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm"
-                                />
-                            </div>
+                                    </FieldError>
+                                </Field>
+                                <Field data-invalid={!!editForm.errors.notes}>
+                                    <FieldLabel htmlFor="edit-notes">
+                                        Notes
+                                    </FieldLabel>
+                                    <div className="relative">
+                                        <FileText className="absolute top-3 left-3 h-4 w-4 text-muted-foreground" />
+                                        <textarea
+                                            id="edit-notes"
+                                            value={editForm.data.notes}
+                                            onChange={(e) =>
+                                                editForm.setData(
+                                                    'notes',
+                                                    e.target.value,
+                                                )
+                                            }
+                                            className="flex min-h-[80px] w-full rounded-md border border-input bg-transparent px-3 py-2 pl-9 text-sm"
+                                            placeholder="Additional notes about this payment..."
+                                        />
+                                    </div>
+                                    <FieldDescription>
+                                        Optional notes for internal reference.
+                                    </FieldDescription>
+                                    <FieldError>
+                                        {editForm.errors.notes}
+                                    </FieldError>
+                                </Field>
+                            </FieldGroup>
                         </div>
-                        <DialogFooter>
+                        <DialogFooter className="flex-shrink-0 border-t pt-4">
                             <Button
                                 variant="outline"
                                 onClick={() => setEditOpen(false)}
@@ -1071,7 +1170,17 @@ export default function PaymentsIndex({
                                 onClick={handleUpdate}
                                 disabled={editForm.processing}
                             >
-                                Update
+                                {editForm.processing ? (
+                                    <>
+                                        <PencilIcon className="mr-2 h-4 w-4 animate-spin" />
+                                        Updating...
+                                    </>
+                                ) : (
+                                    <>
+                                        <PencilIcon className="mr-2 h-4 w-4" />
+                                        Update Payment
+                                    </>
+                                )}
                             </Button>
                         </DialogFooter>
                     </DialogContent>
@@ -1079,50 +1188,100 @@ export default function PaymentsIndex({
 
                 {/* Show Modal */}
                 <Dialog open={showOpen} onOpenChange={setShowOpen}>
-                    <DialogContent>
+                    <DialogContent className="sm:max-w-[500px]">
                         <DialogHeader>
                             <DialogTitle>Payment Details</DialogTitle>
+                            <DialogDescription>
+                                View complete payment information and related
+                                sale details.
+                            </DialogDescription>
                         </DialogHeader>
                         {selectedPayment && (
-                            <div className="space-y-4">
-                                <div>
-                                    <Label>Date</Label>
-                                    <p className="mt-1">
-                                        {new Date(
-                                            selectedPayment.payment_date,
-                                        ).toLocaleDateString()}
-                                    </p>
-                                </div>
-                                <div>
-                                    <Label>Customer</Label>
-                                    <p className="mt-1">
-                                        {selectedPayment.sale.customer.name}
-                                    </p>
-                                </div>
-                                <div>
-                                    <Label>Sale ID</Label>
-                                    <p className="mt-1">
-                                        #{selectedPayment.sale.id}
-                                    </p>
-                                </div>
-                                <div>
-                                    <Label>Amount</Label>
-                                    <p className="mt-1 font-semibold">
-                                        SBD{' '}
-                                        {Number(selectedPayment.amount).toFixed(
-                                            2,
-                                        )}
-                                    </p>
-                                </div>
+                            <ItemGroup>
+                                <Item>
+                                    <ItemMedia variant="icon">
+                                        <Calendar className="h-5 w-5" />
+                                    </ItemMedia>
+                                    <ItemContent>
+                                        <ItemTitle>Payment Date</ItemTitle>
+                                        <ItemDescription>
+                                            {new Date(
+                                                selectedPayment.payment_date,
+                                            ).toLocaleDateString('en-US', {
+                                                year: 'numeric',
+                                                month: 'long',
+                                                day: 'numeric',
+                                            })}
+                                        </ItemDescription>
+                                    </ItemContent>
+                                </Item>
+                                <Item>
+                                    <ItemMedia variant="icon">
+                                        <User className="h-5 w-5" />
+                                    </ItemMedia>
+                                    <ItemContent>
+                                        <ItemTitle>Customer</ItemTitle>
+                                        <ItemDescription>
+                                            {selectedPayment.sale.customer.name}
+                                        </ItemDescription>
+                                    </ItemContent>
+                                </Item>
+                                <Item>
+                                    <ItemMedia variant="icon">
+                                        <TrendingUp className="h-5 w-5" />
+                                    </ItemMedia>
+                                    <ItemContent>
+                                        <ItemTitle>Sale ID</ItemTitle>
+                                        <ItemDescription>
+                                            #{selectedPayment.sale.id}
+                                        </ItemDescription>
+                                    </ItemContent>
+                                </Item>
+                                <Item>
+                                    <ItemMedia variant="icon">
+                                        <DollarSign className="h-5 w-5" />
+                                    </ItemMedia>
+                                    <ItemContent>
+                                        <ItemTitle>Payment Amount</ItemTitle>
+                                        <ItemDescription>
+                                            <span className="font-semibold">
+                                                SBD{' '}
+                                                {Number(
+                                                    selectedPayment.amount,
+                                                ).toFixed(2)}
+                                            </span>
+                                        </ItemDescription>
+                                    </ItemContent>
+                                </Item>
+                                <Item>
+                                    <ItemMedia variant="icon">
+                                        <DollarSign className="h-5 w-5" />
+                                    </ItemMedia>
+                                    <ItemContent>
+                                        <ItemTitle>Sale Total</ItemTitle>
+                                        <ItemDescription>
+                                            SBD{' '}
+                                            {Number(
+                                                selectedPayment.sale
+                                                    .total_amount,
+                                            ).toFixed(2)}
+                                        </ItemDescription>
+                                    </ItemContent>
+                                </Item>
                                 {selectedPayment.notes && (
-                                    <div>
-                                        <Label>Notes</Label>
-                                        <p className="mt-1">
-                                            {selectedPayment.notes}
-                                        </p>
-                                    </div>
+                                    <Item>
+                                        <ItemMedia variant="icon">
+                                            <FileText className="h-5 w-5" />
+                                        </ItemMedia>
+                                        <ItemContent>
+                                            <ItemTitle>Notes</ItemTitle>
+                                            <ItemDescription>
+                                                {selectedPayment.notes}
+                                            </ItemDescription>
+                                        </ItemContent>
+                                    </Item>
                                 )}
-                            </div>
+                            </ItemGroup>
                         )}
                         <DialogFooter>
                             <Button

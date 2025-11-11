@@ -25,7 +25,22 @@ import {
     EmptyMedia,
     EmptyTitle,
 } from '@/components/ui/empty';
+import {
+    Field,
+    FieldDescription,
+    FieldError,
+    FieldGroup,
+    FieldLabel,
+} from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
+import {
+    Item,
+    ItemContent,
+    ItemDescription,
+    ItemGroup,
+    ItemMedia,
+    ItemTitle,
+} from '@/components/ui/item';
 import { Label } from '@/components/ui/label';
 import {
     Select,
@@ -57,6 +72,7 @@ import {
 } from '@tanstack/react-table';
 import {
     ArrowUpDown,
+    Calendar,
     ChevronDown,
     ChevronLeft,
     ChevronRight,
@@ -64,9 +80,14 @@ import {
     ChevronsRight,
     Columns,
     EyeIcon,
+    FileText,
     InfoIcon,
+    Mail,
+    MapPin,
     MoreHorizontal,
+    Package,
     PencilIcon,
+    Phone,
     PlusIcon,
     Search,
     TrashIcon,
@@ -869,97 +890,141 @@ export default function SuppliersIndex({
 
                 {/* Create Modal */}
                 <Dialog open={createOpen} onOpenChange={setCreateOpen}>
-                    <DialogContent>
-                        <DialogHeader>
+                    <DialogContent className="flex max-h-[90vh] flex-col gap-0 sm:max-w-[500px]">
+                        <DialogHeader className="flex-shrink-0 pb-4">
                             <DialogTitle>Create Supplier</DialogTitle>
                             <DialogDescription>
                                 Add a new supplier (fisherman) to the system.
+                                All fields marked with * are required.
                             </DialogDescription>
                         </DialogHeader>
-                        <div className="space-y-4">
-                            <div>
-                                <Label htmlFor="name">Name *</Label>
-                                <Input
-                                    id="name"
-                                    value={createForm.data.name}
-                                    onChange={(e) =>
-                                        createForm.setData(
-                                            'name',
-                                            e.target.value,
-                                        )
-                                    }
-                                    className="mt-1"
-                                />
-                                {createForm.errors.name && (
-                                    <p className="mt-1 text-sm text-destructive">
+                        <div className="flex-1 overflow-y-auto px-1">
+                            <FieldGroup className="gap-6">
+                                <Field data-invalid={!!createForm.errors.name}>
+                                    <FieldLabel htmlFor="name">
+                                        Supplier Name *
+                                    </FieldLabel>
+                                    <div className="relative">
+                                        <UserCircle className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                                        <Input
+                                            id="name"
+                                            value={createForm.data.name}
+                                            onChange={(e) =>
+                                                createForm.setData(
+                                                    'name',
+                                                    e.target.value,
+                                                )
+                                            }
+                                            className="pl-9"
+                                            placeholder="John Fisherman"
+                                            autoFocus
+                                        />
+                                    </div>
+                                    <FieldError>
                                         {createForm.errors.name}
-                                    </p>
-                                )}
-                            </div>
-                            <div>
-                                <Label htmlFor="email">Email</Label>
-                                <Input
-                                    id="email"
-                                    type="email"
-                                    value={createForm.data.email}
-                                    onChange={(e) =>
-                                        createForm.setData(
-                                            'email',
-                                            e.target.value,
-                                        )
-                                    }
-                                    className="mt-1"
-                                />
-                                {createForm.errors.email && (
-                                    <p className="mt-1 text-sm text-destructive">
+                                    </FieldError>
+                                </Field>
+                                <Field data-invalid={!!createForm.errors.email}>
+                                    <FieldLabel htmlFor="email">
+                                        Email Address
+                                    </FieldLabel>
+                                    <div className="relative">
+                                        <Mail className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                                        <Input
+                                            id="email"
+                                            type="email"
+                                            value={createForm.data.email}
+                                            onChange={(e) =>
+                                                createForm.setData(
+                                                    'email',
+                                                    e.target.value,
+                                                )
+                                            }
+                                            className="pl-9"
+                                            placeholder="john@example.com"
+                                        />
+                                    </div>
+                                    <FieldError>
                                         {createForm.errors.email}
-                                    </p>
-                                )}
-                            </div>
-                            <div>
-                                <Label htmlFor="phone">Phone</Label>
-                                <Input
-                                    id="phone"
-                                    value={createForm.data.phone}
-                                    onChange={(e) =>
-                                        createForm.setData(
-                                            'phone',
-                                            e.target.value,
-                                        )
-                                    }
-                                    className="mt-1"
-                                />
-                            </div>
-                            <div>
-                                <Label htmlFor="address">Address</Label>
-                                <Input
-                                    id="address"
-                                    value={createForm.data.address}
-                                    onChange={(e) =>
-                                        createForm.setData(
-                                            'address',
-                                            e.target.value,
-                                        )
-                                    }
-                                    className="mt-1"
-                                />
-                            </div>
-                            <div>
-                                <Label htmlFor="notes">Notes</Label>
-                                <textarea
-                                    id="notes"
-                                    value={createForm.data.notes}
-                                    onChange={(e) =>
-                                        createForm.setData(
-                                            'notes',
-                                            e.target.value,
-                                        )
-                                    }
-                                    className="mt-1 flex min-h-[80px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm"
-                                />
-                            </div>
+                                    </FieldError>
+                                </Field>
+                                <Field data-invalid={!!createForm.errors.phone}>
+                                    <FieldLabel htmlFor="phone">
+                                        Phone Number
+                                    </FieldLabel>
+                                    <div className="relative">
+                                        <Phone className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                                        <Input
+                                            id="phone"
+                                            value={createForm.data.phone}
+                                            onChange={(e) =>
+                                                createForm.setData(
+                                                    'phone',
+                                                    e.target.value,
+                                                )
+                                            }
+                                            className="pl-9"
+                                            placeholder="+1 (555) 123-4567"
+                                        />
+                                    </div>
+                                    <FieldError>
+                                        {createForm.errors.phone}
+                                    </FieldError>
+                                </Field>
+                                <Field
+                                    data-invalid={!!createForm.errors.address}
+                                >
+                                    <FieldLabel htmlFor="address">
+                                        Address
+                                    </FieldLabel>
+                                    <div className="relative">
+                                        <MapPin className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                                        <Input
+                                            id="address"
+                                            value={createForm.data.address}
+                                            onChange={(e) =>
+                                                createForm.setData(
+                                                    'address',
+                                                    e.target.value,
+                                                )
+                                            }
+                                            className="pl-9"
+                                            placeholder="123 Harbor St, City, State ZIP"
+                                        />
+                                    </div>
+                                    <FieldError>
+                                        {createForm.errors.address}
+                                    </FieldError>
+                                </Field>
+                                <Field data-invalid={!!createForm.errors.notes}>
+                                    <FieldLabel htmlFor="notes">
+                                        Notes
+                                    </FieldLabel>
+                                    <div className="relative">
+                                        <FileText className="absolute top-3 left-3 h-4 w-4 text-muted-foreground" />
+                                        <textarea
+                                            id="notes"
+                                            value={createForm.data.notes}
+                                            onChange={(e) =>
+                                                createForm.setData(
+                                                    'notes',
+                                                    e.target.value,
+                                                )
+                                            }
+                                            className="flex min-h-[80px] w-full rounded-md border border-input bg-transparent px-3 py-2 pl-9 text-sm"
+                                            placeholder="Additional notes about this supplier..."
+                                        />
+                                    </div>
+                                    <FieldDescription>
+                                        Optional notes for internal reference.
+                                    </FieldDescription>
+                                    <FieldError>
+                                        {createForm.errors.notes}
+                                    </FieldError>
+                                </Field>
+                            </FieldGroup>
                         </div>
-                        <DialogFooter>
+                        <DialogFooter className="flex-shrink-0 border-t pt-4">
                             <Button
                                 variant="outline"
                                 onClick={() => setCreateOpen(false)}
@@ -970,7 +1035,17 @@ export default function SuppliersIndex({
                                 onClick={handleCreate}
                                 disabled={createForm.processing}
                             >
-                                Create
+                                {createForm.processing ? (
+                                    <>
+                                        <PlusIcon className="mr-2 h-4 w-4 animate-spin" />
+                                        Creating...
+                                    </>
+                                ) : (
+                                    <>
+                                        <PlusIcon className="mr-2 h-4 w-4" />
+                                        Create Supplier
+                                    </>
+                                )}
                             </Button>
                         </DialogFooter>
                     </DialogContent>
@@ -978,94 +1053,138 @@ export default function SuppliersIndex({
 
                 {/* Edit Modal */}
                 <Dialog open={editOpen} onOpenChange={setEditOpen}>
-                    <DialogContent>
-                        <DialogHeader>
+                    <DialogContent className="flex max-h-[90vh] flex-col gap-0 sm:max-w-[500px]">
+                        <DialogHeader className="flex-shrink-0 pb-4">
                             <DialogTitle>Edit Supplier</DialogTitle>
                             <DialogDescription>
-                                Update supplier information.
+                                Update supplier information. All fields marked
+                                with * are required.
                             </DialogDescription>
                         </DialogHeader>
-                        <div className="space-y-4">
-                            <div>
-                                <Label htmlFor="edit-name">Name *</Label>
-                                <Input
-                                    id="edit-name"
-                                    value={editForm.data.name}
-                                    onChange={(e) =>
-                                        editForm.setData('name', e.target.value)
-                                    }
-                                    className="mt-1"
-                                />
-                                {editForm.errors.name && (
-                                    <p className="mt-1 text-sm text-destructive">
+                        <div className="flex-1 overflow-y-auto px-1">
+                            <FieldGroup className="gap-6">
+                                <Field data-invalid={!!editForm.errors.name}>
+                                    <FieldLabel htmlFor="edit-name">
+                                        Supplier Name *
+                                    </FieldLabel>
+                                    <div className="relative">
+                                        <UserCircle className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                                        <Input
+                                            id="edit-name"
+                                            value={editForm.data.name}
+                                            onChange={(e) =>
+                                                editForm.setData(
+                                                    'name',
+                                                    e.target.value,
+                                                )
+                                            }
+                                            className="pl-9"
+                                            placeholder="John Fisherman"
+                                        />
+                                    </div>
+                                    <FieldError>
                                         {editForm.errors.name}
-                                    </p>
-                                )}
-                            </div>
-                            <div>
-                                <Label htmlFor="edit-email">Email</Label>
-                                <Input
-                                    id="edit-email"
-                                    type="email"
-                                    value={editForm.data.email}
-                                    onChange={(e) =>
-                                        editForm.setData(
-                                            'email',
-                                            e.target.value,
-                                        )
-                                    }
-                                    className="mt-1"
-                                />
-                                {editForm.errors.email && (
-                                    <p className="mt-1 text-sm text-destructive">
+                                    </FieldError>
+                                </Field>
+                                <Field data-invalid={!!editForm.errors.email}>
+                                    <FieldLabel htmlFor="edit-email">
+                                        Email Address
+                                    </FieldLabel>
+                                    <div className="relative">
+                                        <Mail className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                                        <Input
+                                            id="edit-email"
+                                            type="email"
+                                            value={editForm.data.email}
+                                            onChange={(e) =>
+                                                editForm.setData(
+                                                    'email',
+                                                    e.target.value,
+                                                )
+                                            }
+                                            className="pl-9"
+                                            placeholder="john@example.com"
+                                        />
+                                    </div>
+                                    <FieldError>
                                         {editForm.errors.email}
-                                    </p>
-                                )}
-                            </div>
-                            <div>
-                                <Label htmlFor="edit-phone">Phone</Label>
-                                <Input
-                                    id="edit-phone"
-                                    value={editForm.data.phone}
-                                    onChange={(e) =>
-                                        editForm.setData(
-                                            'phone',
-                                            e.target.value,
-                                        )
-                                    }
-                                    className="mt-1"
-                                />
-                            </div>
-                            <div>
-                                <Label htmlFor="edit-address">Address</Label>
-                                <Input
-                                    id="edit-address"
-                                    value={editForm.data.address}
-                                    onChange={(e) =>
-                                        editForm.setData(
-                                            'address',
-                                            e.target.value,
-                                        )
-                                    }
-                                    className="mt-1"
-                                />
-                            </div>
-                            <div>
-                                <Label htmlFor="edit-notes">Notes</Label>
-                                <textarea
-                                    id="edit-notes"
-                                    value={editForm.data.notes}
-                                    onChange={(e) =>
-                                        editForm.setData(
-                                            'notes',
-                                            e.target.value,
-                                        )
-                                    }
-                                    className="mt-1 flex min-h-[80px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm"
-                                />
-                            </div>
+                                    </FieldError>
+                                </Field>
+                                <Field data-invalid={!!editForm.errors.phone}>
+                                    <FieldLabel htmlFor="edit-phone">
+                                        Phone Number
+                                    </FieldLabel>
+                                    <div className="relative">
+                                        <Phone className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                                        <Input
+                                            id="edit-phone"
+                                            value={editForm.data.phone}
+                                            onChange={(e) =>
+                                                editForm.setData(
+                                                    'phone',
+                                                    e.target.value,
+                                                )
+                                            }
+                                            className="pl-9"
+                                            placeholder="+1 (555) 123-4567"
+                                        />
+                                    </div>
+                                    <FieldError>
+                                        {editForm.errors.phone}
+                                    </FieldError>
+                                </Field>
+                                <Field data-invalid={!!editForm.errors.address}>
+                                    <FieldLabel htmlFor="edit-address">
+                                        Address
+                                    </FieldLabel>
+                                    <div className="relative">
+                                        <MapPin className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                                        <Input
+                                            id="edit-address"
+                                            value={editForm.data.address}
+                                            onChange={(e) =>
+                                                editForm.setData(
+                                                    'address',
+                                                    e.target.value,
+                                                )
+                                            }
+                                            className="pl-9"
+                                            placeholder="123 Harbor St, City, State ZIP"
+                                        />
+                                    </div>
+                                    <FieldError>
+                                        {editForm.errors.address}
+                                    </FieldError>
+                                </Field>
+                                <Field data-invalid={!!editForm.errors.notes}>
+                                    <FieldLabel htmlFor="edit-notes">
+                                        Notes
+                                    </FieldLabel>
+                                    <div className="relative">
+                                        <FileText className="absolute top-3 left-3 h-4 w-4 text-muted-foreground" />
+                                        <textarea
+                                            id="edit-notes"
+                                            value={editForm.data.notes}
+                                            onChange={(e) =>
+                                                editForm.setData(
+                                                    'notes',
+                                                    e.target.value,
+                                                )
+                                            }
+                                            className="flex min-h-[80px] w-full rounded-md border border-input bg-transparent px-3 py-2 pl-9 text-sm"
+                                            placeholder="Additional notes about this supplier..."
+                                        />
+                                    </div>
+                                    <FieldDescription>
+                                        Optional notes for internal reference.
+                                    </FieldDescription>
+                                    <FieldError>
+                                        {editForm.errors.notes}
+                                    </FieldError>
+                                </Field>
+                            </FieldGroup>
                         </div>
-                        <DialogFooter>
+                        <DialogFooter className="flex-shrink-0 border-t pt-4">
                             <Button
                                 variant="outline"
                                 onClick={() => setEditOpen(false)}
@@ -1076,7 +1195,17 @@ export default function SuppliersIndex({
                                 onClick={handleUpdate}
                                 disabled={editForm.processing}
                             >
-                                Update
+                                {editForm.processing ? (
+                                    <>
+                                        <PencilIcon className="mr-2 h-4 w-4 animate-spin" />
+                                        Updating...
+                                    </>
+                                ) : (
+                                    <>
+                                        <PencilIcon className="mr-2 h-4 w-4" />
+                                        Update Supplier
+                                    </>
+                                )}
                             </Button>
                         </DialogFooter>
                     </DialogContent>
@@ -1084,101 +1213,158 @@ export default function SuppliersIndex({
 
                 {/* Show Modal */}
                 <Dialog open={showOpen} onOpenChange={setShowOpen}>
-                    <DialogContent>
+                    <DialogContent className="sm:max-w-[500px]">
                         <DialogHeader>
                             <DialogTitle>Supplier Details</DialogTitle>
+                            <DialogDescription>
+                                View complete supplier information and
+                                statistics.
+                            </DialogDescription>
                         </DialogHeader>
                         {selectedSupplier && (
-                            <div className="space-y-4">
-                                <div>
-                                    <Label>Name</Label>
-                                    <p className="mt-1">
-                                        {selectedSupplier.name}
-                                    </p>
-                                </div>
-                                <div>
-                                    <Label>Email</Label>
-                                    <p className="mt-1">
-                                        {selectedSupplier.email || '-'}
-                                    </p>
-                                </div>
-                                <div>
-                                    <Label>Phone</Label>
-                                    <p className="mt-1">
-                                        {selectedSupplier.phone || '-'}
-                                    </p>
-                                </div>
-                                <div>
-                                    <Label>Address</Label>
-                                    <p className="mt-1">
-                                        {selectedSupplier.address || '-'}
-                                    </p>
-                                </div>
-                                <div>
-                                    <Label>Total Purchases</Label>
-                                    <p className="mt-1">
-                                        {selectedSupplier.purchases_sum_quantity_kg
-                                            ? Number(
-                                                  selectedSupplier.purchases_sum_quantity_kg,
-                                              ).toFixed(2)
-                                            : '0.00'}{' '}
-                                        kg
-                                    </p>
-                                </div>
-                                <div>
-                                    <Label>Remaining Stock</Label>
-                                    <p className="mt-1 text-lg font-semibold">
-                                        {selectedSupplier.remaining_stock !==
-                                        undefined
-                                            ? Number(
-                                                  selectedSupplier.remaining_stock,
-                                              ).toFixed(2)
-                                            : '0.00'}{' '}
-                                        kg
-                                    </p>
-                                    {selectedSupplier.purchases_sum_quantity_kg &&
-                                        selectedSupplier.remaining_stock !==
-                                            undefined &&
-                                        Number(
-                                            selectedSupplier.purchases_sum_quantity_kg,
-                                        ) > 0 && (
-                                            <p className="mt-1 text-xs text-muted-foreground">
-                                                {(
-                                                    (Number(
-                                                        selectedSupplier.remaining_stock,
-                                                    ) /
-                                                        Number(
-                                                            selectedSupplier.purchases_sum_quantity_kg,
-                                                        )) *
-                                                    100
-                                                ).toFixed(1)}
-                                                % of total purchases remaining
-                                            </p>
-                                        )}
-                                </div>
-                                {selectedSupplier.notes && (
-                                    <div>
-                                        <Label>Notes</Label>
-                                        <p className="mt-1">
-                                            {selectedSupplier.notes}
-                                        </p>
-                                    </div>
+                            <ItemGroup>
+                                <Item>
+                                    <ItemMedia variant="icon">
+                                        <UserCircle className="h-5 w-5" />
+                                    </ItemMedia>
+                                    <ItemContent>
+                                        <ItemTitle>Supplier Name</ItemTitle>
+                                        <ItemDescription>
+                                            {selectedSupplier.name}
+                                        </ItemDescription>
+                                    </ItemContent>
+                                </Item>
+                                <Item>
+                                    <ItemMedia variant="icon">
+                                        <Mail className="h-5 w-5" />
+                                    </ItemMedia>
+                                    <ItemContent>
+                                        <ItemTitle>Email Address</ItemTitle>
+                                        <ItemDescription>
+                                            {selectedSupplier.email || (
+                                                <span className="text-muted-foreground">
+                                                    Not provided
+                                                </span>
+                                            )}
+                                        </ItemDescription>
+                                    </ItemContent>
+                                </Item>
+                                <Item>
+                                    <ItemMedia variant="icon">
+                                        <Phone className="h-5 w-5" />
+                                    </ItemMedia>
+                                    <ItemContent>
+                                        <ItemTitle>Phone Number</ItemTitle>
+                                        <ItemDescription>
+                                            {selectedSupplier.phone || (
+                                                <span className="text-muted-foreground">
+                                                    Not provided
+                                                </span>
+                                            )}
+                                        </ItemDescription>
+                                    </ItemContent>
+                                </Item>
+                                {selectedSupplier.address && (
+                                    <Item>
+                                        <ItemMedia variant="icon">
+                                            <MapPin className="h-5 w-5" />
+                                        </ItemMedia>
+                                        <ItemContent>
+                                            <ItemTitle>Address</ItemTitle>
+                                            <ItemDescription>
+                                                {selectedSupplier.address}
+                                            </ItemDescription>
+                                        </ItemContent>
+                                    </Item>
                                 )}
-                                <div>
-                                    <Label>Created At</Label>
-                                    <p className="mt-1">
-                                        {new Date(
-                                            selectedSupplier.created_at,
-                                        ).toLocaleDateString('en-US', {
-                                            year: 'numeric',
-                                            month: 'long',
-                                            day: 'numeric',
-                                            hour: '2-digit',
-                                            minute: '2-digit',
-                                        })}
-                                    </p>
-                                </div>
-                            </div>
+                                <Item>
+                                    <ItemMedia variant="icon">
+                                        <Package className="h-5 w-5" />
+                                    </ItemMedia>
+                                    <ItemContent>
+                                        <ItemTitle>Total Purchases</ItemTitle>
+                                        <ItemDescription>
+                                            {selectedSupplier.purchases_sum_quantity_kg
+                                                ? Number(
+                                                      selectedSupplier.purchases_sum_quantity_kg,
+                                                  ).toFixed(2)
+                                                : '0.00'}{' '}
+                                            kg
+                                        </ItemDescription>
+                                    </ItemContent>
+                                </Item>
+                                <Item>
+                                    <ItemMedia variant="icon">
+                                        <Package className="h-5 w-5" />
+                                    </ItemMedia>
+                                    <ItemContent>
+                                        <ItemTitle>Remaining Stock</ItemTitle>
+                                        <ItemDescription>
+                                            <span className="font-semibold">
+                                                {selectedSupplier.remaining_stock !==
+                                                undefined
+                                                    ? Number(
+                                                          selectedSupplier.remaining_stock,
+                                                      ).toFixed(2)
+                                                    : '0.00'}{' '}
+                                                kg
+                                            </span>
+                                            {selectedSupplier.purchases_sum_quantity_kg &&
+                                                selectedSupplier.remaining_stock !==
+                                                    undefined &&
+                                                Number(
+                                                    selectedSupplier.purchases_sum_quantity_kg,
+                                                ) > 0 && (
+                                                    <span className="ml-2 text-xs text-muted-foreground">
+                                                        (
+                                                        {(
+                                                            (Number(
+                                                                selectedSupplier.remaining_stock,
+                                                            ) /
+                                                                Number(
+                                                                    selectedSupplier.purchases_sum_quantity_kg,
+                                                                )) *
+                                                            100
+                                                        ).toFixed(1)}
+                                                        % remaining)
+                                                    </span>
+                                                )}
+                                        </ItemDescription>
+                                    </ItemContent>
+                                </Item>
+                                {selectedSupplier.notes && (
+                                    <Item>
+                                        <ItemMedia variant="icon">
+                                            <FileText className="h-5 w-5" />
+                                        </ItemMedia>
+                                        <ItemContent>
+                                            <ItemTitle>Notes</ItemTitle>
+                                            <ItemDescription>
+                                                {selectedSupplier.notes}
+                                            </ItemDescription>
+                                        </ItemContent>
+                                    </Item>
+                                )}
+                                <Item>
+                                    <ItemMedia variant="icon">
+                                        <Calendar className="h-5 w-5" />
+                                    </ItemMedia>
+                                    <ItemContent>
+                                        <ItemTitle>Created At</ItemTitle>
+                                        <ItemDescription>
+                                            {new Date(
+                                                selectedSupplier.created_at,
+                                            ).toLocaleDateString('en-US', {
+                                                year: 'numeric',
+                                                month: 'long',
+                                                day: 'numeric',
+                                                hour: '2-digit',
+                                                minute: '2-digit',
+                                            })}
+                                        </ItemDescription>
+                                    </ItemContent>
+                                </Item>
+                            </ItemGroup>
                         )}
                         <DialogFooter>
                             <Button

@@ -16,8 +16,22 @@ import {
     EmptyMedia,
     EmptyTitle,
 } from '@/components/ui/empty';
+import {
+    Field,
+    FieldDescription,
+    FieldError,
+    FieldGroup,
+    FieldLabel,
+} from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import {
+    Item,
+    ItemContent,
+    ItemDescription,
+    ItemGroup,
+    ItemMedia,
+    ItemTitle,
+} from '@/components/ui/item';
 import {
     Pagination,
     PaginationContent,
@@ -55,11 +69,17 @@ import {
 } from '@tanstack/react-table';
 import {
     ArrowUpDown,
+    Building2,
     EyeIcon,
     InfoIcon,
+    Mail,
+    MapPin,
     PencilIcon,
+    Phone,
     PlusIcon,
+    Search,
     TrashIcon,
+    User,
     Users,
 } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -381,12 +401,13 @@ export default function CustomersIndex({ customers, filters }: CustomersProps) {
 
                 {/* Filters */}
                 <div className="flex items-center gap-4">
-                    <div className="flex-1">
+                    <div className="relative max-w-sm flex-1">
+                        <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                         <Input
                             placeholder="Search customers by name..."
                             value={searchValue}
                             onChange={(e) => handleSearch(e.target.value)}
-                            className="max-w-sm"
+                            className="pl-9"
                         />
                     </div>
                     <Select value={typeFilter} onValueChange={handleTypeFilter}>
@@ -577,109 +598,150 @@ export default function CustomersIndex({ customers, filters }: CustomersProps) {
 
                 {/* Create Modal */}
                 <Dialog open={createOpen} onOpenChange={setCreateOpen}>
-                    <DialogContent>
-                        <DialogHeader>
+                    <DialogContent className="flex max-h-[90vh] flex-col gap-0 sm:max-w-[500px]">
+                        <DialogHeader className="flex-shrink-0 pb-4">
                             <DialogTitle>Create Customer</DialogTitle>
                             <DialogDescription>
-                                Add a new customer to the system.
+                                Add a new customer to the system. All fields
+                                marked with * are required.
                             </DialogDescription>
                         </DialogHeader>
-                        <div className="space-y-4">
-                            <div>
-                                <Label htmlFor="name">Name *</Label>
-                                <Input
-                                    id="name"
-                                    value={createForm.data.name}
-                                    onChange={(e) =>
-                                        createForm.setData(
-                                            'name',
-                                            e.target.value,
-                                        )
-                                    }
-                                    className="mt-1"
-                                />
-                                {createForm.errors.name && (
-                                    <p className="mt-1 text-sm text-destructive">
+                        <div className="flex-1 overflow-y-auto px-1">
+                            <FieldGroup className="gap-6">
+                                <Field data-invalid={!!createForm.errors.name}>
+                                    <FieldLabel htmlFor="name">
+                                        Full Name *
+                                    </FieldLabel>
+                                    <div className="relative">
+                                        <User className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                                        <Input
+                                            id="name"
+                                            value={createForm.data.name}
+                                            onChange={(e) =>
+                                                createForm.setData(
+                                                    'name',
+                                                    e.target.value,
+                                                )
+                                            }
+                                            className="pl-9"
+                                            placeholder="John Doe"
+                                            autoFocus
+                                        />
+                                    </div>
+                                    <FieldError>
                                         {createForm.errors.name}
-                                    </p>
-                                )}
-                            </div>
-                            <div>
-                                <Label htmlFor="email">Email</Label>
-                                <Input
-                                    id="email"
-                                    type="email"
-                                    value={createForm.data.email}
-                                    onChange={(e) =>
-                                        createForm.setData(
-                                            'email',
-                                            e.target.value,
-                                        )
-                                    }
-                                    className="mt-1"
-                                />
-                                {createForm.errors.email && (
-                                    <p className="mt-1 text-sm text-destructive">
+                                    </FieldError>
+                                </Field>
+                                <Field data-invalid={!!createForm.errors.email}>
+                                    <FieldLabel htmlFor="email">
+                                        Email Address
+                                    </FieldLabel>
+                                    <div className="relative">
+                                        <Mail className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                                        <Input
+                                            id="email"
+                                            type="email"
+                                            value={createForm.data.email}
+                                            onChange={(e) =>
+                                                createForm.setData(
+                                                    'email',
+                                                    e.target.value,
+                                                )
+                                            }
+                                            className="pl-9"
+                                            placeholder="john.doe@example.com"
+                                        />
+                                    </div>
+                                    <FieldDescription>
+                                        Used for sending receipts via email.
+                                    </FieldDescription>
+                                    <FieldError>
                                         {createForm.errors.email}
-                                    </p>
-                                )}
-                            </div>
-                            <div>
-                                <Label htmlFor="phone">Phone</Label>
-                                <Input
-                                    id="phone"
-                                    value={createForm.data.phone}
-                                    onChange={(e) =>
-                                        createForm.setData(
-                                            'phone',
-                                            e.target.value,
-                                        )
-                                    }
-                                    className="mt-1"
-                                />
-                            </div>
-                            <div>
-                                <Label htmlFor="type">Type *</Label>
-                                <Select
-                                    value={createForm.data.type}
-                                    onValueChange={(
-                                        value: 'individual' | 'business',
-                                    ) => createForm.setData('type', value)}
-                                >
-                                    <SelectTrigger className="mt-1">
-                                        <SelectValue />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="individual">
-                                            Individual
-                                        </SelectItem>
-                                        <SelectItem value="business">
-                                            Business
-                                        </SelectItem>
-                                    </SelectContent>
-                                </Select>
-                                {createForm.errors.type && (
-                                    <p className="mt-1 text-sm text-destructive">
+                                    </FieldError>
+                                </Field>
+                                <Field data-invalid={!!createForm.errors.phone}>
+                                    <FieldLabel htmlFor="phone">
+                                        Phone Number
+                                    </FieldLabel>
+                                    <div className="relative">
+                                        <Phone className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                                        <Input
+                                            id="phone"
+                                            value={createForm.data.phone}
+                                            onChange={(e) =>
+                                                createForm.setData(
+                                                    'phone',
+                                                    e.target.value,
+                                                )
+                                            }
+                                            className="pl-9"
+                                            placeholder="+1 (555) 123-4567"
+                                        />
+                                    </div>
+                                    <FieldError>
+                                        {createForm.errors.phone}
+                                    </FieldError>
+                                </Field>
+                                <Field data-invalid={!!createForm.errors.type}>
+                                    <FieldLabel htmlFor="type">
+                                        Customer Type *
+                                    </FieldLabel>
+                                    <Select
+                                        value={createForm.data.type}
+                                        onValueChange={(
+                                            value: 'individual' | 'business',
+                                        ) => createForm.setData('type', value)}
+                                    >
+                                        <SelectTrigger id="type">
+                                            <SelectValue />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="individual">
+                                                <div className="flex items-center gap-2">
+                                                    <User className="h-4 w-4" />
+                                                    Individual
+                                                </div>
+                                            </SelectItem>
+                                            <SelectItem value="business">
+                                                <div className="flex items-center gap-2">
+                                                    <Building2 className="h-4 w-4" />
+                                                    Business
+                                                </div>
+                                            </SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                    <FieldError>
                                         {createForm.errors.type}
-                                    </p>
-                                )}
-                            </div>
-                            <div>
-                                <Label htmlFor="address">Address</Label>
-                                <textarea
-                                    id="address"
-                                    value={createForm.data.address}
-                                    onChange={(e) =>
-                                        createForm.setData(
-                                            'address',
-                                            e.target.value,
-                                        )
-                                    }
-                                    className="mt-1 flex min-h-[80px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm"
-                                />
-                            </div>
+                                    </FieldError>
+                                </Field>
+                                <Field
+                                    data-invalid={!!createForm.errors.address}
+                                >
+                                    <FieldLabel htmlFor="address">
+                                        Address
+                                    </FieldLabel>
+                                    <div className="relative">
+                                        <MapPin className="absolute top-3 left-3 h-4 w-4 text-muted-foreground" />
+                                        <textarea
+                                            id="address"
+                                            value={createForm.data.address}
+                                            onChange={(e) =>
+                                                createForm.setData(
+                                                    'address',
+                                                    e.target.value,
+                                                )
+                                            }
+                                            className="flex min-h-[80px] w-full rounded-md border border-input bg-transparent px-3 py-2 pl-9 text-sm"
+                                            placeholder="123 Main St, City, State ZIP"
+                                        />
+                                    </div>
+                                    <FieldError>
+                                        {createForm.errors.address}
+                                    </FieldError>
+                                </Field>
+                            </FieldGroup>
                         </div>
-                        <DialogFooter>
+                        <DialogFooter className="flex-shrink-0 border-t pt-4">
                             <Button
                                 variant="outline"
                                 onClick={() => setCreateOpen(false)}
@@ -690,7 +752,17 @@ export default function CustomersIndex({ customers, filters }: CustomersProps) {
                                 onClick={handleCreate}
                                 disabled={createForm.processing}
                             >
-                                Create
+                                {createForm.processing ? (
+                                    <>
+                                        <PlusIcon className="mr-2 h-4 w-4 animate-spin" />
+                                        Creating...
+                                    </>
+                                ) : (
+                                    <>
+                                        <PlusIcon className="mr-2 h-4 w-4" />
+                                        Create Customer
+                                    </>
+                                )}
                             </Button>
                         </DialogFooter>
                     </DialogContent>
@@ -698,106 +770,147 @@ export default function CustomersIndex({ customers, filters }: CustomersProps) {
 
                 {/* Edit Modal */}
                 <Dialog open={editOpen} onOpenChange={setEditOpen}>
-                    <DialogContent>
-                        <DialogHeader>
+                    <DialogContent className="flex max-h-[90vh] flex-col gap-0 sm:max-w-[500px]">
+                        <DialogHeader className="flex-shrink-0 pb-4">
                             <DialogTitle>Edit Customer</DialogTitle>
                             <DialogDescription>
-                                Update customer information.
+                                Update customer information. All fields marked
+                                with * are required.
                             </DialogDescription>
                         </DialogHeader>
-                        <div className="space-y-4">
-                            <div>
-                                <Label htmlFor="edit-name">Name *</Label>
-                                <Input
-                                    id="edit-name"
-                                    value={editForm.data.name}
-                                    onChange={(e) =>
-                                        editForm.setData('name', e.target.value)
-                                    }
-                                    className="mt-1"
-                                />
-                                {editForm.errors.name && (
-                                    <p className="mt-1 text-sm text-destructive">
+                        <div className="flex-1 overflow-y-auto px-1">
+                            <FieldGroup className="gap-6">
+                                <Field data-invalid={!!editForm.errors.name}>
+                                    <FieldLabel htmlFor="edit-name">
+                                        Full Name *
+                                    </FieldLabel>
+                                    <div className="relative">
+                                        <User className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                                        <Input
+                                            id="edit-name"
+                                            value={editForm.data.name}
+                                            onChange={(e) =>
+                                                editForm.setData(
+                                                    'name',
+                                                    e.target.value,
+                                                )
+                                            }
+                                            className="pl-9"
+                                            placeholder="John Doe"
+                                        />
+                                    </div>
+                                    <FieldError>
                                         {editForm.errors.name}
-                                    </p>
-                                )}
-                            </div>
-                            <div>
-                                <Label htmlFor="edit-email">Email</Label>
-                                <Input
-                                    id="edit-email"
-                                    type="email"
-                                    value={editForm.data.email}
-                                    onChange={(e) =>
-                                        editForm.setData(
-                                            'email',
-                                            e.target.value,
-                                        )
-                                    }
-                                    className="mt-1"
-                                />
-                                {editForm.errors.email && (
-                                    <p className="mt-1 text-sm text-destructive">
+                                    </FieldError>
+                                </Field>
+                                <Field data-invalid={!!editForm.errors.email}>
+                                    <FieldLabel htmlFor="edit-email">
+                                        Email Address
+                                    </FieldLabel>
+                                    <div className="relative">
+                                        <Mail className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                                        <Input
+                                            id="edit-email"
+                                            type="email"
+                                            value={editForm.data.email}
+                                            onChange={(e) =>
+                                                editForm.setData(
+                                                    'email',
+                                                    e.target.value,
+                                                )
+                                            }
+                                            className="pl-9"
+                                            placeholder="john.doe@example.com"
+                                        />
+                                    </div>
+                                    <FieldDescription>
+                                        Used for sending receipts via email.
+                                    </FieldDescription>
+                                    <FieldError>
                                         {editForm.errors.email}
-                                    </p>
-                                )}
-                            </div>
-                            <div>
-                                <Label htmlFor="edit-phone">Phone</Label>
-                                <Input
-                                    id="edit-phone"
-                                    value={editForm.data.phone}
-                                    onChange={(e) =>
-                                        editForm.setData(
-                                            'phone',
-                                            e.target.value,
-                                        )
-                                    }
-                                    className="mt-1"
-                                />
-                            </div>
-                            <div>
-                                <Label htmlFor="edit-type">Type *</Label>
-                                <Select
-                                    value={editForm.data.type}
-                                    onValueChange={(
-                                        value: 'individual' | 'business',
-                                    ) => editForm.setData('type', value)}
-                                >
-                                    <SelectTrigger className="mt-1">
-                                        <SelectValue />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="individual">
-                                            Individual
-                                        </SelectItem>
-                                        <SelectItem value="business">
-                                            Business
-                                        </SelectItem>
-                                    </SelectContent>
-                                </Select>
-                                {editForm.errors.type && (
-                                    <p className="mt-1 text-sm text-destructive">
+                                    </FieldError>
+                                </Field>
+                                <Field data-invalid={!!editForm.errors.phone}>
+                                    <FieldLabel htmlFor="edit-phone">
+                                        Phone Number
+                                    </FieldLabel>
+                                    <div className="relative">
+                                        <Phone className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                                        <Input
+                                            id="edit-phone"
+                                            value={editForm.data.phone}
+                                            onChange={(e) =>
+                                                editForm.setData(
+                                                    'phone',
+                                                    e.target.value,
+                                                )
+                                            }
+                                            className="pl-9"
+                                            placeholder="+1 (555) 123-4567"
+                                        />
+                                    </div>
+                                    <FieldError>
+                                        {editForm.errors.phone}
+                                    </FieldError>
+                                </Field>
+                                <Field data-invalid={!!editForm.errors.type}>
+                                    <FieldLabel htmlFor="edit-type">
+                                        Customer Type *
+                                    </FieldLabel>
+                                    <Select
+                                        value={editForm.data.type}
+                                        onValueChange={(
+                                            value: 'individual' | 'business',
+                                        ) => editForm.setData('type', value)}
+                                    >
+                                        <SelectTrigger id="edit-type">
+                                            <SelectValue />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="individual">
+                                                <div className="flex items-center gap-2">
+                                                    <User className="h-4 w-4" />
+                                                    Individual
+                                                </div>
+                                            </SelectItem>
+                                            <SelectItem value="business">
+                                                <div className="flex items-center gap-2">
+                                                    <Building2 className="h-4 w-4" />
+                                                    Business
+                                                </div>
+                                            </SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                    <FieldError>
                                         {editForm.errors.type}
-                                    </p>
-                                )}
-                            </div>
-                            <div>
-                                <Label htmlFor="edit-address">Address</Label>
-                                <textarea
-                                    id="edit-address"
-                                    value={editForm.data.address}
-                                    onChange={(e) =>
-                                        editForm.setData(
-                                            'address',
-                                            e.target.value,
-                                        )
-                                    }
-                                    className="mt-1 flex min-h-[80px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm"
-                                />
-                            </div>
+                                    </FieldError>
+                                </Field>
+                                <Field data-invalid={!!editForm.errors.address}>
+                                    <FieldLabel htmlFor="edit-address">
+                                        Address
+                                    </FieldLabel>
+                                    <div className="relative">
+                                        <MapPin className="absolute top-3 left-3 h-4 w-4 text-muted-foreground" />
+                                        <textarea
+                                            id="edit-address"
+                                            value={editForm.data.address}
+                                            onChange={(e) =>
+                                                editForm.setData(
+                                                    'address',
+                                                    e.target.value,
+                                                )
+                                            }
+                                            className="flex min-h-[80px] w-full rounded-md border border-input bg-transparent px-3 py-2 pl-9 text-sm"
+                                            placeholder="123 Main St, City, State ZIP"
+                                        />
+                                    </div>
+                                    <FieldError>
+                                        {editForm.errors.address}
+                                    </FieldError>
+                                </Field>
+                            </FieldGroup>
                         </div>
-                        <DialogFooter>
+                        <DialogFooter className="flex-shrink-0 border-t pt-4">
                             <Button
                                 variant="outline"
                                 onClick={() => setEditOpen(false)}
@@ -808,7 +921,17 @@ export default function CustomersIndex({ customers, filters }: CustomersProps) {
                                 onClick={handleUpdate}
                                 disabled={editForm.processing}
                             >
-                                Update
+                                {editForm.processing ? (
+                                    <>
+                                        <PencilIcon className="mr-2 h-4 w-4 animate-spin" />
+                                        Updating...
+                                    </>
+                                ) : (
+                                    <>
+                                        <PencilIcon className="mr-2 h-4 w-4" />
+                                        Update Customer
+                                    </>
+                                )}
                             </Button>
                         </DialogFooter>
                     </DialogContent>
@@ -816,45 +939,86 @@ export default function CustomersIndex({ customers, filters }: CustomersProps) {
 
                 {/* Show Modal */}
                 <Dialog open={showOpen} onOpenChange={setShowOpen}>
-                    <DialogContent>
+                    <DialogContent className="sm:max-w-[500px]">
                         <DialogHeader>
                             <DialogTitle>Customer Details</DialogTitle>
+                            <DialogDescription>
+                                View complete customer information.
+                            </DialogDescription>
                         </DialogHeader>
                         {selectedCustomer && (
-                            <div className="space-y-4">
-                                <div>
-                                    <Label>Name</Label>
-                                    <p className="mt-1">
-                                        {selectedCustomer.name}
-                                    </p>
-                                </div>
-                                <div>
-                                    <Label>Email</Label>
-                                    <p className="mt-1">
-                                        {selectedCustomer.email || '-'}
-                                    </p>
-                                </div>
-                                <div>
-                                    <Label>Phone</Label>
-                                    <p className="mt-1">
-                                        {selectedCustomer.phone || '-'}
-                                    </p>
-                                </div>
-                                <div>
-                                    <Label>Type</Label>
-                                    <p className="mt-1 capitalize">
-                                        {selectedCustomer.type}
-                                    </p>
-                                </div>
+                            <ItemGroup>
+                                <Item>
+                                    <ItemMedia variant="icon">
+                                        <User className="h-5 w-5" />
+                                    </ItemMedia>
+                                    <ItemContent>
+                                        <ItemTitle>Full Name</ItemTitle>
+                                        <ItemDescription>
+                                            {selectedCustomer.name}
+                                        </ItemDescription>
+                                    </ItemContent>
+                                </Item>
+                                <Item>
+                                    <ItemMedia variant="icon">
+                                        <Mail className="h-5 w-5" />
+                                    </ItemMedia>
+                                    <ItemContent>
+                                        <ItemTitle>Email Address</ItemTitle>
+                                        <ItemDescription>
+                                            {selectedCustomer.email || (
+                                                <span className="text-muted-foreground">
+                                                    Not provided
+                                                </span>
+                                            )}
+                                        </ItemDescription>
+                                    </ItemContent>
+                                </Item>
+                                <Item>
+                                    <ItemMedia variant="icon">
+                                        <Phone className="h-5 w-5" />
+                                    </ItemMedia>
+                                    <ItemContent>
+                                        <ItemTitle>Phone Number</ItemTitle>
+                                        <ItemDescription>
+                                            {selectedCustomer.phone || (
+                                                <span className="text-muted-foreground">
+                                                    Not provided
+                                                </span>
+                                            )}
+                                        </ItemDescription>
+                                    </ItemContent>
+                                </Item>
+                                <Item>
+                                    <ItemMedia variant="icon">
+                                        {selectedCustomer.type ===
+                                        'business' ? (
+                                            <Building2 className="h-5 w-5" />
+                                        ) : (
+                                            <User className="h-5 w-5" />
+                                        )}
+                                    </ItemMedia>
+                                    <ItemContent>
+                                        <ItemTitle>Customer Type</ItemTitle>
+                                        <ItemDescription className="capitalize">
+                                            {selectedCustomer.type}
+                                        </ItemDescription>
+                                    </ItemContent>
+                                </Item>
                                 {selectedCustomer.address && (
-                                    <div>
-                                        <Label>Address</Label>
-                                        <p className="mt-1">
-                                            {selectedCustomer.address}
-                                        </p>
-                                    </div>
+                                    <Item>
+                                        <ItemMedia variant="icon">
+                                            <MapPin className="h-5 w-5" />
+                                        </ItemMedia>
+                                        <ItemContent>
+                                            <ItemTitle>Address</ItemTitle>
+                                            <ItemDescription>
+                                                {selectedCustomer.address}
+                                            </ItemDescription>
+                                        </ItemContent>
+                                    </Item>
                                 )}
-                            </div>
+                            </ItemGroup>
                         )}
                         <DialogFooter>
                             <Button
