@@ -1011,7 +1011,7 @@ export default function PaymentsIndex({
                                         {createForm.errors.amount}
                                     </FieldError>
                                 </Field>
-                                <Field>
+                                <Field data-invalid={!!createForm.errors.notes}>
                                     <FieldLabel htmlFor="notes">
                                         Notes
                                     </FieldLabel>
@@ -1033,6 +1033,9 @@ export default function PaymentsIndex({
                                     <FieldDescription>
                                         Optional notes for internal reference.
                                     </FieldDescription>
+                                    <FieldError>
+                                        {createForm.errors.notes}
+                                    </FieldError>
                                 </Field>
                             </FieldGroup>
                         </div>
@@ -1128,7 +1131,7 @@ export default function PaymentsIndex({
                                         {editForm.errors.amount}
                                     </FieldError>
                                 </Field>
-                                <Field>
+                                <Field data-invalid={!!editForm.errors.notes}>
                                     <FieldLabel htmlFor="edit-notes">
                                         Notes
                                     </FieldLabel>
@@ -1150,6 +1153,9 @@ export default function PaymentsIndex({
                                     <FieldDescription>
                                         Optional notes for internal reference.
                                     </FieldDescription>
+                                    <FieldError>
+                                        {editForm.errors.notes}
+                                    </FieldError>
                                 </Field>
                             </FieldGroup>
                         </div>
