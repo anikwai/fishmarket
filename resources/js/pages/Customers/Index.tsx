@@ -659,7 +659,7 @@ export default function CustomersIndex({ customers, filters }: CustomersProps) {
                                         {createForm.errors.email}
                                     </FieldError>
                                 </Field>
-                                <Field>
+                                <Field data-invalid={!!createForm.errors.phone}>
                                     <FieldLabel htmlFor="phone">
                                         Phone Number
                                     </FieldLabel>
@@ -678,6 +678,9 @@ export default function CustomersIndex({ customers, filters }: CustomersProps) {
                                             placeholder="+1 (555) 123-4567"
                                         />
                                     </div>
+                                    <FieldError>
+                                        {createForm.errors.phone}
+                                    </FieldError>
                                 </Field>
                                 <Field data-invalid={!!createForm.errors.type}>
                                     <FieldLabel htmlFor="type">
@@ -711,7 +714,9 @@ export default function CustomersIndex({ customers, filters }: CustomersProps) {
                                         {createForm.errors.type}
                                     </FieldError>
                                 </Field>
-                                <Field>
+                                <Field
+                                    data-invalid={!!createForm.errors.address}
+                                >
                                     <FieldLabel htmlFor="address">
                                         Address
                                     </FieldLabel>
@@ -730,6 +735,9 @@ export default function CustomersIndex({ customers, filters }: CustomersProps) {
                                             placeholder="123 Main St, City, State ZIP"
                                         />
                                     </div>
+                                    <FieldError>
+                                        {createForm.errors.address}
+                                    </FieldError>
                                 </Field>
                             </FieldGroup>
                         </div>
@@ -822,7 +830,7 @@ export default function CustomersIndex({ customers, filters }: CustomersProps) {
                                         {editForm.errors.email}
                                     </FieldError>
                                 </Field>
-                                <Field>
+                                <Field data-invalid={!!editForm.errors.phone}>
                                     <FieldLabel htmlFor="edit-phone">
                                         Phone Number
                                     </FieldLabel>
@@ -841,6 +849,9 @@ export default function CustomersIndex({ customers, filters }: CustomersProps) {
                                             placeholder="+1 (555) 123-4567"
                                         />
                                     </div>
+                                    <FieldError>
+                                        {editForm.errors.phone}
+                                    </FieldError>
                                 </Field>
                                 <Field data-invalid={!!editForm.errors.type}>
                                     <FieldLabel htmlFor="edit-type">
@@ -874,7 +885,7 @@ export default function CustomersIndex({ customers, filters }: CustomersProps) {
                                         {editForm.errors.type}
                                     </FieldError>
                                 </Field>
-                                <Field>
+                                <Field data-invalid={!!editForm.errors.address}>
                                     <FieldLabel htmlFor="edit-address">
                                         Address
                                     </FieldLabel>
@@ -893,6 +904,9 @@ export default function CustomersIndex({ customers, filters }: CustomersProps) {
                                             placeholder="123 Main St, City, State ZIP"
                                         />
                                     </div>
+                                    <FieldError>
+                                        {editForm.errors.address}
+                                    </FieldError>
                                 </Field>
                             </FieldGroup>
                         </div>
