@@ -1522,7 +1522,7 @@ export default function PurchasesIndex({
 
                 {/* Show Modal */}
                 <Dialog open={showOpen} onOpenChange={setShowOpen}>
-                    <DialogContent className="sm:max-w-[600px]">
+                    <DialogContent className="sm:max-w-2xl">
                         <DialogHeader>
                             <DialogTitle>Purchase Details</DialogTitle>
                             <DialogDescription>
@@ -1531,14 +1531,14 @@ export default function PurchasesIndex({
                             </DialogDescription>
                         </DialogHeader>
                         {selectedPurchase && (
-                            <ItemGroup>
-                                <Item>
-                                    <ItemMedia variant="icon">
-                                        <Calendar className="h-5 w-5" />
+                            <div className="grid gap-4 sm:grid-cols-2">
+                                <Item size="sm" className="col-span-1 rounded-lg bg-muted/40">
+                                    <ItemMedia variant="icon" className="text-muted-foreground bg-background">
+                                        <Calendar className="h-4 w-4" />
                                     </ItemMedia>
                                     <ItemContent>
-                                        <ItemTitle>Purchase Date</ItemTitle>
-                                        <ItemDescription>
+                                        <ItemTitle className="text-muted-foreground text-xs">Purchase Date</ItemTitle>
+                                        <ItemDescription className="font-semibold text-foreground text-base">
                                             {new Date(
                                                 selectedPurchase.purchase_date,
                                             ).toLocaleDateString('en-US', {
@@ -1549,24 +1549,24 @@ export default function PurchasesIndex({
                                         </ItemDescription>
                                     </ItemContent>
                                 </Item>
-                                <Item>
-                                    <ItemMedia variant="icon">
-                                        <UserCircle className="h-5 w-5" />
+                                <Item size="sm" className="col-span-1 rounded-lg bg-muted/40">
+                                    <ItemMedia variant="icon" className="text-muted-foreground bg-background">
+                                        <UserCircle className="h-4 w-4" />
                                     </ItemMedia>
                                     <ItemContent>
-                                        <ItemTitle>Supplier</ItemTitle>
-                                        <ItemDescription>
+                                        <ItemTitle className="text-muted-foreground text-xs">Supplier</ItemTitle>
+                                        <ItemDescription className="font-semibold text-foreground text-base">
                                             {selectedPurchase.supplier.name}
                                         </ItemDescription>
                                     </ItemContent>
                                 </Item>
-                                <Item>
-                                    <ItemMedia variant="icon">
-                                        <Package className="h-5 w-5" />
+                                <Item size="sm" className="col-span-1 rounded-lg bg-muted/40">
+                                    <ItemMedia variant="icon" className="text-muted-foreground bg-background">
+                                        <Package className="h-4 w-4" />
                                     </ItemMedia>
                                     <ItemContent>
-                                        <ItemTitle>Quantity</ItemTitle>
-                                        <ItemDescription>
+                                        <ItemTitle className="text-muted-foreground text-xs">Quantity</ItemTitle>
+                                        <ItemDescription className="font-semibold text-foreground text-base">
                                             {Number(
                                                 selectedPurchase.quantity_kg,
                                             ).toFixed(2)}{' '}
@@ -1574,13 +1574,13 @@ export default function PurchasesIndex({
                                         </ItemDescription>
                                     </ItemContent>
                                 </Item>
-                                <Item>
-                                    <ItemMedia variant="icon">
-                                        <DollarSign className="h-5 w-5" />
+                                <Item size="sm" className="col-span-1 rounded-lg bg-muted/40">
+                                    <ItemMedia variant="icon" className="text-muted-foreground bg-background">
+                                        <DollarSign className="h-4 w-4" />
                                     </ItemMedia>
                                     <ItemContent>
-                                        <ItemTitle>Price per kg</ItemTitle>
-                                        <ItemDescription>
+                                        <ItemTitle className="text-muted-foreground text-xs">Price per kg</ItemTitle>
+                                        <ItemDescription className="font-semibold text-foreground text-base">
                                             SBD{' '}
                                             {Number(
                                                 selectedPurchase.price_per_kg,
@@ -1588,29 +1588,27 @@ export default function PurchasesIndex({
                                         </ItemDescription>
                                     </ItemContent>
                                 </Item>
-                                <Item>
-                                    <ItemMedia variant="icon">
-                                        <DollarSign className="h-5 w-5" />
+                                <Item size="sm" className="col-span-1 rounded-lg bg-muted/40">
+                                    <ItemMedia variant="icon" className="text-muted-foreground bg-background">
+                                        <DollarSign className="h-4 w-4" />
                                     </ItemMedia>
                                     <ItemContent>
-                                        <ItemTitle>Total Cost</ItemTitle>
-                                        <ItemDescription>
-                                            <span className="font-semibold">
-                                                SBD{' '}
-                                                {Number(
-                                                    selectedPurchase.total_cost,
-                                                ).toFixed(2)}
-                                            </span>
+                                        <ItemTitle className="text-muted-foreground text-xs">Total Cost</ItemTitle>
+                                        <ItemDescription className="font-semibold text-foreground text-base">
+                                            SBD{' '}
+                                            {Number(
+                                                selectedPurchase.total_cost,
+                                            ).toFixed(2)}
                                         </ItemDescription>
                                     </ItemContent>
                                 </Item>
-                                <Item>
-                                    <ItemMedia variant="icon">
-                                        <Package className="h-5 w-5" />
+                                <Item size="sm" className="col-span-1 rounded-lg bg-muted/40">
+                                    <ItemMedia variant="icon" className="text-muted-foreground bg-background">
+                                        <Package className="h-4 w-4" />
                                     </ItemMedia>
                                     <ItemContent>
-                                        <ItemTitle>Sold Quantity</ItemTitle>
-                                        <ItemDescription>
+                                        <ItemTitle className="text-muted-foreground text-xs">Sold Quantity</ItemTitle>
+                                        <ItemDescription className="font-semibold text-foreground text-base">
                                             {selectedPurchase.sold_quantity
                                                 ? Number(
                                                       selectedPurchase.sold_quantity,
@@ -1626,33 +1624,52 @@ export default function PurchasesIndex({
                                 </Item>
                                 {selectedPurchase.total_revenue !==
                                     undefined && (
-                                    <Item>
-                                        <ItemMedia variant="icon">
-                                            <TrendingUp className="h-5 w-5" />
+                                    <Item size="sm" className="col-span-1 rounded-lg bg-muted/40">
+                                        <ItemMedia variant="icon" className="text-muted-foreground bg-background">
+                                            <TrendingUp className="h-4 w-4" />
                                         </ItemMedia>
                                         <ItemContent>
-                                            <ItemTitle>Total Revenue</ItemTitle>
-                                            <ItemDescription>
-                                                <span className="font-semibold">
-                                                    SBD{' '}
-                                                    {Number(
-                                                        selectedPurchase.total_revenue,
-                                                    ).toFixed(2)}
-                                                </span>
+                                            <ItemTitle className="text-muted-foreground text-xs">Total Revenue</ItemTitle>
+                                            <ItemDescription className="font-semibold text-foreground text-base">
+                                                SBD{' '}
+                                                {Number(
+                                                    selectedPurchase.total_revenue,
+                                                ).toFixed(2)}
                                             </ItemDescription>
                                         </ItemContent>
                                     </Item>
                                 )}
+                                {selectedPurchase.total_expenses !==
+                                    undefined &&
+                                    Number(selectedPurchase.total_expenses) >
+                                        0 && (
+                                        <Item size="sm" className="col-span-1 rounded-lg bg-destructive/10">
+                                            <ItemMedia variant="icon" className="text-destructive bg-background border-destructive/20">
+                                                <DollarSign className="h-4 w-4" />
+                                            </ItemMedia>
+                                            <ItemContent>
+                                                <ItemTitle className="text-destructive text-xs">
+                                                    Total Expenses
+                                                </ItemTitle>
+                                                <ItemDescription className="font-semibold text-destructive text-base">
+                                                    SBD{' '}
+                                                    {Number(
+                                                        selectedPurchase.total_expenses,
+                                                    ).toFixed(2)}
+                                                </ItemDescription>
+                                            </ItemContent>
+                                        </Item>
+                                    )}
                                 {selectedPurchase.profit !== undefined && (
-                                    <Item>
-                                        <ItemMedia variant="icon">
-                                            <TrendingUp className="h-5 w-5" />
+                                    <Item size="sm" className="sm:col-span-2 rounded-lg bg-emerald-50 dark:bg-emerald-950/30">
+                                        <ItemMedia variant="icon" className="text-emerald-600 bg-background border-emerald-200 dark:border-emerald-800">
+                                            <TrendingUp className="h-4 w-4" />
                                         </ItemMedia>
                                         <ItemContent>
-                                            <ItemTitle>Profit/Loss</ItemTitle>
-                                            <ItemDescription>
+                                            <ItemTitle className="text-emerald-600/80 text-xs uppercase tracking-wide font-semibold">Profit/Loss</ItemTitle>
+                                            <ItemDescription className="flex items-center justify-between w-full">
                                                 <span
-                                                    className={`text-lg font-semibold ${Number(selectedPurchase.profit) >= 0 ? 'text-green-600' : 'text-red-600'}`}
+                                                    className={`text-xl font-bold ${Number(selectedPurchase.profit) >= 0 ? 'text-emerald-600' : 'text-red-600'}`}
                                                 >
                                                     {Number(
                                                         selectedPurchase.profit,
@@ -1669,47 +1686,19 @@ export default function PurchasesIndex({
                                                     Number(
                                                         selectedPurchase.total_expenses,
                                                     ) > 0 && (
-                                                        <span className="ml-2 block text-xs text-muted-foreground">
+                                                        <span className="text-xs text-muted-foreground">
                                                             (Includes SBD{' '}
                                                             {Number(
                                                                 selectedPurchase.total_expenses,
                                                             ).toFixed(2)}{' '}
-                                                            in expenses)
+                                                            expenses)
                                                         </span>
                                                     )}
                                             </ItemDescription>
                                         </ItemContent>
                                     </Item>
                                 )}
-                                {selectedPurchase.total_expenses !==
-                                    undefined &&
-                                    Number(selectedPurchase.total_expenses) >
-                                        0 && (
-                                        <Item>
-                                            <ItemMedia variant="icon">
-                                                <DollarSign className="h-5 w-5" />
-                                            </ItemMedia>
-                                            <ItemContent>
-                                                <ItemTitle>
-                                                    Total Expenses
-                                                </ItemTitle>
-                                                <ItemDescription>
-                                                    <span className="font-semibold text-destructive">
-                                                        SBD{' '}
-                                                        {Number(
-                                                            selectedPurchase.total_expenses,
-                                                        ).toFixed(2)}
-                                                    </span>
-                                                    <span className="ml-2 block text-xs text-muted-foreground">
-                                                        Expenses tied to this
-                                                        purchase (freight, ice,
-                                                        fuel, etc.)
-                                                    </span>
-                                                </ItemDescription>
-                                            </ItemContent>
-                                        </Item>
-                                    )}
-                            </ItemGroup>
+                            </div>
                         )}
                         <DialogFooter>
                             <Button
