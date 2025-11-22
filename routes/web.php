@@ -20,16 +20,19 @@ Route::middleware(['auth', 'verified'])->group(function (): void {
 
     Route::resource('suppliers', App\Http\Controllers\SupplierController::class)->except(['create', 'edit', 'show']);
     Route::resource('customers', App\Http\Controllers\CustomerController::class)->except(['create', 'edit', 'show']);
-    Route::resource('purchases', App\Http\Controllers\PurchaseController::class)->except(['create', 'edit', 'show']);
     Route::resource('sales', App\Http\Controllers\SaleController::class)->except(['create', 'edit', 'show']);
+    Route::get('sales/{sale}/receipt/download', [App\Http\Controllers\SaleController::class, 'downloadReceipt'])->name('sales.receipt.download');
+    Route::post('sales/{sale}/receipt/email', [App\Http\Controllers\SaleController::class, 'sendReceiptEmail'])->name('sales.receipt.email');
+
+    Route::resource('purchases', App\Http\Controllers\PurchaseController::class)->except(['create', 'edit', 'show']);
+    Route::get('purchases/{purchase}/invoice/download', [App\Http\Controllers\PurchaseController::class, 'downloadInvoice'])->name('purchases.invoice.download');
+    Route::post('purchases/{purchase}/invoice/email', [App\Http\Controllers\PurchaseController::class, 'sendInvoiceEmail'])->name('purchases.invoice.email');
+
     Route::resource('expenses', App\Http\Controllers\ExpenseController::class)->except(['create', 'edit', 'show']);
     Route::resource('payments', App\Http\Controllers\PaymentController::class)->except(['create', 'edit', 'show']);
     Route::resource('receipts', App\Http\Controllers\ReceiptController::class)->only(['index']);
     Route::get('reports', [App\Http\Controllers\ReportController::class, 'index'])->name('reports.index');
     Route::get('reports/export', [App\Http\Controllers\ReportController::class, 'export'])->name('reports.export');
-
-    Route::get('sales/{sale}/receipt/download', [App\Http\Controllers\SaleController::class, 'downloadReceipt'])->name('sales.receipt.download');
-    Route::post('sales/{sale}/receipt/email', [App\Http\Controllers\SaleController::class, 'sendReceiptEmail'])->name('sales.receipt.email');
 
     Route::get('receipts/{receipt}/download', [App\Http\Controllers\ReceiptController::class, 'download'])->name('receipts.download');
     Route::post('receipts/{receipt}/email', [App\Http\Controllers\ReceiptController::class, 'sendEmail'])->name('receipts.email');

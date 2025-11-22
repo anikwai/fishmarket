@@ -83,6 +83,8 @@ import {
     DollarSign,
     EyeIcon,
     FileText,
+    FileDown,
+    Mail,
     InfoIcon,
     MoreHorizontal,
     Package,
@@ -343,6 +345,27 @@ export default function PurchasesIndex({
         });
     };
 
+    const handleDownloadInvoice = (purchase: Purchase) => {
+        window.open(`/purchases/${purchase.id}/invoice/download`, '_blank');
+    };
+
+    const handleEmailInvoice = (purchase: Purchase) => {
+        if (
+            confirm('Are you sure you want to email this invoice to the supplier?')
+        ) {
+            router.post(
+                `/purchases/${purchase.id}/invoice/email`,
+                {},
+                {
+                    preserveScroll: true,
+                    onSuccess: () => {
+                        // Optional: show toast
+                    },
+                },
+            );
+        }
+    };
+
     const columns = useMemo<ColumnDef<Purchase>[]>(
         () => [
             {
@@ -575,6 +598,23 @@ export default function PurchasesIndex({
                                     </Button>
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end">
+                                    <DropdownMenuItem
+                                        onClick={() =>
+                                            handleDownloadInvoice(purchase)
+                                        }
+                                    >
+                                        <FileDown className="mr-2 h-4 w-4" />
+                                        Download Invoice
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem
+                                        onClick={() =>
+                                            handleEmailInvoice(purchase)
+                                        }
+                                    >
+                                        <Mail className="mr-2 h-4 w-4" />
+                                        Email Invoice
+                                    </DropdownMenuItem>
+                                    <DropdownMenuSeparator />
                                     <DropdownMenuItem
                                         onClick={() => {
                                             setSelectedPurchase(purchase);

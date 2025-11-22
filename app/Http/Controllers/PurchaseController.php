@@ -6,7 +6,9 @@ namespace App\Http\Controllers;
 
 use App\Actions\CreatePurchase;
 use App\Actions\DeletePurchase;
+use App\Actions\GeneratePurchaseInvoice;
 use App\Actions\PreparePurchaseIndexDataAction;
+use App\Actions\SendPurchaseInvoiceEmail;
 use App\Actions\UpdatePurchase;
 use App\Http\Requests\StorePurchaseRequest;
 use App\Http\Requests\UpdatePurchaseRequest;
@@ -14,6 +16,7 @@ use App\Models\Purchase;
 use App\Models\Supplier;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response as HttpResponse;
 use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -102,5 +105,27 @@ final readonly class PurchaseController
         $action->handle($purchase);
 
         return back()->with('success', 'Purchase deleted successfully.');
+    }
+
+    public function downloadInvoice(Purchase $purchase, GeneratePurchaseInvoice $generator): HttpResponse
+    {
+        Gate::authorize('view purchases');
+
+        $pdf = $generator->handle($purchase);
+        $invoiceNumber = 'INV-'.str_pad((string) $purchase->id, 6, '0', STR_PAD_LEFT);
+
+        return response($pdf->output(), 200, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'attachment; filename="'.$invoiceNumber.'.pdf"',
+        ]);
+    }
+
+    public function sendInvoiceEmail(Purchase $purchase, SendPurchaseInvoiceEmail $sender): RedirectResponse
+    {
+        Gate::authorize('view purchases');
+
+        $sender->handle($purchase);
+
+        return back()->with('success', 'Invoice emailed to supplier successfully.');
     }
 }
