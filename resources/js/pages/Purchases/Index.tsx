@@ -97,6 +97,7 @@ import {
     UserCircle,
 } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { toast } from 'sonner';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -358,8 +359,15 @@ export default function PurchasesIndex({
                 {},
                 {
                     preserveScroll: true,
-                    onSuccess: () => {
-                        // Optional: show toast
+                    onSuccess: (page) => {
+                        const flash = page.props.flash as
+                            | { success?: string; error?: string }
+                            | undefined;
+                        if (flash?.success) {
+                            toast.success(flash.success);
+                        } else if (flash?.error) {
+                            toast.error(flash.error);
+                        }
                     },
                 },
             );
