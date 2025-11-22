@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Invoice #{{ str_pad((string) $purchase->id, 6, '0', STR_PAD_LEFT) }}</title>
+    <title>Invoice {{ $purchase->invoice_number }}</title>
     <style>
         /* Theme Colors derived from app.css (converted to Hex for DomPDF support) */
         :root {
@@ -187,7 +187,7 @@
                 <table style="margin-left: auto;">
                     <tr>
                         <td class="text-right text-muted-foreground text-sm" style="padding-right: 15px;">Invoice No:</td>
-                        <td class="text-right font-bold">#{{ str_pad((string) $purchase->id, 6, '0', STR_PAD_LEFT) }}</td>
+                        <td class="text-right font-bold">{{ $purchase->invoice_number }}</td>
                     </tr>
                     <tr>
                         <td class="text-right text-muted-foreground text-sm" style="padding-right: 15px;">Date:</td>

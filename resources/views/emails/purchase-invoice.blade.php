@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Invoice #{{ str_pad((string) $purchase->id, 6, '0', STR_PAD_LEFT) }}</title>
+    <title>Invoice {{ $purchase->invoice_number }}</title>
 </head>
 <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
     <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
@@ -12,7 +12,7 @@
             <p style="margin: 5px 0; color: #666;">P O Box 407, Honiara, Solomon Islands</p>
         </div>
         
-        <h2 style="text-align: center; color: #333;">Invoice #{{ str_pad((string) $purchase->id, 6, '0', STR_PAD_LEFT) }}</h2>
+        <h2 style="text-align: center; color: #333;">Invoice {{ $purchase->invoice_number }}</h2>
         
         <p>Dear {{ $purchase->supplier->name }},</p>
         

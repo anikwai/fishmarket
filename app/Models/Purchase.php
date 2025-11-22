@@ -93,6 +93,11 @@ final class Purchase extends Model
         });
     }
 
+    protected function getInvoiceNumberAttribute(): string
+    {
+        return 'INV-'.mb_str_pad((string) $this->id, 6, '0', STR_PAD_LEFT);
+    }
+
     protected function getTotalExpensesAttribute(): float
     {
         return (float) $this->expenses()->sum('amount');
@@ -160,10 +165,5 @@ final class Purchase extends Model
     protected function getRemainingQuantityAttribute(): float
     {
         return $this->quantity_kg - $this->sold_quantity;
-    }
-
-    protected function getInvoiceNumberAttribute(): string
-    {
-        return 'INV-'.mb_str_pad((string) $this->id, 6, '0', STR_PAD_LEFT);
     }
 }
