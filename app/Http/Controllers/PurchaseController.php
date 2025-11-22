@@ -124,8 +124,10 @@ final readonly class PurchaseController
     {
         Gate::authorize('view purchases');
 
-        $sender->handle($purchase);
+        if ($sender->handle($purchase)) {
+            return back()->with('success', 'Invoice emailed to supplier successfully.');
+        }
 
-        return back()->with('success', 'Invoice emailed to supplier successfully.');
+        return back()->with('error', 'Supplier has no email; invoice not sent.');
     }
 }

@@ -11,16 +11,19 @@ use Illuminate\Support\Facades\Mail;
 
 final readonly class SendPurchaseInvoiceEmail
 {
-    public function handle(Purchase $purchase): void
+    public function handle(Purchase $purchase): bool
     {
         $purchase->load('supplier');
 
         if (! $purchase->supplier || ! $purchase->supplier->email) {
             Log::warning("Cannot send purchase invoice email: Purchase {$purchase->id} has no supplier or supplier has no email.");
-            return;
+
+            return false;
         }
 
         Mail::to($purchase->supplier->email)->send(new PurchaseInvoice($purchase));
+
+        return true;
     }
 }
 
