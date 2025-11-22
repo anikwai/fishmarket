@@ -38,7 +38,7 @@ final class Purchase extends Model
      *
      * @var list<string>
      */
-    protected $appends = ['profit', 'total_revenue'];
+    protected $appends = ['profit', 'total_revenue', 'invoice_number'];
 
     /**
      * @return array<string, string>
@@ -91,6 +91,11 @@ final class Purchase extends Model
                 $purchase->total_cost = $purchase->quantity_kg * $purchase->price_per_kg;
             }
         });
+    }
+
+    protected function getInvoiceNumberAttribute(): string
+    {
+        return 'INV-'.mb_str_pad((string) $this->id, 6, '0', STR_PAD_LEFT);
     }
 
     protected function getTotalExpensesAttribute(): float

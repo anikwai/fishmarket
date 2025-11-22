@@ -1,5 +1,15 @@
 import { DatePicker } from '@/components/date-picker';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
@@ -38,7 +48,6 @@ import {
     Item,
     ItemContent,
     ItemDescription,
-    ItemGroup,
     ItemMedia,
     ItemTitle,
 } from '@/components/ui/item';
@@ -58,6 +67,7 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
+import { useClipboard } from '@/hooks/use-clipboard';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Head, router, useForm } from '@inertiajs/react';
@@ -82,8 +92,11 @@ import {
     Columns,
     DollarSign,
     EyeIcon,
+    FileDown,
     FileText,
     InfoIcon,
+    Link as LinkIcon,
+    Mail,
     MoreHorizontal,
     Package,
     PencilIcon,
@@ -95,6 +108,7 @@ import {
     UserCircle,
 } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { toast } from 'sonner';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -150,9 +164,14 @@ export default function PurchasesIndex({
     const [editOpen, setEditOpen] = useState(false);
     const [showOpen, setShowOpen] = useState(false);
     const [deleteOpen, setDeleteOpen] = useState(false);
+    const [emailDialogOpen, setEmailDialogOpen] = useState(false);
+    const [purchaseToEmail, setPurchaseToEmail] = useState<Purchase | null>(
+        null,
+    );
     const [selectedPurchase, setSelectedPurchase] = useState<Purchase | null>(
         null,
     );
+    const [isEmailingInvoice, setIsEmailingInvoice] = useState(false);
     const [showAddSupplier, setShowAddSupplier] = useState(false);
     const [sorting, setSorting] = useState<SortingState>([]);
     const [supplierFilter, setSupplierFilter] = useState(
@@ -164,6 +183,7 @@ export default function PurchasesIndex({
     );
     const [searchValue, setSearchValue] = useState(filters.search || '');
     const isInitialMount = useRef(true);
+    const [, copyToClipboard] = useClipboard();
 
     // Debounced search function
     const performSearch = useCallback((search: string, supplierId: string) => {
@@ -341,6 +361,61 @@ export default function PurchasesIndex({
             preserveState: true,
             preserveScroll: true,
         });
+    };
+
+    const handleDownloadInvoice = useCallback((purchase: Purchase) => {
+        window.open(`/purchases/${purchase.id}/invoice/download`, '_blank');
+    }, []);
+
+    const handleEmailInvoice = useCallback((purchase: Purchase) => {
+        setPurchaseToEmail(purchase);
+        setEmailDialogOpen(true);
+    }, []);
+
+    const handleCopyInvoiceLink = useCallback(
+        async (purchase: Purchase) => {
+            try {
+                const response = await fetch(
+                    `/purchases/${purchase.id}/invoice/link`,
+                );
+                if (!response.ok) throw new Error('Failed to generate link');
+                const data = await response.json();
+
+                const success = await copyToClipboard(data.url);
+                if (success) {
+                    toast.success('Invoice link copied to clipboard');
+                } else {
+                    toast.error('Failed to copy link');
+                }
+            } catch (error) {
+                toast.error('Could not generate invoice link');
+                console.error(error);
+            }
+        },
+        [copyToClipboard],
+    );
+
+    const confirmEmailInvoice = () => {
+        if (!purchaseToEmail || isEmailingInvoice) return;
+
+        setIsEmailingInvoice(true);
+        router.post(
+            `/purchases/${purchaseToEmail.id}/invoice/email`,
+            {},
+            {
+                preserveScroll: true,
+                onSuccess: () => {
+                    setEmailDialogOpen(false);
+                    setPurchaseToEmail(null);
+                },
+                onError: () => {
+                    setEmailDialogOpen(false);
+                },
+                onFinish: () => {
+                    setIsEmailingInvoice(false);
+                },
+            },
+        );
     };
 
     const columns = useMemo<ColumnDef<Purchase>[]>(
@@ -576,6 +651,31 @@ export default function PurchasesIndex({
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end">
                                     <DropdownMenuItem
+                                        onClick={() =>
+                                            handleDownloadInvoice(purchase)
+                                        }
+                                    >
+                                        <FileDown className="mr-2 h-4 w-4" />
+                                        Download Invoice
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem
+                                        onClick={() =>
+                                            handleEmailInvoice(purchase)
+                                        }
+                                    >
+                                        <Mail className="mr-2 h-4 w-4" />
+                                        Email Invoice
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem
+                                        onClick={() =>
+                                            handleCopyInvoiceLink(purchase)
+                                        }
+                                    >
+                                        <LinkIcon className="mr-2 h-4 w-4" />
+                                        Copy Invoice Link
+                                    </DropdownMenuItem>
+                                    <DropdownMenuSeparator />
+                                    <DropdownMenuItem
                                         onClick={() => {
                                             setSelectedPurchase(purchase);
                                             setShowOpen(true);
@@ -608,7 +708,12 @@ export default function PurchasesIndex({
                 },
             },
         ],
-        [handleEdit],
+        [
+            handleEdit,
+            handleDownloadInvoice,
+            handleEmailInvoice,
+            handleCopyInvoiceLink,
+        ],
     );
 
     const table = useReactTable({
@@ -1461,7 +1566,7 @@ export default function PurchasesIndex({
 
                 {/* Show Modal */}
                 <Dialog open={showOpen} onOpenChange={setShowOpen}>
-                    <DialogContent className="sm:max-w-[600px]">
+                    <DialogContent className="sm:max-w-2xl">
                         <DialogHeader>
                             <DialogTitle>Purchase Details</DialogTitle>
                             <DialogDescription>
@@ -1470,14 +1575,22 @@ export default function PurchasesIndex({
                             </DialogDescription>
                         </DialogHeader>
                         {selectedPurchase && (
-                            <ItemGroup>
-                                <Item>
-                                    <ItemMedia variant="icon">
-                                        <Calendar className="h-5 w-5" />
+                            <div className="grid gap-4 sm:grid-cols-2">
+                                <Item
+                                    size="sm"
+                                    className="col-span-1 rounded-lg bg-muted/40"
+                                >
+                                    <ItemMedia
+                                        variant="icon"
+                                        className="bg-background text-muted-foreground"
+                                    >
+                                        <Calendar className="h-4 w-4" />
                                     </ItemMedia>
                                     <ItemContent>
-                                        <ItemTitle>Purchase Date</ItemTitle>
-                                        <ItemDescription>
+                                        <ItemTitle className="text-xs text-muted-foreground">
+                                            Purchase Date
+                                        </ItemTitle>
+                                        <ItemDescription className="text-base font-semibold text-foreground">
                                             {new Date(
                                                 selectedPurchase.purchase_date,
                                             ).toLocaleDateString('en-US', {
@@ -1488,24 +1601,40 @@ export default function PurchasesIndex({
                                         </ItemDescription>
                                     </ItemContent>
                                 </Item>
-                                <Item>
-                                    <ItemMedia variant="icon">
-                                        <UserCircle className="h-5 w-5" />
+                                <Item
+                                    size="sm"
+                                    className="col-span-1 rounded-lg bg-muted/40"
+                                >
+                                    <ItemMedia
+                                        variant="icon"
+                                        className="bg-background text-muted-foreground"
+                                    >
+                                        <UserCircle className="h-4 w-4" />
                                     </ItemMedia>
                                     <ItemContent>
-                                        <ItemTitle>Supplier</ItemTitle>
-                                        <ItemDescription>
+                                        <ItemTitle className="text-xs text-muted-foreground">
+                                            Supplier
+                                        </ItemTitle>
+                                        <ItemDescription className="text-base font-semibold text-foreground">
                                             {selectedPurchase.supplier.name}
                                         </ItemDescription>
                                     </ItemContent>
                                 </Item>
-                                <Item>
-                                    <ItemMedia variant="icon">
-                                        <Package className="h-5 w-5" />
+                                <Item
+                                    size="sm"
+                                    className="col-span-1 rounded-lg bg-muted/40"
+                                >
+                                    <ItemMedia
+                                        variant="icon"
+                                        className="bg-background text-muted-foreground"
+                                    >
+                                        <Package className="h-4 w-4" />
                                     </ItemMedia>
                                     <ItemContent>
-                                        <ItemTitle>Quantity</ItemTitle>
-                                        <ItemDescription>
+                                        <ItemTitle className="text-xs text-muted-foreground">
+                                            Quantity
+                                        </ItemTitle>
+                                        <ItemDescription className="text-base font-semibold text-foreground">
                                             {Number(
                                                 selectedPurchase.quantity_kg,
                                             ).toFixed(2)}{' '}
@@ -1513,13 +1642,21 @@ export default function PurchasesIndex({
                                         </ItemDescription>
                                     </ItemContent>
                                 </Item>
-                                <Item>
-                                    <ItemMedia variant="icon">
-                                        <DollarSign className="h-5 w-5" />
+                                <Item
+                                    size="sm"
+                                    className="col-span-1 rounded-lg bg-muted/40"
+                                >
+                                    <ItemMedia
+                                        variant="icon"
+                                        className="bg-background text-muted-foreground"
+                                    >
+                                        <DollarSign className="h-4 w-4" />
                                     </ItemMedia>
                                     <ItemContent>
-                                        <ItemTitle>Price per kg</ItemTitle>
-                                        <ItemDescription>
+                                        <ItemTitle className="text-xs text-muted-foreground">
+                                            Price per kg
+                                        </ItemTitle>
+                                        <ItemDescription className="text-base font-semibold text-foreground">
                                             SBD{' '}
                                             {Number(
                                                 selectedPurchase.price_per_kg,
@@ -1527,29 +1664,43 @@ export default function PurchasesIndex({
                                         </ItemDescription>
                                     </ItemContent>
                                 </Item>
-                                <Item>
-                                    <ItemMedia variant="icon">
-                                        <DollarSign className="h-5 w-5" />
+                                <Item
+                                    size="sm"
+                                    className="col-span-1 rounded-lg bg-muted/40"
+                                >
+                                    <ItemMedia
+                                        variant="icon"
+                                        className="bg-background text-muted-foreground"
+                                    >
+                                        <DollarSign className="h-4 w-4" />
                                     </ItemMedia>
                                     <ItemContent>
-                                        <ItemTitle>Total Cost</ItemTitle>
-                                        <ItemDescription>
-                                            <span className="font-semibold">
-                                                SBD{' '}
-                                                {Number(
-                                                    selectedPurchase.total_cost,
-                                                ).toFixed(2)}
-                                            </span>
+                                        <ItemTitle className="text-xs text-muted-foreground">
+                                            Total Cost
+                                        </ItemTitle>
+                                        <ItemDescription className="text-base font-semibold text-foreground">
+                                            SBD{' '}
+                                            {Number(
+                                                selectedPurchase.total_cost,
+                                            ).toFixed(2)}
                                         </ItemDescription>
                                     </ItemContent>
                                 </Item>
-                                <Item>
-                                    <ItemMedia variant="icon">
-                                        <Package className="h-5 w-5" />
+                                <Item
+                                    size="sm"
+                                    className="col-span-1 rounded-lg bg-muted/40"
+                                >
+                                    <ItemMedia
+                                        variant="icon"
+                                        className="bg-background text-muted-foreground"
+                                    >
+                                        <Package className="h-4 w-4" />
                                     </ItemMedia>
                                     <ItemContent>
-                                        <ItemTitle>Sold Quantity</ItemTitle>
-                                        <ItemDescription>
+                                        <ItemTitle className="text-xs text-muted-foreground">
+                                            Sold Quantity
+                                        </ItemTitle>
+                                        <ItemDescription className="text-base font-semibold text-foreground">
                                             {selectedPurchase.sold_quantity
                                                 ? Number(
                                                       selectedPurchase.sold_quantity,
@@ -1565,33 +1716,74 @@ export default function PurchasesIndex({
                                 </Item>
                                 {selectedPurchase.total_revenue !==
                                     undefined && (
-                                    <Item>
-                                        <ItemMedia variant="icon">
-                                            <TrendingUp className="h-5 w-5" />
+                                    <Item
+                                        size="sm"
+                                        className="col-span-1 rounded-lg bg-muted/40"
+                                    >
+                                        <ItemMedia
+                                            variant="icon"
+                                            className="bg-background text-muted-foreground"
+                                        >
+                                            <TrendingUp className="h-4 w-4" />
                                         </ItemMedia>
                                         <ItemContent>
-                                            <ItemTitle>Total Revenue</ItemTitle>
-                                            <ItemDescription>
-                                                <span className="font-semibold">
-                                                    SBD{' '}
-                                                    {Number(
-                                                        selectedPurchase.total_revenue,
-                                                    ).toFixed(2)}
-                                                </span>
+                                            <ItemTitle className="text-xs text-muted-foreground">
+                                                Total Revenue
+                                            </ItemTitle>
+                                            <ItemDescription className="text-base font-semibold text-foreground">
+                                                SBD{' '}
+                                                {Number(
+                                                    selectedPurchase.total_revenue,
+                                                ).toFixed(2)}
                                             </ItemDescription>
                                         </ItemContent>
                                     </Item>
                                 )}
+                                {selectedPurchase.total_expenses !==
+                                    undefined &&
+                                    Number(selectedPurchase.total_expenses) >
+                                        0 && (
+                                        <Item
+                                            size="sm"
+                                            className="col-span-1 rounded-lg bg-destructive/10"
+                                        >
+                                            <ItemMedia
+                                                variant="icon"
+                                                className="border-destructive/20 bg-background text-destructive"
+                                            >
+                                                <DollarSign className="h-4 w-4" />
+                                            </ItemMedia>
+                                            <ItemContent>
+                                                <ItemTitle className="text-xs text-destructive">
+                                                    Total Expenses
+                                                </ItemTitle>
+                                                <ItemDescription className="text-base font-semibold text-destructive">
+                                                    SBD{' '}
+                                                    {Number(
+                                                        selectedPurchase.total_expenses,
+                                                    ).toFixed(2)}
+                                                </ItemDescription>
+                                            </ItemContent>
+                                        </Item>
+                                    )}
                                 {selectedPurchase.profit !== undefined && (
-                                    <Item>
-                                        <ItemMedia variant="icon">
-                                            <TrendingUp className="h-5 w-5" />
+                                    <Item
+                                        size="sm"
+                                        className="rounded-lg bg-emerald-50 sm:col-span-2 dark:bg-emerald-950/30"
+                                    >
+                                        <ItemMedia
+                                            variant="icon"
+                                            className="border-emerald-200 bg-background text-emerald-600 dark:border-emerald-800"
+                                        >
+                                            <TrendingUp className="h-4 w-4" />
                                         </ItemMedia>
                                         <ItemContent>
-                                            <ItemTitle>Profit/Loss</ItemTitle>
-                                            <ItemDescription>
+                                            <ItemTitle className="text-xs font-semibold tracking-wide text-emerald-600/80 uppercase">
+                                                Profit/Loss
+                                            </ItemTitle>
+                                            <ItemDescription className="flex w-full items-center justify-between">
                                                 <span
-                                                    className={`text-lg font-semibold ${Number(selectedPurchase.profit) >= 0 ? 'text-green-600' : 'text-red-600'}`}
+                                                    className={`text-xl font-bold ${Number(selectedPurchase.profit) >= 0 ? 'text-emerald-600' : 'text-red-600'}`}
                                                 >
                                                     {Number(
                                                         selectedPurchase.profit,
@@ -1608,47 +1800,19 @@ export default function PurchasesIndex({
                                                     Number(
                                                         selectedPurchase.total_expenses,
                                                     ) > 0 && (
-                                                        <span className="ml-2 block text-xs text-muted-foreground">
+                                                        <span className="text-xs text-muted-foreground">
                                                             (Includes SBD{' '}
                                                             {Number(
                                                                 selectedPurchase.total_expenses,
                                                             ).toFixed(2)}{' '}
-                                                            in expenses)
+                                                            expenses)
                                                         </span>
                                                     )}
                                             </ItemDescription>
                                         </ItemContent>
                                     </Item>
                                 )}
-                                {selectedPurchase.total_expenses !==
-                                    undefined &&
-                                    Number(selectedPurchase.total_expenses) >
-                                        0 && (
-                                        <Item>
-                                            <ItemMedia variant="icon">
-                                                <DollarSign className="h-5 w-5" />
-                                            </ItemMedia>
-                                            <ItemContent>
-                                                <ItemTitle>
-                                                    Total Expenses
-                                                </ItemTitle>
-                                                <ItemDescription>
-                                                    <span className="font-semibold text-destructive">
-                                                        SBD{' '}
-                                                        {Number(
-                                                            selectedPurchase.total_expenses,
-                                                        ).toFixed(2)}
-                                                    </span>
-                                                    <span className="ml-2 block text-xs text-muted-foreground">
-                                                        Expenses tied to this
-                                                        purchase (freight, ice,
-                                                        fuel, etc.)
-                                                    </span>
-                                                </ItemDescription>
-                                            </ItemContent>
-                                        </Item>
-                                    )}
-                            </ItemGroup>
+                            </div>
                         )}
                         <DialogFooter>
                             <Button
@@ -1687,6 +1851,37 @@ export default function PurchasesIndex({
                         </DialogFooter>
                     </DialogContent>
                 </Dialog>
+
+                {/* Email Invoice Alert Dialog */}
+                <AlertDialog
+                    open={emailDialogOpen}
+                    onOpenChange={setEmailDialogOpen}
+                >
+                    <AlertDialogContent>
+                        <AlertDialogHeader>
+                            <AlertDialogTitle>Email Invoice</AlertDialogTitle>
+                            <AlertDialogDescription>
+                                Are you sure you want to email this invoice to
+                                the supplier?
+                            </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                            <AlertDialogCancel
+                                onClick={() => setPurchaseToEmail(null)}
+                            >
+                                Cancel
+                            </AlertDialogCancel>
+                            <AlertDialogAction
+                                onClick={confirmEmailInvoice}
+                                disabled={isEmailingInvoice}
+                            >
+                                {isEmailingInvoice
+                                    ? 'Sending...'
+                                    : 'Email Invoice'}
+                            </AlertDialogAction>
+                        </AlertDialogFooter>
+                    </AlertDialogContent>
+                </AlertDialog>
 
                 {/* Add Supplier Modal */}
                 <Dialog
