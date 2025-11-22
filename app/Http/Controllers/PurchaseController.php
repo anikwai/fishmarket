@@ -152,7 +152,7 @@ final readonly class PurchaseController
 
         $url = URL::temporarySignedRoute(
             'purchases.invoice.print',
-            now()->addDays(30),
+            now()->addDays(7),
             ['purchase' => $purchase]
         );
 
