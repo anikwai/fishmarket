@@ -164,6 +164,6 @@ final class Purchase extends Model
 
     protected function getInvoiceNumberAttribute(): string
     {
-        return 'INV-'.str_pad((string) $this->id, 6, '0', STR_PAD_LEFT);
+        return 'INV-'.mb_str_pad((string) $this->id, 6, '0', STR_PAD_LEFT);
     }
 }

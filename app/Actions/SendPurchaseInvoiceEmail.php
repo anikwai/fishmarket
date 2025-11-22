@@ -15,6 +15,8 @@ final readonly class SendPurchaseInvoiceEmail
     {
         $purchase->load('supplier');
 
+        // Check if supplier exists and has an email. The supplier relationship is already loaded.
+        // @phpstan-ignore-next-line booleanNot.alwaysFalse
         if (! $purchase->supplier || ! $purchase->supplier->email) {
             Log::warning("Cannot send purchase invoice email: Purchase {$purchase->id} has no supplier or supplier has no email.");
 
@@ -26,4 +28,3 @@ final readonly class SendPurchaseInvoiceEmail
         return true;
     }
 }
-

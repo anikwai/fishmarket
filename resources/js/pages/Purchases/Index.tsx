@@ -82,10 +82,10 @@ import {
     Columns,
     DollarSign,
     EyeIcon,
-    FileText,
     FileDown,
-    Mail,
+    FileText,
     InfoIcon,
+    Mail,
     MoreHorizontal,
     Package,
     PencilIcon,
@@ -352,7 +352,9 @@ export default function PurchasesIndex({
 
     const handleEmailInvoice = (purchase: Purchase) => {
         if (
-            confirm('Are you sure you want to email this invoice to the supplier?')
+            confirm(
+                'Are you sure you want to email this invoice to the supplier?',
+            )
         ) {
             router.post(
                 `/purchases/${purchase.id}/invoice/email`,

@@ -17,19 +17,17 @@ final class PurchaseInvoice extends Mailable
 {
     use Queueable, SerializesModels;
 
-    private GeneratePurchaseInvoice $generatePurchaseInvoice;
-
     public function __construct(
         public Purchase $purchase,
-        ?GeneratePurchaseInvoice $generatePurchaseInvoice = null,
-    ) {
-        $this->generatePurchaseInvoice = $generatePurchaseInvoice ?? app(GeneratePurchaseInvoice::class);
-    }
+    ) {}
 
     public function envelope(): Envelope
     {
+        /** @var string $appName */
+        $appName = config('app.name');
+
         return new Envelope(
-            subject: 'Invoice '.$this->purchase->invoice_number.' - '.config('app.name'),
+            subject: 'Invoice '.$this->purchase->invoice_number.' - '.$appName,
         );
     }
 
@@ -49,9 +47,12 @@ final class PurchaseInvoice extends Mailable
     public function attachments(): array
     {
         return [
-            Attachment::fromData(fn (): string => $this->generatePurchaseInvoice->handle($this->purchase)->output(), $this->purchase->invoice_number.'.pdf')
+            Attachment::fromData(function (): string {
+                $pdf = app(GeneratePurchaseInvoice::class)->handle($this->purchase);
+
+                return $pdf->output();
+            }, $this->purchase->invoice_number.'.pdf')
                 ->withMime('application/pdf'),
         ];
     }
 }
-
