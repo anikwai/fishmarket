@@ -171,6 +171,7 @@ export default function PurchasesIndex({
     const [selectedPurchase, setSelectedPurchase] = useState<Purchase | null>(
         null,
     );
+    const [isEmailingInvoice, setIsEmailingInvoice] = useState(false);
     const [showAddSupplier, setShowAddSupplier] = useState(false);
     const [sorting, setSorting] = useState<SortingState>([]);
     const [supplierFilter, setSupplierFilter] = useState(
@@ -395,8 +396,9 @@ export default function PurchasesIndex({
     );
 
     const confirmEmailInvoice = () => {
-        if (!purchaseToEmail) return;
+        if (!purchaseToEmail || isEmailingInvoice) return;
 
+        setIsEmailingInvoice(true);
         router.post(
             `/purchases/${purchaseToEmail.id}/invoice/email`,
             {},
@@ -408,6 +410,9 @@ export default function PurchasesIndex({
                 },
                 onError: () => {
                     setEmailDialogOpen(false);
+                },
+                onFinish: () => {
+                    setIsEmailingInvoice(false);
                 },
             },
         );
@@ -1866,8 +1871,13 @@ export default function PurchasesIndex({
                             >
                                 Cancel
                             </AlertDialogCancel>
-                            <AlertDialogAction onClick={confirmEmailInvoice}>
-                                Email Invoice
+                            <AlertDialogAction
+                                onClick={confirmEmailInvoice}
+                                disabled={isEmailingInvoice}
+                            >
+                                {isEmailingInvoice
+                                    ? 'Sending...'
+                                    : 'Email Invoice'}
                             </AlertDialogAction>
                         </AlertDialogFooter>
                     </AlertDialogContent>
