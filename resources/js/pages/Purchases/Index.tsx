@@ -1,5 +1,15 @@
 import { DatePicker } from '@/components/date-picker';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
@@ -97,7 +107,6 @@ import {
     UserCircle,
 } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { toast } from 'sonner';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -153,6 +162,10 @@ export default function PurchasesIndex({
     const [editOpen, setEditOpen] = useState(false);
     const [showOpen, setShowOpen] = useState(false);
     const [deleteOpen, setDeleteOpen] = useState(false);
+    const [emailDialogOpen, setEmailDialogOpen] = useState(false);
+    const [purchaseToEmail, setPurchaseToEmail] = useState<Purchase | null>(
+        null,
+    );
     const [selectedPurchase, setSelectedPurchase] = useState<Purchase | null>(
         null,
     );
@@ -351,29 +364,27 @@ export default function PurchasesIndex({
     };
 
     const handleEmailInvoice = (purchase: Purchase) => {
-        if (
-            confirm(
-                'Are you sure you want to email this invoice to the supplier?',
-            )
-        ) {
-            router.post(
-                `/purchases/${purchase.id}/invoice/email`,
-                {},
-                {
-                    preserveScroll: true,
-                    onSuccess: (page) => {
-                        const flash = page.props.flash as
-                            | { success?: string; error?: string }
-                            | undefined;
-                        if (flash?.success) {
-                            toast.success(flash.success);
-                        } else if (flash?.error) {
-                            toast.error(flash.error);
-                        }
-                    },
+        setPurchaseToEmail(purchase);
+        setEmailDialogOpen(true);
+    };
+
+    const confirmEmailInvoice = () => {
+        if (!purchaseToEmail) return;
+
+        router.post(
+            `/purchases/${purchaseToEmail.id}/invoice/email`,
+            {},
+            {
+                preserveScroll: true,
+                onSuccess: () => {
+                    setEmailDialogOpen(false);
+                    setPurchaseToEmail(null);
                 },
-            );
-        }
+                onError: () => {
+                    setEmailDialogOpen(false);
+                },
+            },
+        );
     };
 
     const columns = useMemo<ColumnDef<Purchase>[]>(
@@ -1737,6 +1748,32 @@ export default function PurchasesIndex({
                         </DialogFooter>
                     </DialogContent>
                 </Dialog>
+
+                {/* Email Invoice Alert Dialog */}
+                <AlertDialog
+                    open={emailDialogOpen}
+                    onOpenChange={setEmailDialogOpen}
+                >
+                    <AlertDialogContent>
+                        <AlertDialogHeader>
+                            <AlertDialogTitle>Email Invoice</AlertDialogTitle>
+                            <AlertDialogDescription>
+                                Are you sure you want to email this invoice to
+                                the supplier?
+                            </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                            <AlertDialogCancel
+                                onClick={() => setPurchaseToEmail(null)}
+                            >
+                                Cancel
+                            </AlertDialogCancel>
+                            <AlertDialogAction onClick={confirmEmailInvoice}>
+                                Email Invoice
+                            </AlertDialogAction>
+                        </AlertDialogFooter>
+                    </AlertDialogContent>
+                </AlertDialog>
 
                 {/* Add Supplier Modal */}
                 <Dialog
