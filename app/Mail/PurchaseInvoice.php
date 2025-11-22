@@ -48,10 +48,8 @@ final class PurchaseInvoice extends Mailable
      */
     public function attachments(): array
     {
-        $pdf = $this->generatePurchaseInvoice->handle($this->purchase);
-
         return [
-            Attachment::fromData(fn (): string => $pdf->output(), $this->purchase->invoice_number.'.pdf')
+            Attachment::fromData(fn (): string => $this->generatePurchaseInvoice->handle($this->purchase)->output(), $this->purchase->invoice_number.'.pdf')
                 ->withMime('application/pdf'),
         ];
     }
