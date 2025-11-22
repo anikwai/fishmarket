@@ -67,6 +67,7 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
+import { useClipboard } from '@/hooks/use-clipboard';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Head, router, useForm } from '@inertiajs/react';
@@ -94,6 +95,7 @@ import {
     FileDown,
     FileText,
     InfoIcon,
+    Link as LinkIcon,
     Mail,
     MoreHorizontal,
     Package,
@@ -106,6 +108,7 @@ import {
     UserCircle,
 } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { toast } from 'sonner';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -179,6 +182,7 @@ export default function PurchasesIndex({
     );
     const [searchValue, setSearchValue] = useState(filters.search || '');
     const isInitialMount = useRef(true);
+    const [, copyToClipboard] = useClipboard();
 
     // Debounced search function
     const performSearch = useCallback((search: string, supplierId: string) => {
@@ -358,14 +362,37 @@ export default function PurchasesIndex({
         });
     };
 
-    const handleDownloadInvoice = (purchase: Purchase) => {
+    const handleDownloadInvoice = useCallback((purchase: Purchase) => {
         window.open(`/purchases/${purchase.id}/invoice/download`, '_blank');
-    };
+    }, []);
 
-    const handleEmailInvoice = (purchase: Purchase) => {
+    const handleEmailInvoice = useCallback((purchase: Purchase) => {
         setPurchaseToEmail(purchase);
         setEmailDialogOpen(true);
-    };
+    }, []);
+
+    const handleCopyInvoiceLink = useCallback(
+        async (purchase: Purchase) => {
+            try {
+                const response = await fetch(
+                    `/purchases/${purchase.id}/invoice/link`,
+                );
+                if (!response.ok) throw new Error('Failed to generate link');
+                const data = await response.json();
+
+                const success = await copyToClipboard(data.url);
+                if (success) {
+                    toast.success('Invoice link copied to clipboard');
+                } else {
+                    toast.error('Failed to copy link');
+                }
+            } catch (error) {
+                toast.error('Could not generate invoice link');
+                console.error(error);
+            }
+        },
+        [copyToClipboard],
+    );
 
     const confirmEmailInvoice = () => {
         if (!purchaseToEmail) return;
@@ -634,6 +661,14 @@ export default function PurchasesIndex({
                                         <Mail className="mr-2 h-4 w-4" />
                                         Email Invoice
                                     </DropdownMenuItem>
+                                    <DropdownMenuItem
+                                        onClick={() =>
+                                            handleCopyInvoiceLink(purchase)
+                                        }
+                                    >
+                                        <LinkIcon className="mr-2 h-4 w-4" />
+                                        Copy Invoice Link
+                                    </DropdownMenuItem>
                                     <DropdownMenuSeparator />
                                     <DropdownMenuItem
                                         onClick={() => {
@@ -668,7 +703,12 @@ export default function PurchasesIndex({
                 },
             },
         ],
-        [handleEdit],
+        [
+            handleEdit,
+            handleDownloadInvoice,
+            handleEmailInvoice,
+            handleCopyInvoiceLink,
+        ],
     );
 
     const table = useReactTable({
