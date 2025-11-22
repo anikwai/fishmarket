@@ -38,7 +38,7 @@ final class Purchase extends Model
      *
      * @var list<string>
      */
-    protected $appends = ['profit', 'total_revenue'];
+    protected $appends = ['profit', 'total_revenue', 'invoice_number'];
 
     /**
      * @return array<string, string>

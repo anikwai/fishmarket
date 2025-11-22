@@ -208,7 +208,7 @@
                 <div class="info-label">Bill To</div>
                 <div class="info-value font-bold">{{ $purchase->supplier->name }}</div>
                 <div class="info-value text-muted-foreground">
-                    {{ $purchase->supplier->address ?? 'Solomon Islands National University' }}<br>
+                    {{ $purchase->supplier->address ?? 'TZ HOLDING LIMITED' }}<br>
                     {{ $purchase->supplier->city ?? 'Honiara, SI' }}<br>
                     {{ $purchase->supplier->phone ?? '' }}
                 </div>
@@ -241,8 +241,8 @@
                     <span class="text-muted-foreground text-xs">{{ $purchase->notes ?: 'Fresh Stock' }}</span>
                 </td>
                 <td class="text-right">{{ number_format($purchase->quantity_kg, 2) }} kg</td>
-                <td class="text-right">$ {{ number_format($purchase->price_per_kg, 2) }}</td>
-                <td class="text-right">$ {{ number_format($purchase->total_cost, 2) }}</td>
+                <td class="text-right">SBD {{ number_format($purchase->price_per_kg, 2) }}</td>
+                <td class="text-right">SBD {{ number_format($purchase->total_cost, 2) }}</td>
             </tr>
             <!-- Fill lines to maintain structure if needed, or just clean whitespace -->
             @for($i = 0; $i < 3; $i++)
@@ -256,15 +256,15 @@
     <table class="totals-table">
         <tr>
             <td class="totals-label">Subtotal</td>
-            <td class="totals-value">$ {{ number_format($purchase->total_cost, 2) }}</td>
+            <td class="totals-value">SBD {{ number_format($purchase->total_cost, 2) }}</td>
         </tr>
         <tr>
             <td class="totals-label">Discount</td>
-            <td class="totals-value">$ 0.00</td>
+            <td class="totals-value">SBD 0.00</td>
         </tr>
         <tr class="total-row">
             <td class="totals-label text-sm" style="vertical-align: middle;">Total</td>
-            <td class="totals-value">$ {{ number_format($purchase->total_cost, 2) }}</td>
+            <td class="totals-value">SBD {{ number_format($purchase->total_cost, 2) }}</td>
         </tr>
     </table>
 
