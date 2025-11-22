@@ -6,6 +6,7 @@ namespace App\Actions;
 
 use App\Mail\PurchaseInvoice;
 use App\Models\Purchase;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 
 final readonly class SendPurchaseInvoiceEmail
@@ -14,7 +15,8 @@ final readonly class SendPurchaseInvoiceEmail
     {
         $purchase->load('supplier');
 
-        if (! $purchase->supplier->email) {
+        if (! $purchase->supplier || ! $purchase->supplier->email) {
+            Log::warning("Cannot send purchase invoice email: Purchase {$purchase->id} has no supplier or supplier has no email.");
             return;
         }
 
