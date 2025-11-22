@@ -1131,7 +1131,7 @@ export default function PurchasesIndex({
 
                 {/* Create Modal */}
                 <Dialog open={createOpen} onOpenChange={setCreateOpen}>
-                    <DialogContent className="flex max-h-[90vh] max-w-2xl flex-col gap-0">
+                    <DialogContent className="flex max-h-[90vh] w-full flex-col gap-0 sm:max-w-2xl">
                         <DialogHeader className="flex-shrink-0 pb-4">
                             <DialogTitle>Create Purchase</DialogTitle>
                             <DialogDescription>
@@ -1238,7 +1238,7 @@ export default function PurchasesIndex({
                                         {createForm.errors.purchase_date}
                                     </FieldError>
                                 </Field>
-                                <div className="grid grid-cols-2 gap-4">
+                                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                                     <Field
                                         data-invalid={
                                             !!createForm.errors.quantity_kg
@@ -1360,7 +1360,7 @@ export default function PurchasesIndex({
 
                 {/* Edit Modal */}
                 <Dialog open={editOpen} onOpenChange={setEditOpen}>
-                    <DialogContent className="flex max-h-[90vh] max-w-2xl flex-col gap-0">
+                    <DialogContent className="flex max-h-[90vh] w-full flex-col gap-0 sm:max-w-2xl">
                         <DialogHeader className="flex-shrink-0 pb-4">
                             <DialogTitle>Edit Purchase</DialogTitle>
                             <DialogDescription>
@@ -1445,7 +1445,7 @@ export default function PurchasesIndex({
                                         {editForm.errors.purchase_date}
                                     </FieldError>
                                 </Field>
-                                <div className="grid grid-cols-2 gap-4">
+                                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                                     <Field
                                         data-invalid={
                                             !!editForm.errors.quantity_kg
@@ -1566,7 +1566,7 @@ export default function PurchasesIndex({
 
                 {/* Show Modal */}
                 <Dialog open={showOpen} onOpenChange={setShowOpen}>
-                    <DialogContent className="sm:max-w-2xl">
+                    <DialogContent className="w-full sm:max-w-2xl">
                         <DialogHeader>
                             <DialogTitle>Purchase Details</DialogTitle>
                             <DialogDescription>

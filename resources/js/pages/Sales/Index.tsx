@@ -1095,7 +1095,7 @@ export default function SalesIndex({
 
                 {/* Create Modal */}
                 <Dialog open={createOpen} onOpenChange={setCreateOpen}>
-                    <DialogContent className="flex max-h-[90vh] max-w-2xl flex-col gap-0">
+                    <DialogContent className="flex max-h-[90vh] w-full flex-col gap-0 sm:max-w-2xl">
                         <DialogHeader className="flex-shrink-0 pb-4">
                             <DialogTitle>Create Sale</DialogTitle>
                             <DialogDescription>
@@ -1174,7 +1174,7 @@ export default function SalesIndex({
                                         {createForm.errors.sale_date}
                                     </FieldError>
                                 </Field>
-                                <div className="grid grid-cols-2 gap-4">
+                                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                                     <Field
                                         data-invalid={
                                             !!createForm.errors.quantity_kg
@@ -1239,7 +1239,7 @@ export default function SalesIndex({
                                         </FieldError>
                                     </Field>
                                 </div>
-                                <div className="grid grid-cols-2 gap-4">
+                                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                                     <Field>
                                         <FieldLabel htmlFor="discount_percentage">
                                             Discount (%)
@@ -1451,7 +1451,7 @@ export default function SalesIndex({
 
                 {/* Edit Modal - Similar structure but with editForm */}
                 <Dialog open={editOpen} onOpenChange={setEditOpen}>
-                    <DialogContent className="flex max-h-[90vh] max-w-2xl flex-col gap-0">
+                    <DialogContent className="flex max-h-[90vh] w-full flex-col gap-0 sm:max-w-2xl">
                         <DialogHeader className="flex-shrink-0 pb-4">
                             <DialogTitle>Edit Sale</DialogTitle>
                             <DialogDescription>
@@ -1525,7 +1525,7 @@ export default function SalesIndex({
                                         {editForm.errors.sale_date}
                                     </FieldError>
                                 </Field>
-                                <div className="grid grid-cols-2 gap-4">
+                                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                                     <Field
                                         data-invalid={
                                             !!editForm.errors.quantity_kg
@@ -1589,7 +1589,7 @@ export default function SalesIndex({
                                         </FieldError>
                                     </Field>
                                 </div>
-                                <div className="grid grid-cols-2 gap-4">
+                                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                                     <Field>
                                         <FieldLabel htmlFor="edit-discount_percentage">
                                             Discount (%)
@@ -1801,7 +1801,7 @@ export default function SalesIndex({
 
                 {/* Show Modal */}
                 <Dialog open={showOpen} onOpenChange={setShowOpen}>
-                    <DialogContent className="sm:max-w-[600px]">
+                    <DialogContent className="w-full sm:max-w-[600px]">
                         <DialogHeader>
                             <DialogTitle>Sale Details</DialogTitle>
                             <DialogDescription>

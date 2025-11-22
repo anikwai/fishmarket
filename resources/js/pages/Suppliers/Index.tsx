@@ -890,7 +890,7 @@ export default function SuppliersIndex({
 
                 {/* Create Modal */}
                 <Dialog open={createOpen} onOpenChange={setCreateOpen}>
-                    <DialogContent className="flex max-h-[90vh] flex-col gap-0 sm:max-w-[500px]">
+                    <DialogContent className="flex max-h-[90vh] w-full flex-col gap-0 sm:max-w-[500px]">
                         <DialogHeader className="flex-shrink-0 pb-4">
                             <DialogTitle>Create Supplier</DialogTitle>
                             <DialogDescription>
@@ -1053,7 +1053,7 @@ export default function SuppliersIndex({
 
                 {/* Edit Modal */}
                 <Dialog open={editOpen} onOpenChange={setEditOpen}>
-                    <DialogContent className="flex max-h-[90vh] flex-col gap-0 sm:max-w-[500px]">
+                    <DialogContent className="flex max-h-[90vh] w-full flex-col gap-0 sm:max-w-[500px]">
                         <DialogHeader className="flex-shrink-0 pb-4">
                             <DialogTitle>Edit Supplier</DialogTitle>
                             <DialogDescription>
@@ -1213,7 +1213,7 @@ export default function SuppliersIndex({
 
                 {/* Show Modal */}
                 <Dialog open={showOpen} onOpenChange={setShowOpen}>
-                    <DialogContent className="sm:max-w-[500px]">
+                    <DialogContent className="w-full sm:max-w-[500px]">
                         <DialogHeader>
                             <DialogTitle>Supplier Details</DialogTitle>
                             <DialogDescription>

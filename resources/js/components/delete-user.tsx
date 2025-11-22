@@ -42,7 +42,7 @@ export default function DeleteUser() {
                             Delete account
                         </Button>
                     </DialogTrigger>
-                    <DialogContent>
+                    <DialogContent className="w-full">
                         <DialogTitle>
                             Are you sure you want to delete your account?
                         </DialogTitle>
