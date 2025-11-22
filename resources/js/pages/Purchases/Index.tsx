@@ -48,7 +48,6 @@ import {
     Item,
     ItemContent,
     ItemDescription,
-    ItemGroup,
     ItemMedia,
     ItemTitle,
 } from '@/components/ui/item';
@@ -1532,13 +1531,21 @@ export default function PurchasesIndex({
                         </DialogHeader>
                         {selectedPurchase && (
                             <div className="grid gap-4 sm:grid-cols-2">
-                                <Item size="sm" className="col-span-1 rounded-lg bg-muted/40">
-                                    <ItemMedia variant="icon" className="text-muted-foreground bg-background">
+                                <Item
+                                    size="sm"
+                                    className="col-span-1 rounded-lg bg-muted/40"
+                                >
+                                    <ItemMedia
+                                        variant="icon"
+                                        className="bg-background text-muted-foreground"
+                                    >
                                         <Calendar className="h-4 w-4" />
                                     </ItemMedia>
                                     <ItemContent>
-                                        <ItemTitle className="text-muted-foreground text-xs">Purchase Date</ItemTitle>
-                                        <ItemDescription className="font-semibold text-foreground text-base">
+                                        <ItemTitle className="text-xs text-muted-foreground">
+                                            Purchase Date
+                                        </ItemTitle>
+                                        <ItemDescription className="text-base font-semibold text-foreground">
                                             {new Date(
                                                 selectedPurchase.purchase_date,
                                             ).toLocaleDateString('en-US', {
@@ -1549,24 +1556,40 @@ export default function PurchasesIndex({
                                         </ItemDescription>
                                     </ItemContent>
                                 </Item>
-                                <Item size="sm" className="col-span-1 rounded-lg bg-muted/40">
-                                    <ItemMedia variant="icon" className="text-muted-foreground bg-background">
+                                <Item
+                                    size="sm"
+                                    className="col-span-1 rounded-lg bg-muted/40"
+                                >
+                                    <ItemMedia
+                                        variant="icon"
+                                        className="bg-background text-muted-foreground"
+                                    >
                                         <UserCircle className="h-4 w-4" />
                                     </ItemMedia>
                                     <ItemContent>
-                                        <ItemTitle className="text-muted-foreground text-xs">Supplier</ItemTitle>
-                                        <ItemDescription className="font-semibold text-foreground text-base">
+                                        <ItemTitle className="text-xs text-muted-foreground">
+                                            Supplier
+                                        </ItemTitle>
+                                        <ItemDescription className="text-base font-semibold text-foreground">
                                             {selectedPurchase.supplier.name}
                                         </ItemDescription>
                                     </ItemContent>
                                 </Item>
-                                <Item size="sm" className="col-span-1 rounded-lg bg-muted/40">
-                                    <ItemMedia variant="icon" className="text-muted-foreground bg-background">
+                                <Item
+                                    size="sm"
+                                    className="col-span-1 rounded-lg bg-muted/40"
+                                >
+                                    <ItemMedia
+                                        variant="icon"
+                                        className="bg-background text-muted-foreground"
+                                    >
                                         <Package className="h-4 w-4" />
                                     </ItemMedia>
                                     <ItemContent>
-                                        <ItemTitle className="text-muted-foreground text-xs">Quantity</ItemTitle>
-                                        <ItemDescription className="font-semibold text-foreground text-base">
+                                        <ItemTitle className="text-xs text-muted-foreground">
+                                            Quantity
+                                        </ItemTitle>
+                                        <ItemDescription className="text-base font-semibold text-foreground">
                                             {Number(
                                                 selectedPurchase.quantity_kg,
                                             ).toFixed(2)}{' '}
@@ -1574,13 +1597,21 @@ export default function PurchasesIndex({
                                         </ItemDescription>
                                     </ItemContent>
                                 </Item>
-                                <Item size="sm" className="col-span-1 rounded-lg bg-muted/40">
-                                    <ItemMedia variant="icon" className="text-muted-foreground bg-background">
+                                <Item
+                                    size="sm"
+                                    className="col-span-1 rounded-lg bg-muted/40"
+                                >
+                                    <ItemMedia
+                                        variant="icon"
+                                        className="bg-background text-muted-foreground"
+                                    >
                                         <DollarSign className="h-4 w-4" />
                                     </ItemMedia>
                                     <ItemContent>
-                                        <ItemTitle className="text-muted-foreground text-xs">Price per kg</ItemTitle>
-                                        <ItemDescription className="font-semibold text-foreground text-base">
+                                        <ItemTitle className="text-xs text-muted-foreground">
+                                            Price per kg
+                                        </ItemTitle>
+                                        <ItemDescription className="text-base font-semibold text-foreground">
                                             SBD{' '}
                                             {Number(
                                                 selectedPurchase.price_per_kg,
@@ -1588,13 +1619,21 @@ export default function PurchasesIndex({
                                         </ItemDescription>
                                     </ItemContent>
                                 </Item>
-                                <Item size="sm" className="col-span-1 rounded-lg bg-muted/40">
-                                    <ItemMedia variant="icon" className="text-muted-foreground bg-background">
+                                <Item
+                                    size="sm"
+                                    className="col-span-1 rounded-lg bg-muted/40"
+                                >
+                                    <ItemMedia
+                                        variant="icon"
+                                        className="bg-background text-muted-foreground"
+                                    >
                                         <DollarSign className="h-4 w-4" />
                                     </ItemMedia>
                                     <ItemContent>
-                                        <ItemTitle className="text-muted-foreground text-xs">Total Cost</ItemTitle>
-                                        <ItemDescription className="font-semibold text-foreground text-base">
+                                        <ItemTitle className="text-xs text-muted-foreground">
+                                            Total Cost
+                                        </ItemTitle>
+                                        <ItemDescription className="text-base font-semibold text-foreground">
                                             SBD{' '}
                                             {Number(
                                                 selectedPurchase.total_cost,
@@ -1602,13 +1641,21 @@ export default function PurchasesIndex({
                                         </ItemDescription>
                                     </ItemContent>
                                 </Item>
-                                <Item size="sm" className="col-span-1 rounded-lg bg-muted/40">
-                                    <ItemMedia variant="icon" className="text-muted-foreground bg-background">
+                                <Item
+                                    size="sm"
+                                    className="col-span-1 rounded-lg bg-muted/40"
+                                >
+                                    <ItemMedia
+                                        variant="icon"
+                                        className="bg-background text-muted-foreground"
+                                    >
                                         <Package className="h-4 w-4" />
                                     </ItemMedia>
                                     <ItemContent>
-                                        <ItemTitle className="text-muted-foreground text-xs">Sold Quantity</ItemTitle>
-                                        <ItemDescription className="font-semibold text-foreground text-base">
+                                        <ItemTitle className="text-xs text-muted-foreground">
+                                            Sold Quantity
+                                        </ItemTitle>
+                                        <ItemDescription className="text-base font-semibold text-foreground">
                                             {selectedPurchase.sold_quantity
                                                 ? Number(
                                                       selectedPurchase.sold_quantity,
@@ -1624,13 +1671,21 @@ export default function PurchasesIndex({
                                 </Item>
                                 {selectedPurchase.total_revenue !==
                                     undefined && (
-                                    <Item size="sm" className="col-span-1 rounded-lg bg-muted/40">
-                                        <ItemMedia variant="icon" className="text-muted-foreground bg-background">
+                                    <Item
+                                        size="sm"
+                                        className="col-span-1 rounded-lg bg-muted/40"
+                                    >
+                                        <ItemMedia
+                                            variant="icon"
+                                            className="bg-background text-muted-foreground"
+                                        >
                                             <TrendingUp className="h-4 w-4" />
                                         </ItemMedia>
                                         <ItemContent>
-                                            <ItemTitle className="text-muted-foreground text-xs">Total Revenue</ItemTitle>
-                                            <ItemDescription className="font-semibold text-foreground text-base">
+                                            <ItemTitle className="text-xs text-muted-foreground">
+                                                Total Revenue
+                                            </ItemTitle>
+                                            <ItemDescription className="text-base font-semibold text-foreground">
                                                 SBD{' '}
                                                 {Number(
                                                     selectedPurchase.total_revenue,
@@ -1643,15 +1698,21 @@ export default function PurchasesIndex({
                                     undefined &&
                                     Number(selectedPurchase.total_expenses) >
                                         0 && (
-                                        <Item size="sm" className="col-span-1 rounded-lg bg-destructive/10">
-                                            <ItemMedia variant="icon" className="text-destructive bg-background border-destructive/20">
+                                        <Item
+                                            size="sm"
+                                            className="col-span-1 rounded-lg bg-destructive/10"
+                                        >
+                                            <ItemMedia
+                                                variant="icon"
+                                                className="border-destructive/20 bg-background text-destructive"
+                                            >
                                                 <DollarSign className="h-4 w-4" />
                                             </ItemMedia>
                                             <ItemContent>
-                                                <ItemTitle className="text-destructive text-xs">
+                                                <ItemTitle className="text-xs text-destructive">
                                                     Total Expenses
                                                 </ItemTitle>
-                                                <ItemDescription className="font-semibold text-destructive text-base">
+                                                <ItemDescription className="text-base font-semibold text-destructive">
                                                     SBD{' '}
                                                     {Number(
                                                         selectedPurchase.total_expenses,
@@ -1661,13 +1722,21 @@ export default function PurchasesIndex({
                                         </Item>
                                     )}
                                 {selectedPurchase.profit !== undefined && (
-                                    <Item size="sm" className="sm:col-span-2 rounded-lg bg-emerald-50 dark:bg-emerald-950/30">
-                                        <ItemMedia variant="icon" className="text-emerald-600 bg-background border-emerald-200 dark:border-emerald-800">
+                                    <Item
+                                        size="sm"
+                                        className="rounded-lg bg-emerald-50 sm:col-span-2 dark:bg-emerald-950/30"
+                                    >
+                                        <ItemMedia
+                                            variant="icon"
+                                            className="border-emerald-200 bg-background text-emerald-600 dark:border-emerald-800"
+                                        >
                                             <TrendingUp className="h-4 w-4" />
                                         </ItemMedia>
                                         <ItemContent>
-                                            <ItemTitle className="text-emerald-600/80 text-xs uppercase tracking-wide font-semibold">Profit/Loss</ItemTitle>
-                                            <ItemDescription className="flex items-center justify-between w-full">
+                                            <ItemTitle className="text-xs font-semibold tracking-wide text-emerald-600/80 uppercase">
+                                                Profit/Loss
+                                            </ItemTitle>
+                                            <ItemDescription className="flex w-full items-center justify-between">
                                                 <span
                                                     className={`text-xl font-bold ${Number(selectedPurchase.profit) >= 0 ? 'text-emerald-600' : 'text-red-600'}`}
                                                 >
