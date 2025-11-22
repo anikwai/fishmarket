@@ -173,8 +173,7 @@
     <table class="header-table">
         <tr>
             <td class="logo-container">
-                <!-- Placeholder for Logo if available -->
-                <!-- <img src="{{ public_path('TZ_logo.png') }}" alt="Logo" style="height: 60px; margin-bottom: 15px;"> -->
+                <img src="{{ public_path('TZ_logo.png') }}" alt="Logo" style="height: 60px; margin-bottom: 15px;">
                 <div class="company-name">TZ HOLDING LIMITED</div>
                 <div class="text-sm text-muted-foreground">
                     20231076<br>
