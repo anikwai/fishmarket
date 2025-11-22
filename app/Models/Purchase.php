@@ -161,4 +161,9 @@ final class Purchase extends Model
     {
         return $this->quantity_kg - $this->sold_quantity;
     }
+
+    protected function getInvoiceNumberAttribute(): string
+    {
+        return 'INV-'.str_pad((string) $this->id, 6, '0', STR_PAD_LEFT);
+    }
 }

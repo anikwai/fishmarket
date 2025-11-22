@@ -23,10 +23,8 @@ final class PurchaseInvoice extends Mailable
 
     public function envelope(): Envelope
     {
-        $invoiceNumber = 'INV-'.str_pad((string) $this->purchase->id, 6, '0', STR_PAD_LEFT);
-
         return new Envelope(
-            subject: 'Invoice '.$invoiceNumber.' - '.config('app.name'),
+            subject: 'Invoice '.$this->purchase->invoice_number.' - '.config('app.name'),
         );
     }
 
@@ -46,10 +44,9 @@ final class PurchaseInvoice extends Mailable
     public function attachments(): array
     {
         $pdf = (new GeneratePurchaseInvoice)->handle($this->purchase);
-        $invoiceNumber = 'INV-'.str_pad((string) $this->purchase->id, 6, '0', STR_PAD_LEFT);
 
         return [
-            Attachment::fromData(fn (): string => $pdf->output(), $invoiceNumber.'.pdf')
+            Attachment::fromData(fn (): string => $pdf->output(), $this->purchase->invoice_number.'.pdf')
                 ->withMime('application/pdf'),
         ];
     }

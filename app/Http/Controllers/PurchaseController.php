@@ -112,7 +112,7 @@ final readonly class PurchaseController
         Gate::authorize('view purchases');
 
         $pdf = $generator->handle($purchase);
-        $invoiceNumber = 'INV-'.str_pad((string) $purchase->id, 6, '0', STR_PAD_LEFT);
+        $invoiceNumber = $purchase->invoice_number;
 
         return response($pdf->output(), 200, [
             'Content-Type' => 'application/pdf',
