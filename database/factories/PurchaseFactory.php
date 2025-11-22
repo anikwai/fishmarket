@@ -19,7 +19,13 @@ final class PurchaseFactory extends Factory
     public function definition(): array
     {
         return [
-            //
+            'supplier_id' => \App\Models\Supplier::factory(),
+            'purchase_date' => $this->faker->date(),
+            'quantity_kg' => $this->faker->randomFloat(2, 10, 100),
+            'price_per_kg' => $this->faker->randomFloat(2, 5, 50),
+            // @phpstan-ignore-next-line
+            'total_cost' => fn (array $attributes): float => (float) $attributes['quantity_kg'] * (float) $attributes['price_per_kg'],
+            'notes' => $this->faker->optional()->sentence(),
         ];
     }
 }
