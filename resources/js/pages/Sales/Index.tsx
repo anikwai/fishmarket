@@ -1095,7 +1095,7 @@ export default function SalesIndex({
                 {/* Create Modal */}
                 <Dialog open={createOpen} onOpenChange={setCreateOpen}>
                     <DialogContent className="flex max-h-[85vh] w-full flex-col gap-0 sm:max-w-2xl">
-                        <DialogHeader className="flex-shrink-0 pb-4">
+                        <DialogHeader className="shrink-0 pb-4">
                             <DialogTitle>Create Sale</DialogTitle>
                             <DialogDescription>
                                 Record a new sale. Available stock:{' '}
@@ -1423,7 +1423,7 @@ export default function SalesIndex({
                                                     e.target.value,
                                                 )
                                             }
-                                            className="flex min-h-[80px] w-full rounded-md border border-input bg-transparent px-3 py-2 pl-9 text-sm"
+                                            className="flex min-h-20 w-full rounded-md border border-input bg-transparent px-3 py-2 pl-9 text-sm"
                                             placeholder="Additional notes about this sale..."
                                         />
                                     </div>
@@ -1433,7 +1433,7 @@ export default function SalesIndex({
                                 </Field>
                             </FieldGroup>
                         </div>
-                        <DialogFooter className="flex-shrink-0 border-t pt-4">
+                        <DialogFooter className="shrink-0 border-t pt-4">
                             <Button
                                 variant="outline"
                                 onClick={() => setCreateOpen(false)}
@@ -1463,7 +1463,7 @@ export default function SalesIndex({
                 {/* Edit Modal - Similar structure but with editForm */}
                 <Dialog open={editOpen} onOpenChange={setEditOpen}>
                     <DialogContent className="flex max-h-[85vh] w-full flex-col gap-0 sm:max-w-2xl">
-                        <DialogHeader className="flex-shrink-0 pb-4">
+                        <DialogHeader className="shrink-0 pb-4">
                             <DialogTitle>Edit Sale</DialogTitle>
                             <DialogDescription>
                                 Update sale information. All fields marked with
@@ -1785,7 +1785,7 @@ export default function SalesIndex({
                                                     e.target.value,
                                                 )
                                             }
-                                            className="flex min-h-[80px] w-full rounded-md border border-input bg-transparent px-3 py-2 pl-9 text-sm"
+                                            className="flex min-h-20 w-full rounded-md border border-input bg-transparent px-3 py-2 pl-9 text-sm"
                                             placeholder="Additional notes about this sale..."
                                         />
                                     </div>
@@ -1795,7 +1795,7 @@ export default function SalesIndex({
                                 </Field>
                             </FieldGroup>
                         </div>
-                        <DialogFooter className="flex-shrink-0 border-t pt-4">
+                        <DialogFooter className="shrink-0 border-t pt-4">
                             <Button
                                 variant="outline"
                                 onClick={() => setEditOpen(false)}
