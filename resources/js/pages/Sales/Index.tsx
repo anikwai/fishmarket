@@ -39,7 +39,6 @@ import {
     Item,
     ItemContent,
     ItemDescription,
-    ItemGroup,
     ItemMedia,
     ItemTitle,
 } from '@/components/ui/item';
@@ -1095,7 +1094,7 @@ export default function SalesIndex({
 
                 {/* Create Modal */}
                 <Dialog open={createOpen} onOpenChange={setCreateOpen}>
-                    <DialogContent className="flex max-h-[90vh] w-full flex-col gap-0 sm:max-w-2xl">
+                    <DialogContent className="flex max-h-[85vh] w-full flex-col gap-0 sm:max-w-2xl">
                         <DialogHeader className="flex-shrink-0 pb-4">
                             <DialogTitle>Create Sale</DialogTitle>
                             <DialogDescription>
@@ -1106,74 +1105,86 @@ export default function SalesIndex({
                                 . All fields marked with * are required.
                             </DialogDescription>
                         </DialogHeader>
-                        <div className="flex-1 overflow-y-auto px-1">
+                        <div className="flex-1 overflow-y-auto px-1 pb-4">
                             <FieldGroup className="gap-6">
-                                <Field
-                                    data-invalid={
-                                        !!createForm.errors.customer_id
-                                    }
-                                >
-                                    <FieldLabel htmlFor="customer_id">
-                                        Customer *
-                                    </FieldLabel>
-                                    <div className="relative">
-                                        <User className="absolute top-1/2 left-3 z-10 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                                        <Select
-                                            value={createForm.data.customer_id}
-                                            onValueChange={(value) =>
-                                                createForm.setData(
-                                                    'customer_id',
-                                                    value,
-                                                )
-                                            }
-                                        >
-                                            <SelectTrigger
-                                                id="customer_id"
-                                                className="pl-9"
+                                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                                    <Field
+                                        data-invalid={
+                                            !!createForm.errors.customer_id
+                                        }
+                                    >
+                                        <FieldLabel htmlFor="customer_id">
+                                            Customer *
+                                        </FieldLabel>
+                                        <div className="relative">
+                                            <User className="absolute top-1/2 left-3 z-10 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                                            <Select
+                                                value={
+                                                    createForm.data.customer_id
+                                                }
+                                                onValueChange={(value) =>
+                                                    createForm.setData(
+                                                        'customer_id',
+                                                        value,
+                                                    )
+                                                }
                                             >
-                                                <SelectValue placeholder="Select customer" />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                {customers.map((customer) => (
-                                                    <SelectItem
-                                                        key={customer.id}
-                                                        value={customer.id.toString()}
-                                                    >
-                                                        {customer.name}
-                                                    </SelectItem>
-                                                ))}
-                                            </SelectContent>
-                                        </Select>
-                                    </div>
-                                    <FieldError>
-                                        {createForm.errors.customer_id}
-                                    </FieldError>
-                                </Field>
-                                <Field
-                                    data-invalid={!!createForm.errors.sale_date}
-                                >
-                                    <FieldLabel htmlFor="sale_date">
-                                        Sale Date *
-                                    </FieldLabel>
-                                    <div className="relative">
-                                        <Calendar className="absolute top-1/2 left-3 z-10 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                                        <DatePicker
-                                            id="sale_date"
-                                            value={createForm.data.sale_date}
-                                            onChange={(value) =>
-                                                createForm.setData(
-                                                    'sale_date',
-                                                    value,
-                                                )
-                                            }
-                                            placeholder="Select sale date"
-                                            className="pl-9"
-                                        />
-                                    </div>
-                                    <FieldError>
-                                        {createForm.errors.sale_date}
-                                    </FieldError>
-                                </Field>
+                                                <SelectTrigger
+                                                    id="customer_id"
+                                                    className="pl-9"
+                                                >
+                                                    <SelectValue placeholder="Select customer" />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    {customers.map(
+                                                        (customer) => (
+                                                            <SelectItem
+                                                                key={
+                                                                    customer.id
+                                                                }
+                                                                value={customer.id.toString()}
+                                                            >
+                                                                {customer.name}
+                                                            </SelectItem>
+                                                        ),
+                                                    )}
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+                                        <FieldError>
+                                            {createForm.errors.customer_id}
+                                        </FieldError>
+                                    </Field>
+                                    <Field
+                                        data-invalid={
+                                            !!createForm.errors.sale_date
+                                        }
+                                    >
+                                        <FieldLabel htmlFor="sale_date">
+                                            Sale Date *
+                                        </FieldLabel>
+                                        <div className="relative">
+                                            <Calendar className="absolute top-1/2 left-3 z-10 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                                            <DatePicker
+                                                id="sale_date"
+                                                value={
+                                                    createForm.data.sale_date
+                                                }
+                                                onChange={(value) =>
+                                                    createForm.setData(
+                                                        'sale_date',
+                                                        value,
+                                                    )
+                                                }
+                                                placeholder="Select sale date"
+                                                className="pl-9"
+                                            />
+                                        </div>
+                                        <FieldError>
+                                            {createForm.errors.sale_date}
+                                        </FieldError>
+                                    </Field>
+                                </div>
                                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                                     <Field
                                         data-invalid={
@@ -1451,7 +1462,7 @@ export default function SalesIndex({
 
                 {/* Edit Modal - Similar structure but with editForm */}
                 <Dialog open={editOpen} onOpenChange={setEditOpen}>
-                    <DialogContent className="flex max-h-[90vh] w-full flex-col gap-0 sm:max-w-2xl">
+                    <DialogContent className="flex max-h-[85vh] w-full flex-col gap-0 sm:max-w-2xl">
                         <DialogHeader className="flex-shrink-0 pb-4">
                             <DialogTitle>Edit Sale</DialogTitle>
                             <DialogDescription>
@@ -1459,72 +1470,84 @@ export default function SalesIndex({
                                 * are required.
                             </DialogDescription>
                         </DialogHeader>
-                        <div className="flex-1 overflow-y-auto px-1">
+                        <div className="flex-1 overflow-y-auto px-1 pb-4">
                             <FieldGroup className="gap-6">
-                                <Field
-                                    data-invalid={!!editForm.errors.customer_id}
-                                >
-                                    <FieldLabel htmlFor="edit-customer_id">
-                                        Customer *
-                                    </FieldLabel>
-                                    <div className="relative">
-                                        <User className="absolute top-1/2 left-3 z-10 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                                        <Select
-                                            value={editForm.data.customer_id}
-                                            onValueChange={(value) =>
-                                                editForm.setData(
-                                                    'customer_id',
-                                                    value,
-                                                )
-                                            }
-                                        >
-                                            <SelectTrigger
-                                                id="edit-customer_id"
-                                                className="pl-9"
+                                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                                    <Field
+                                        data-invalid={
+                                            !!editForm.errors.customer_id
+                                        }
+                                    >
+                                        <FieldLabel htmlFor="edit-customer_id">
+                                            Customer *
+                                        </FieldLabel>
+                                        <div className="relative">
+                                            <User className="absolute top-1/2 left-3 z-10 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                                            <Select
+                                                value={
+                                                    editForm.data.customer_id
+                                                }
+                                                onValueChange={(value) =>
+                                                    editForm.setData(
+                                                        'customer_id',
+                                                        value,
+                                                    )
+                                                }
                                             >
-                                                <SelectValue placeholder="Select customer" />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                {customers.map((customer) => (
-                                                    <SelectItem
-                                                        key={customer.id}
-                                                        value={customer.id.toString()}
-                                                    >
-                                                        {customer.name}
-                                                    </SelectItem>
-                                                ))}
-                                            </SelectContent>
-                                        </Select>
-                                    </div>
-                                    <FieldError>
-                                        {editForm.errors.customer_id}
-                                    </FieldError>
-                                </Field>
-                                <Field
-                                    data-invalid={!!editForm.errors.sale_date}
-                                >
-                                    <FieldLabel htmlFor="edit-sale_date">
-                                        Sale Date *
-                                    </FieldLabel>
-                                    <div className="relative">
-                                        <Calendar className="absolute top-1/2 left-3 z-10 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                                        <DatePicker
-                                            id="edit-sale_date"
-                                            value={editForm.data.sale_date}
-                                            onChange={(value) =>
-                                                editForm.setData(
-                                                    'sale_date',
-                                                    value,
-                                                )
-                                            }
-                                            placeholder="Select sale date"
-                                            className="pl-9"
-                                        />
-                                    </div>
-                                    <FieldError>
-                                        {editForm.errors.sale_date}
-                                    </FieldError>
-                                </Field>
+                                                <SelectTrigger
+                                                    id="edit-customer_id"
+                                                    className="pl-9"
+                                                >
+                                                    <SelectValue placeholder="Select customer" />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    {customers.map(
+                                                        (customer) => (
+                                                            <SelectItem
+                                                                key={
+                                                                    customer.id
+                                                                }
+                                                                value={customer.id.toString()}
+                                                            >
+                                                                {customer.name}
+                                                            </SelectItem>
+                                                        ),
+                                                    )}
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+                                        <FieldError>
+                                            {editForm.errors.customer_id}
+                                        </FieldError>
+                                    </Field>
+                                    <Field
+                                        data-invalid={
+                                            !!editForm.errors.sale_date
+                                        }
+                                    >
+                                        <FieldLabel htmlFor="edit-sale_date">
+                                            Sale Date *
+                                        </FieldLabel>
+                                        <div className="relative">
+                                            <Calendar className="absolute top-1/2 left-3 z-10 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                                            <DatePicker
+                                                id="edit-sale_date"
+                                                value={editForm.data.sale_date}
+                                                onChange={(value) =>
+                                                    editForm.setData(
+                                                        'sale_date',
+                                                        value,
+                                                    )
+                                                }
+                                                placeholder="Select sale date"
+                                                className="pl-9"
+                                            />
+                                        </div>
+                                        <FieldError>
+                                            {editForm.errors.sale_date}
+                                        </FieldError>
+                                    </Field>
+                                </div>
                                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                                     <Field
                                         data-invalid={
@@ -1801,7 +1824,7 @@ export default function SalesIndex({
 
                 {/* Show Modal */}
                 <Dialog open={showOpen} onOpenChange={setShowOpen}>
-                    <DialogContent className="w-full sm:max-w-[600px]">
+                    <DialogContent className="w-full sm:max-w-2xl">
                         <DialogHeader>
                             <DialogTitle>Sale Details</DialogTitle>
                             <DialogDescription>
@@ -1810,14 +1833,22 @@ export default function SalesIndex({
                             </DialogDescription>
                         </DialogHeader>
                         {selectedSale && (
-                            <ItemGroup>
-                                <Item>
-                                    <ItemMedia variant="icon">
-                                        <Calendar className="h-5 w-5" />
+                            <div className="grid gap-4 sm:grid-cols-2">
+                                <Item
+                                    size="sm"
+                                    className="col-span-1 rounded-lg bg-muted/40"
+                                >
+                                    <ItemMedia
+                                        variant="icon"
+                                        className="bg-background text-muted-foreground"
+                                    >
+                                        <Calendar className="h-4 w-4" />
                                     </ItemMedia>
                                     <ItemContent>
-                                        <ItemTitle>Sale Date</ItemTitle>
-                                        <ItemDescription>
+                                        <ItemTitle className="text-xs text-muted-foreground">
+                                            Sale Date
+                                        </ItemTitle>
+                                        <ItemDescription className="text-base font-semibold text-foreground">
                                             {new Date(
                                                 selectedSale.sale_date,
                                             ).toLocaleDateString('en-US', {
@@ -1828,24 +1859,40 @@ export default function SalesIndex({
                                         </ItemDescription>
                                     </ItemContent>
                                 </Item>
-                                <Item>
-                                    <ItemMedia variant="icon">
-                                        <User className="h-5 w-5" />
+                                <Item
+                                    size="sm"
+                                    className="col-span-1 rounded-lg bg-muted/40"
+                                >
+                                    <ItemMedia
+                                        variant="icon"
+                                        className="bg-background text-muted-foreground"
+                                    >
+                                        <User className="h-4 w-4" />
                                     </ItemMedia>
                                     <ItemContent>
-                                        <ItemTitle>Customer</ItemTitle>
-                                        <ItemDescription>
+                                        <ItemTitle className="text-xs text-muted-foreground">
+                                            Customer
+                                        </ItemTitle>
+                                        <ItemDescription className="text-base font-semibold text-foreground">
                                             {selectedSale.customer.name}
                                         </ItemDescription>
                                     </ItemContent>
                                 </Item>
-                                <Item>
-                                    <ItemMedia variant="icon">
-                                        <Package className="h-5 w-5" />
+                                <Item
+                                    size="sm"
+                                    className="col-span-1 rounded-lg bg-muted/40"
+                                >
+                                    <ItemMedia
+                                        variant="icon"
+                                        className="bg-background text-muted-foreground"
+                                    >
+                                        <Package className="h-4 w-4" />
                                     </ItemMedia>
                                     <ItemContent>
-                                        <ItemTitle>Quantity</ItemTitle>
-                                        <ItemDescription>
+                                        <ItemTitle className="text-xs text-muted-foreground">
+                                            Quantity
+                                        </ItemTitle>
+                                        <ItemDescription className="text-base font-semibold text-foreground">
                                             {Number(
                                                 selectedSale.quantity_kg,
                                             ).toFixed(2)}{' '}
@@ -1853,13 +1900,21 @@ export default function SalesIndex({
                                         </ItemDescription>
                                     </ItemContent>
                                 </Item>
-                                <Item>
-                                    <ItemMedia variant="icon">
-                                        <DollarSign className="h-5 w-5" />
+                                <Item
+                                    size="sm"
+                                    className="col-span-1 rounded-lg bg-muted/40"
+                                >
+                                    <ItemMedia
+                                        variant="icon"
+                                        className="bg-background text-muted-foreground"
+                                    >
+                                        <DollarSign className="h-4 w-4" />
                                     </ItemMedia>
                                     <ItemContent>
-                                        <ItemTitle>Price per kg</ItemTitle>
-                                        <ItemDescription>
+                                        <ItemTitle className="text-xs text-muted-foreground">
+                                            Price per kg
+                                        </ItemTitle>
+                                        <ItemDescription className="text-base font-semibold text-foreground">
                                             SBD{' '}
                                             {Number(
                                                 selectedSale.price_per_kg,
@@ -1869,13 +1924,21 @@ export default function SalesIndex({
                                 </Item>
                                 {Number(selectedSale.discount_percentage) >
                                     0 && (
-                                    <Item>
-                                        <ItemMedia variant="icon">
-                                            <Percent className="h-5 w-5" />
+                                    <Item
+                                        size="sm"
+                                        className="col-span-1 rounded-lg bg-muted/40"
+                                    >
+                                        <ItemMedia
+                                            variant="icon"
+                                            className="bg-background text-muted-foreground"
+                                        >
+                                            <Percent className="h-4 w-4" />
                                         </ItemMedia>
                                         <ItemContent>
-                                            <ItemTitle>Discount</ItemTitle>
-                                            <ItemDescription>
+                                            <ItemTitle className="text-xs text-muted-foreground">
+                                                Discount
+                                            </ItemTitle>
+                                            <ItemDescription className="text-base font-semibold text-foreground">
                                                 {Number(
                                                     selectedSale.discount_percentage,
                                                 ).toFixed(2)}
@@ -1885,13 +1948,21 @@ export default function SalesIndex({
                                     </Item>
                                 )}
                                 {Number(selectedSale.delivery_fee) > 0 && (
-                                    <Item>
-                                        <ItemMedia variant="icon">
-                                            <Truck className="h-5 w-5" />
+                                    <Item
+                                        size="sm"
+                                        className="col-span-1 rounded-lg bg-muted/40"
+                                    >
+                                        <ItemMedia
+                                            variant="icon"
+                                            className="bg-background text-muted-foreground"
+                                        >
+                                            <Truck className="h-4 w-4" />
                                         </ItemMedia>
                                         <ItemContent>
-                                            <ItemTitle>Delivery Fee</ItemTitle>
-                                            <ItemDescription>
+                                            <ItemTitle className="text-xs text-muted-foreground">
+                                                Delivery Fee
+                                            </ItemTitle>
+                                            <ItemDescription className="text-base font-semibold text-foreground">
                                                 SBD{' '}
                                                 {Number(
                                                     selectedSale.delivery_fee,
@@ -1900,43 +1971,57 @@ export default function SalesIndex({
                                         </ItemContent>
                                     </Item>
                                 )}
-                                <Item>
-                                    <ItemMedia variant="icon">
-                                        <DollarSign className="h-5 w-5" />
+                                <Item
+                                    size="sm"
+                                    className="col-span-1 rounded-lg bg-muted/40"
+                                >
+                                    <ItemMedia
+                                        variant="icon"
+                                        className="bg-background text-muted-foreground"
+                                    >
+                                        <DollarSign className="h-4 w-4" />
                                     </ItemMedia>
                                     <ItemContent>
-                                        <ItemTitle>Total Amount</ItemTitle>
-                                        <ItemDescription>
-                                            <span className="text-lg font-semibold">
-                                                SBD{' '}
-                                                {Number(
-                                                    selectedSale.total_amount,
-                                                ).toFixed(2)}
-                                            </span>
+                                        <ItemTitle className="text-xs text-muted-foreground">
+                                            Total Amount
+                                        </ItemTitle>
+                                        <ItemDescription className="text-base font-semibold text-foreground">
+                                            SBD{' '}
+                                            {Number(
+                                                selectedSale.total_amount,
+                                            ).toFixed(2)}
                                         </ItemDescription>
                                     </ItemContent>
                                 </Item>
-                                <Item>
-                                    <ItemMedia variant="icon">
+                                <Item
+                                    size="sm"
+                                    className="col-span-1 rounded-lg bg-muted/40"
+                                >
+                                    <ItemMedia
+                                        variant="icon"
+                                        className="bg-background text-muted-foreground"
+                                    >
                                         {selectedSale.is_credit ? (
                                             outstandingBalance(selectedSale) >
                                             0 ? (
-                                                <AlertCircle className="h-5 w-5 text-destructive" />
+                                                <AlertCircle className="h-4 w-4 text-destructive" />
                                             ) : (
-                                                <CircleCheck className="h-5 w-5 text-green-600" />
+                                                <CircleCheck className="h-4 w-4 text-green-600" />
                                             )
                                         ) : (
-                                            <CircleCheck className="h-5 w-5 text-green-600" />
+                                            <CircleCheck className="h-4 w-4 text-green-600" />
                                         )}
                                     </ItemMedia>
                                     <ItemContent>
-                                        <ItemTitle>Payment Status</ItemTitle>
-                                        <ItemDescription>
+                                        <ItemTitle className="text-xs text-muted-foreground">
+                                            Payment Status
+                                        </ItemTitle>
+                                        <ItemDescription className="text-base font-semibold text-foreground">
                                             {selectedSale.is_credit ? (
                                                 outstandingBalance(
                                                     selectedSale,
                                                 ) > 0 ? (
-                                                    <span className="font-medium text-destructive">
+                                                    <span className="text-destructive">
                                                         Credit Sale -
                                                         Outstanding: SBD{' '}
                                                         {outstandingBalance(
@@ -1944,12 +2029,12 @@ export default function SalesIndex({
                                                         ).toFixed(2)}
                                                     </span>
                                                 ) : (
-                                                    <span className="font-medium text-green-600">
+                                                    <span className="text-green-600">
                                                         Paid (Credit Sale)
                                                     </span>
                                                 )
                                             ) : (
-                                                <span className="font-medium text-green-600">
+                                                <span className="text-green-600">
                                                     Paid
                                                 </span>
                                             )}
@@ -1958,12 +2043,20 @@ export default function SalesIndex({
                                 </Item>
                                 {selectedSale.payments &&
                                     selectedSale.payments.length > 0 && (
-                                        <Item>
-                                            <ItemMedia variant="icon">
-                                                <CreditCard className="h-5 w-5" />
+                                        <Item
+                                            size="sm"
+                                            className="col-span-2 rounded-lg bg-muted/40"
+                                        >
+                                            <ItemMedia
+                                                variant="icon"
+                                                className="bg-background text-muted-foreground"
+                                            >
+                                                <CreditCard className="h-4 w-4" />
                                             </ItemMedia>
                                             <ItemContent>
-                                                <ItemTitle>Payments</ItemTitle>
+                                                <ItemTitle className="text-xs text-muted-foreground">
+                                                    Payments
+                                                </ItemTitle>
                                                 <ItemDescription>
                                                     <div className="mt-2 space-y-2">
                                                         {selectedSale.payments.map(
@@ -1997,19 +2090,27 @@ export default function SalesIndex({
                                         </Item>
                                     )}
                                 {selectedSale.notes && (
-                                    <Item>
-                                        <ItemMedia variant="icon">
-                                            <FileText className="h-5 w-5" />
+                                    <Item
+                                        size="sm"
+                                        className="col-span-2 rounded-lg bg-muted/40"
+                                    >
+                                        <ItemMedia
+                                            variant="icon"
+                                            className="bg-background text-muted-foreground"
+                                        >
+                                            <FileText className="h-4 w-4" />
                                         </ItemMedia>
                                         <ItemContent>
-                                            <ItemTitle>Notes</ItemTitle>
-                                            <ItemDescription>
+                                            <ItemTitle className="text-xs text-muted-foreground">
+                                                Notes
+                                            </ItemTitle>
+                                            <ItemDescription className="text-base font-semibold text-foreground">
                                                 {selectedSale.notes}
                                             </ItemDescription>
                                         </ItemContent>
                                     </Item>
                                 )}
-                            </ItemGroup>
+                            </div>
                         )}
                         <DialogFooter>
                             <Button
