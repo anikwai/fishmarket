@@ -17,7 +17,6 @@ import {
     DropdownMenuContent,
     DropdownMenuItem,
     DropdownMenuLabel,
-    DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
@@ -511,8 +510,7 @@ export const columns: ColumnDef<RecentSale>[] = [
         id: 'actions',
         header: () => <div className="text-right">Action</div>,
         enableHiding: false,
-        cell: ({ row }) => {
-            const customerId = row.original.customer.id;
+        cell: () => {
             return (
                 <div className="text-right">
                     <DropdownMenu>
@@ -528,16 +526,6 @@ export const columns: ColumnDef<RecentSale>[] = [
                                 onClick={() => router.visit('/sales')}
                             >
                                 View full list
-                            </DropdownMenuItem>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem
-                                onClick={() =>
-                                    router.visit(
-                                        `/customers/${customerId}/history`,
-                                    )
-                                }
-                            >
-                                View customer history
                             </DropdownMenuItem>
                         </DropdownMenuContent>
                     </DropdownMenu>
