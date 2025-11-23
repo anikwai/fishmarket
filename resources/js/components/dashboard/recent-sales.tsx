@@ -96,6 +96,20 @@ export const recentSaleSchema = z.object({
 
 export type RecentSale = z.infer<typeof recentSaleSchema>;
 
+// Formats dates safely, returning a fallback when the input is invalid.
+const formatDate = (
+    value: string,
+    options?: Intl.DateTimeFormatOptions,
+): string => {
+    const date = new Date(value);
+
+    if (Number.isNaN(date.getTime())) {
+        return 'Invalid date';
+    }
+
+    return date.toLocaleDateString('en-US', options);
+};
+
 function SaleDetailsDrawer({ sale }: { sale: RecentSale }) {
     const isMobile = useIsMobile();
     const totalPaid = sale.payments.reduce(
@@ -174,9 +188,7 @@ function SaleDetailsDrawer({ sale }: { sale: RecentSale }) {
                                     Date
                                 </Label>
                                 <span className="text-sm font-medium">
-                                    {new Date(
-                                        sale.sale_date,
-                                    ).toLocaleDateString('en-US', {
+                                    {formatDate(sale.sale_date, {
                                         month: 'short',
                                         day: 'numeric',
                                         year: 'numeric',
@@ -355,10 +367,8 @@ function SaleDetailsDrawer({ sale }: { sale: RecentSale }) {
                                                     className="flex items-center justify-between rounded-md bg-muted/50 p-2 text-xs"
                                                 >
                                                     <span className="text-muted-foreground">
-                                                        {new Date(
+                                                        {formatDate(
                                                             payment.payment_date,
-                                                        ).toLocaleDateString(
-                                                            'en-US',
                                                             {
                                                                 month: 'short',
                                                                 day: 'numeric',
@@ -442,7 +452,7 @@ export const columns: ColumnDef<RecentSale>[] = [
             const sale = row.original;
             return (
                 <div className="text-sm text-muted-foreground">
-                    {new Date(sale.sale_date).toLocaleDateString('en-US', {
+                    {formatDate(sale.sale_date, {
                         month: 'short',
                         day: 'numeric',
                         year: 'numeric',
