@@ -24,7 +24,6 @@ final class DemoDataSeeder extends Seeder
         $customers = Customer::factory()->count(10)->create();
 
         // Create Purchases (spread over last 60 days)
-        $purchases = collect();
         foreach ($suppliers as $supplier) {
             // Each supplier has 3-6 purchases
             $count = fake()->numberBetween(3, 6);
@@ -36,7 +35,6 @@ final class DemoDataSeeder extends Seeder
                     'quantity_kg' => fake()->numberBetween(50, 200),
                     'price_per_kg' => fake()->numberBetween(20, 40),
                 ]);
-                $purchases->push($purchase);
 
                 // Add expenses linked to purchase (Shipping/Ice)
                 if (fake()->boolean()) {
@@ -66,7 +64,6 @@ final class DemoDataSeeder extends Seeder
                 $date = Date::now()->subDays(fake()->numberBetween(1, 30));
                 $quantity = fake()->numberBetween(5, 50);
                 $price = fake()->numberBetween(45, 60); // Higher than purchase price
-                $subtotal = $quantity * $price;
                 $delivery = fake()->boolean() ? fake()->numberBetween(10, 50) : 0;
 
                 $sale = Sale::factory()->create([
@@ -75,9 +72,7 @@ final class DemoDataSeeder extends Seeder
                     'quantity_kg' => $quantity,
                     'price_per_kg' => $price,
                     'delivery_fee' => $delivery,
-                    // subtotal and total_amount handled by factory or model logic usually,
-                    // but factory often sets them. Let's check factory if needed,
-                    // assuming standard factory usage.
+                    'is_delivery' => (bool) $delivery,
                     'is_credit' => fake()->boolean(), // Randomize credit/cash sales
                 ]);
 

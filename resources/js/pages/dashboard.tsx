@@ -429,7 +429,7 @@ export default function Dashboard({
                                         paddingAngle={4}
                                         strokeWidth={0}
                                     >
-                                        {expenseBreakdown.map(
+                                        {safeExpenseBreakdown.map(
                                             (entry, index) => (
                                                 <Cell
                                                     key={`cell-${index}`}
@@ -446,7 +446,7 @@ export default function Dashboard({
                                 </RePieChart>
                             </ChartContainer>
                             <div className="mt-4 flex flex-wrap justify-center gap-4 text-xs">
-                                {expenseBreakdown.map((entry, index) => (
+                                {safeExpenseBreakdown.map((entry, index) => (
                                     <div
                                         key={entry.type}
                                         className="flex items-center gap-1.5"
