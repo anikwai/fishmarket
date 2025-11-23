@@ -759,7 +759,7 @@ export default function UsersIndex({ users, roles, filters }: UsersProps) {
 
                 {/* Create User Modal */}
                 <Dialog open={createOpen} onOpenChange={setCreateOpen}>
-                    <DialogContent className="sm:max-w-[500px]">
+                    <DialogContent className="w-full sm:max-w-[500px]">
                         <Form
                             {...UserController.storeAdmin.form()}
                             noValidate
@@ -926,7 +926,7 @@ export default function UsersIndex({ users, roles, filters }: UsersProps) {
                 {/* Edit Modal */}
                 {editFormProps && selectedUser && (
                     <Dialog open={editOpen} onOpenChange={setEditOpen}>
-                        <DialogContent className="sm:max-w-[500px]">
+                        <DialogContent className="w-full sm:max-w-[500px]">
                             <Form
                                 {...editFormProps}
                                 noValidate
@@ -1062,7 +1062,7 @@ export default function UsersIndex({ users, roles, filters }: UsersProps) {
                         open={permissionsOpen}
                         onOpenChange={setPermissionsOpen}
                     >
-                        <DialogContent className="sm:max-w-[600px]">
+                        <DialogContent className="w-full sm:max-w-[600px]">
                             <DialogHeader>
                                 <DialogTitle>
                                     Permissions for{' '}

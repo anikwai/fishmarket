@@ -993,7 +993,7 @@ export default function ExpensesIndex({
 
                 {/* Create Modal */}
                 <Dialog open={createOpen} onOpenChange={setCreateOpen}>
-                    <DialogContent className="flex max-h-[90vh] max-w-4xl flex-col gap-0">
+                    <DialogContent className="flex max-h-[90vh] w-full flex-col gap-0 sm:max-w-4xl">
                         <DialogHeader className="flex-shrink-0 pb-4">
                             <DialogTitle>Create Expenses</DialogTitle>
                             <DialogDescription>
@@ -1006,48 +1006,39 @@ export default function ExpensesIndex({
                             <FieldGroup className="gap-6">
                                 {(createForm.data.expenses || []).map(
                                     (expense, index) => (
-                                        <div
-                                            key={index}
-                                            className="space-y-5 rounded-lg border bg-muted/30 p-5"
-                                        >
-                                            <Item className="pb-2">
-                                                <ItemMedia variant="icon">
-                                                    <Receipt className="h-5 w-5" />
-                                                </ItemMedia>
-                                                <ItemContent>
-                                                    <ItemTitle>
-                                                        {expense.type
-                                                            ? expense.type
-                                                                  .charAt(0)
-                                                                  .toUpperCase() +
-                                                              expense.type.slice(
-                                                                  1,
-                                                              )
-                                                            : `Expense ${index + 1}`}
-                                                    </ItemTitle>
-                                                    {(
-                                                        createForm.data
-                                                            .expenses || []
-                                                    ).length > 1 && (
-                                                        <ItemDescription className="mt-1">
-                                                            <Button
-                                                                type="button"
-                                                                variant="ghost"
-                                                                size="sm"
-                                                                onClick={() =>
-                                                                    removeExpenseRow(
-                                                                        index,
-                                                                    )
-                                                                }
-                                                                className="h-auto p-0 text-destructive hover:text-destructive"
-                                                            >
-                                                                <XIcon className="mr-1 h-3 w-3" />
-                                                                Remove
-                                                            </Button>
-                                                        </ItemDescription>
-                                                    )}
-                                                </ItemContent>
-                                            </Item>
+                                        <div key={index} className="space-y-6">
+                                            {(createForm.data.expenses || [])
+                                                .length > 1 && (
+                                                <div className="flex items-center justify-between border-b pb-4">
+                                                    <div className="flex items-center gap-2">
+                                                        <Receipt className="h-4 w-4 text-muted-foreground" />
+                                                        <span className="text-sm font-medium">
+                                                            {expense.type
+                                                                ? expense.type
+                                                                      .charAt(0)
+                                                                      .toUpperCase() +
+                                                                  expense.type.slice(
+                                                                      1,
+                                                                  )
+                                                                : `Expense ${index + 1}`}
+                                                        </span>
+                                                    </div>
+                                                    <Button
+                                                        type="button"
+                                                        variant="ghost"
+                                                        size="sm"
+                                                        onClick={() =>
+                                                            removeExpenseRow(
+                                                                index,
+                                                            )
+                                                        }
+                                                        className="h-auto p-0 text-destructive hover:text-destructive"
+                                                    >
+                                                        <XIcon className="mr-1 h-3 w-3" />
+                                                        Remove
+                                                    </Button>
+                                                </div>
+                                            )}
                                             <FieldGroup className="gap-6">
                                                 {/* Essential Information */}
                                                 <FieldSet>
@@ -1406,7 +1397,7 @@ export default function ExpensesIndex({
 
                 {/* Edit Modal */}
                 <Dialog open={editOpen} onOpenChange={setEditOpen}>
-                    <DialogContent className="flex max-h-[90vh] flex-col gap-0 sm:max-w-[500px]">
+                    <DialogContent className="flex max-h-[90vh] w-full flex-col gap-0 sm:max-w-[500px]">
                         <DialogHeader className="flex-shrink-0 pb-4">
                             <DialogTitle>Edit Expense</DialogTitle>
                             <DialogDescription>
@@ -1627,7 +1618,7 @@ export default function ExpensesIndex({
 
                 {/* Show Modal */}
                 <Dialog open={showOpen} onOpenChange={setShowOpen}>
-                    <DialogContent className="sm:max-w-[500px]">
+                    <DialogContent className="w-full sm:max-w-[500px]">
                         <DialogHeader>
                             <DialogTitle>Expense Details</DialogTitle>
                             <DialogDescription>

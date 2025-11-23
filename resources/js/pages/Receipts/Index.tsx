@@ -841,7 +841,7 @@ export default function ReceiptsIndex({
 
                 {/* Void Receipt Dialog */}
                 <Dialog open={voidOpen} onOpenChange={setVoidOpen}>
-                    <DialogContent>
+                    <DialogContent className="w-full">
                         <DialogHeader>
                             <DialogTitle>Void Receipt</DialogTitle>
                             <DialogDescription>

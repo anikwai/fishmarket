@@ -19,7 +19,11 @@ final class ExpenseFactory extends Factory
     public function definition(): array
     {
         return [
-            //
+            'purchase_id' => null,
+            'expense_date' => fake()->dateTimeBetween('-3 months', 'now'),
+            'type' => fake()->randomElement(['shipping', 'ice', 'other']),
+            'description' => fake()->sentence(),
+            'amount' => fake()->randomFloat(2, 10, 500),
         ];
     }
 }

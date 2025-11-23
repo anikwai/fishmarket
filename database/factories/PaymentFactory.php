@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Database\Factories;
 
+use App\Models\Sale;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -19,7 +20,10 @@ final class PaymentFactory extends Factory
     public function definition(): array
     {
         return [
-            //
+            'sale_id' => Sale::factory(),
+            'payment_date' => fake()->dateTimeBetween('-1 month', 'now'),
+            'amount' => fake()->randomFloat(2, 10, 500),
+            'notes' => fake()->optional()->sentence(),
         ];
     }
 }
