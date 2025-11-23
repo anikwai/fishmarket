@@ -653,6 +653,12 @@ function SalesSummaryReport({ data }: { data: SalesSummaryData }) {
                             <LineChart
                                 accessibilityLayer
                                 data={data.daily_data}
+                                margin={{
+                                    left: 50,
+                                    right: 20,
+                                    top: 10,
+                                    bottom: 10,
+                                }}
                             >
                                 <CartesianGrid vertical={false} />
                                 <XAxis
@@ -671,12 +677,21 @@ function SalesSummaryReport({ data }: { data: SalesSummaryData }) {
                                 <YAxis
                                     tickLine={false}
                                     axisLine={false}
-                                    tickMargin={8}
-                                    width={60}
+                                    tickMargin={12}
+                                    width={100}
                                     tickFormatter={(value) => {
-                                        if (value >= 1000)
-                                            return `SBD ${(value / 1000).toFixed(1)}k`;
-                                        return `SBD ${Math.round(value)}`;
+                                        const formattedValue =
+                                            typeof value === 'number'
+                                                ? value >= 1000
+                                                    ? `${(value / 1000).toFixed(1)}k`
+                                                    : value.toLocaleString(
+                                                          'en-US',
+                                                          {
+                                                              maximumFractionDigits: 0,
+                                                          },
+                                                      )
+                                                : value;
+                                        return `SBD ${formattedValue}`;
                                     }}
                                 />
                                 <ChartTooltip
@@ -900,6 +915,12 @@ function ProfitLossReport({ data }: { data: ProfitLossData }) {
                                         <BarChart
                                             accessibilityLayer
                                             data={data.expense_breakdown}
+                                            margin={{
+                                                left: 50,
+                                                right: 20,
+                                                top: 10,
+                                                bottom: 10,
+                                            }}
                                         >
                                             <CartesianGrid vertical={false} />
                                             <XAxis
@@ -911,12 +932,22 @@ function ProfitLossReport({ data }: { data: ProfitLossData }) {
                                             <YAxis
                                                 tickLine={false}
                                                 axisLine={false}
-                                                tickMargin={8}
-                                                width={60}
+                                                tickMargin={12}
+                                                width={100}
                                                 tickFormatter={(value) => {
-                                                    if (value >= 1000)
-                                                        return `SBD ${(value / 1000).toFixed(1)}k`;
-                                                    return `SBD ${Math.round(value)}`;
+                                                    const formattedValue =
+                                                        typeof value ===
+                                                        'number'
+                                                            ? value >= 1000
+                                                                ? `${(value / 1000).toFixed(1)}k`
+                                                                : value.toLocaleString(
+                                                                      'en-US',
+                                                                      {
+                                                                          maximumFractionDigits: 0,
+                                                                      },
+                                                                  )
+                                                            : value;
+                                                    return `SBD ${formattedValue}`;
                                                 }}
                                             />
                                             <ChartTooltip
@@ -1059,6 +1090,12 @@ function ExpenseReport({ data }: { data: ExpenseReportData }) {
                                 <LineChart
                                     accessibilityLayer
                                     data={data.daily_data}
+                                    margin={{
+                                        left: 50,
+                                        right: 20,
+                                        top: 10,
+                                        bottom: 10,
+                                    }}
                                 >
                                     <CartesianGrid vertical={false} />
                                     <XAxis
@@ -1080,12 +1117,21 @@ function ExpenseReport({ data }: { data: ExpenseReportData }) {
                                     <YAxis
                                         tickLine={false}
                                         axisLine={false}
-                                        tickMargin={8}
-                                        width={60}
+                                        tickMargin={12}
+                                        width={100}
                                         tickFormatter={(value) => {
-                                            if (value >= 1000)
-                                                return `SBD ${(value / 1000).toFixed(1)}k`;
-                                            return `SBD ${Math.round(value)}`;
+                                            const formattedValue =
+                                                typeof value === 'number'
+                                                    ? value >= 1000
+                                                        ? `${(value / 1000).toFixed(1)}k`
+                                                        : value.toLocaleString(
+                                                              'en-US',
+                                                              {
+                                                                  maximumFractionDigits: 0,
+                                                              },
+                                                          )
+                                                    : value;
+                                            return `SBD ${formattedValue}`;
                                         }}
                                     />
                                     <ChartTooltip

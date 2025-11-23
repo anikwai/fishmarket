@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Database\Factories;
 
+use App\Models\Supplier;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -18,14 +19,16 @@ final class PurchaseFactory extends Factory
      */
     public function definition(): array
     {
+        $quantity = fake()->randomFloat(2, 10, 1000);
+        $price = fake()->randomFloat(2, 10, 50);
+
         return [
-            'supplier_id' => \App\Models\Supplier::factory(),
-            'purchase_date' => $this->faker->date(),
-            'quantity_kg' => $this->faker->randomFloat(2, 10, 100),
-            'price_per_kg' => $this->faker->randomFloat(2, 5, 50),
-            // @phpstan-ignore-next-line
-            'total_cost' => fn (array $attributes): float => (float) $attributes['quantity_kg'] * (float) $attributes['price_per_kg'],
-            'notes' => $this->faker->optional()->sentence(),
+            'supplier_id' => Supplier::factory(),
+            'purchase_date' => fake()->dateTimeBetween('-3 months', 'now'),
+            'quantity_kg' => $quantity,
+            'price_per_kg' => $price,
+            'total_cost' => $quantity * $price,
+            'notes' => fake()->optional()->sentence(),
         ];
     }
 }

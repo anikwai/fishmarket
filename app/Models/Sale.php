@@ -136,8 +136,9 @@ final class Sale extends Model
             return 0.0;
         }
 
-        $paidAmount = $this->payments()->sum('amount');
+        // Use loaded relationship if available to avoid N+1
+        $paidAmount = $this->relationLoaded('payments') ? $this->payments->sum('amount') : $this->payments()->sum('amount');
 
-        return max(0.0, $this->total_amount - (float) $paidAmount);
+        return max(0.0, $this->total_amount - (is_numeric($paidAmount) ? (float) $paidAmount : 0.0));
     }
 }

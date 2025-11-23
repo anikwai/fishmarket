@@ -9,6 +9,7 @@ use App\Models\Purchase;
 use App\Models\Sale;
 use App\Models\Supplier;
 use App\Support\Stock;
+use Carbon\CarbonInterface;
 use Illuminate\Support\Facades\DB;
 
 final readonly class GetDashboardDataAction
@@ -16,14 +17,40 @@ final readonly class GetDashboardDataAction
     /**
      * @return array<string, mixed>
      */
-    public function handle(): array
+    public function handle(?CarbonInterface $startDate = null, ?CarbonInterface $endDate = null): array
     {
         $currentStock = Stock::current();
         $recentSales = Sale::query()
-            ->with('customer')
+            ->with(['customer', 'payments'])
+            ->when($startDate && $endDate, fn ($q) => $q->whereBetween('sale_date', [$startDate, $endDate]))
             ->latest()
-            ->limit(10)
-            ->get();
+            ->limit(50)
+            ->get()
+            ->map(fn (Sale $sale): array => [
+                'id' => $sale->id,
+                'sale_date' => $sale->sale_date->toISOString(),
+                'quantity_kg' => (float) $sale->quantity_kg,
+                'price_per_kg' => (float) $sale->price_per_kg,
+                'discount_percentage' => (float) $sale->discount_percentage,
+                'subtotal' => (float) $sale->subtotal,
+                'delivery_fee' => (float) $sale->delivery_fee,
+                'total_amount' => (float) $sale->total_amount,
+                'is_credit' => $sale->is_credit,
+                'is_delivery' => $sale->is_delivery,
+                'notes' => $sale->notes,
+                'customer' => [
+                    'id' => $sale->customer->id,
+                    'name' => $sale->customer->name,
+                    'email' => $sale->customer->email,
+                    'phone' => $sale->customer->phone,
+                ],
+                'payments' => $sale->payments->map(fn ($payment): array => [
+                    'id' => $payment->id,
+                    'amount' => (float) $payment->amount,
+                    'payment_date' => $payment->payment_date->toISOString(),
+                ])->all(),
+                'outstanding_balance' => (float) $sale->outstanding_balance,
+            ]);
 
         $outstandingCredits = Sale::query()
             ->where('is_credit', true)
@@ -39,57 +66,10 @@ final readonly class GetDashboardDataAction
             ])
             ->values();
 
-        // Sales revenue over last 6 months
-        $salesRevenueData = Sale::query()
-            ->selectRaw("TO_CHAR(sale_date, 'YYYY-MM') as month")
-            ->selectRaw('SUM(total_amount) as revenue')
-            ->selectRaw('COUNT(*) as count')
-            ->where('sale_date', '>=', now()->subMonths(6)->startOfMonth())
-            ->groupByRaw("TO_CHAR(sale_date, 'YYYY-MM')")
-            ->orderBy('month')
-            ->get()
-            ->map(fn (object $item): array => [
-                'month' => $item->month ?? '',
-                'revenue' => (isset($item->revenue) && is_numeric($item->revenue)) ? (float) $item->revenue : 0.0,
-                'count' => (isset($item->count) && is_numeric($item->count)) ? (int) $item->count : 0,
-            ]);
-
-        // Purchases cost over last 6 months
-        $purchasesCostData = Purchase::query()
-            ->selectRaw("TO_CHAR(purchase_date, 'YYYY-MM') as month")
-            ->selectRaw('SUM(total_cost) as cost')
-            ->selectRaw('SUM(quantity_kg) as quantity')
-            ->where('purchase_date', '>=', now()->subMonths(6)->startOfMonth())
-            ->groupByRaw("TO_CHAR(purchase_date, 'YYYY-MM')")
-            ->orderBy('month')
-            ->get()
-            ->map(fn (object $item): array => [
-                'month' => $item->month ?? '',
-                'cost' => (isset($item->cost) && is_numeric($item->cost)) ? (float) $item->cost : 0.0,
-                'quantity' => (isset($item->quantity) && is_numeric($item->quantity)) ? (float) $item->quantity : 0.0,
-            ]);
-
-        // Combine sales and purchases data for comparison chart
-        $monthlyComparison = collect(range(0, 5))
-            ->map(fn (int $i): string => now()->subMonths($i)->format('Y-m'))
-            ->reverse()
-            ->map(function (string $month) use ($salesRevenueData, $purchasesCostData): array {
-                $sales = $salesRevenueData->firstWhere('month', $month);
-                $purchases = $purchasesCostData->firstWhere('month', $month);
-
-                $revenue = is_array($sales) ? (float) $sales['revenue'] : 0.0;
-                $cost = is_array($purchases) ? (float) $purchases['cost'] : 0.0;
-
-                return [
-                    'month' => date('M Y', (int) strtotime($month.'-01')),
-                    'revenue' => $revenue,
-                    'cost' => $cost,
-                ];
-            });
-
         // Expense breakdown by type
         $expenseBreakdown = Expense::query()
             ->select('type', DB::raw('SUM(amount) as total'))
+            ->when($startDate && $endDate, fn ($q) => $q->whereBetween('expense_date', [$startDate, $endDate]))
             ->groupBy('type')
             ->get()
             ->map(fn (object $item): array => [
@@ -97,15 +77,21 @@ final readonly class GetDashboardDataAction
                 'total' => (isset($item->total) && is_numeric($item->total)) ? (float) $item->total : 0.0,
             ]);
 
-        // Daily sales for last 30 days
-        $dailySalesData = Sale::query()
+        // Daily sales for last 30 days or selected period
+        $dailySalesQuery = Sale::query()
             ->selectRaw('sale_date::date as date')
             ->selectRaw('SUM(total_amount) as revenue')
             ->selectRaw('SUM(quantity_kg) as quantity')
-            ->where('sale_date', '>=', now()->subDays(30))
             ->groupByRaw('sale_date::date')
-            ->orderBy('date')
-            ->get()
+            ->orderBy('date');
+
+        if ($startDate && $endDate) {
+            $dailySalesQuery->whereBetween('sale_date', [$startDate, $endDate]);
+        } else {
+            $dailySalesQuery->where('sale_date', '>=', now()->subDays(30));
+        }
+
+        $dailySalesData = $dailySalesQuery->get()
             ->map(fn (object $item): array => [
                 'date' => $item->date ?? '',
                 'revenue' => (isset($item->revenue) && is_numeric($item->revenue)) ? (float) $item->revenue : 0.0,
@@ -113,10 +99,24 @@ final readonly class GetDashboardDataAction
             ]);
 
         // Summary statistics
-        $totalRevenue = Sale::query()->sum('total_amount');
-        $totalCosts = Purchase::query()->sum('total_cost');
-        $totalExpenses = Expense::query()->sum('amount');
+        $totalRevenue = Sale::query()
+            ->when($startDate && $endDate, fn ($q) => $q->whereBetween('sale_date', [$startDate, $endDate]))
+            ->sum('total_amount');
+
+        $totalCosts = Purchase::query()
+            ->when($startDate && $endDate, fn ($q) => $q->whereBetween('purchase_date', [$startDate, $endDate]))
+            ->sum('total_cost');
+
+        $totalExpenses = Expense::query()
+            ->when($startDate && $endDate, fn ($q) => $q->whereBetween('expense_date', [$startDate, $endDate]))
+            ->sum('amount');
+
         $netProfit = $totalRevenue - $totalCosts - $totalExpenses;
+
+        // For "This Month" stats, if we are filtering, maybe we just return 0 or the same as total?
+        // Let's keep "This Month" as actual current month context regardless of filter,
+        // or update the UI to not label it "This Month" if filtered.
+        // Given the UI structure, let's keep "This Month" as strict calendar month for context.
 
         $thisMonthRevenue = Sale::query()
             ->where('sale_date', '>=', now()->startOfMonth())
@@ -132,19 +132,39 @@ final readonly class GetDashboardDataAction
 
         $thisMonthProfit = $thisMonthRevenue - $thisMonthCosts - $thisMonthExpenses;
 
-        $totalSales = Sale::query()->count();
-        $totalPurchases = Purchase::query()->count();
-        $totalCustomers = \App\Models\Customer::query()->count();
-        $totalSuppliers = Supplier::query()->count();
+        $totalSales = Sale::query()
+            ->when($startDate && $endDate, fn ($q) => $q->whereBetween('sale_date', [$startDate, $endDate]))
+            ->count();
+
+        $totalPurchases = Purchase::query()
+            ->when($startDate && $endDate, fn ($q) => $q->whereBetween('purchase_date', [$startDate, $endDate]))
+            ->count();
+
+        $totalCustomers = \App\Models\Customer::query()->count(); // Customers are global
+        $totalSuppliers = Supplier::query()->count(); // Suppliers are global
 
         // Supplier stock breakdown for pie chart
+        // Optimized to avoid N+1 problem on remaining_stock accessor
         $supplierStockData = Supplier::query()
+            ->select('suppliers.id', 'suppliers.name') // Ensure 'id' is selected
+            ->selectRaw('
+                (
+                    COALESCE((SELECT SUM(quantity_kg) FROM purchases WHERE supplier_id = suppliers.id), 0)
+                    -
+                    COALESCE((
+                        SELECT SUM(purchase_sale.quantity_kg) 
+                        FROM purchase_sale 
+                        JOIN purchases ON purchases.id = purchase_sale.purchase_id 
+                        WHERE purchases.supplier_id = suppliers.id
+                    ), 0)
+                ) as remaining_stock
+            ')
             ->get()
-            ->map(fn (Supplier $supplier): array => [
-                'name' => $supplier->name,
-                'value' => (float) $supplier->remaining_stock,
+            ->filter(fn (object $item): bool => ((float) $item->remaining_stock) > 0)
+            ->map(fn (object $item): array => [
+                'name' => $item->name,
+                'value' => (float) $item->remaining_stock,
             ])
-            ->filter(fn (array $item): bool => $item['value'] > 0)
             ->values()
             ->all();
 
@@ -152,7 +172,6 @@ final readonly class GetDashboardDataAction
             'currentStock' => $currentStock,
             'recentSales' => $recentSales,
             'outstandingCredits' => $outstandingCredits,
-            'monthlyComparison' => $monthlyComparison,
             'expenseBreakdown' => $expenseBreakdown,
             'dailySalesData' => $dailySalesData,
             'supplierStockData' => $supplierStockData,
