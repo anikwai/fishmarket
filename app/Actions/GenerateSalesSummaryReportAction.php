@@ -23,17 +23,30 @@ final readonly class GenerateSalesSummaryReportAction
         /** @var \Illuminate\Database\Eloquent\Collection<int, Sale> $sales */
         $sales = $query->with(['customer', 'items'])->get();
 
-        $dailyData = Sale::query()
+        /** @var \Illuminate\Support\Collection<int, object> $revenueAndCount */
+        $revenueAndCount = Sale::query()
             ->selectRaw('sales.sale_date::date as date')
             ->selectRaw('SUM(sales.total_amount) as revenue')
-            ->selectRaw('SUM(sale_items.quantity_kg) as quantity')
-            ->selectRaw('COUNT(DISTINCT sales.id) as count')
-            ->join('sale_items', 'sales.id', '=', 'sale_items.sale_id')
+            ->selectRaw('COUNT(*) as count')
             ->whereBetween('sales.sale_date', [$startDate, $endDate])
             ->when($customerId, fn (\Illuminate\Database\Eloquent\Builder $q) => $q->where('sales.customer_id', $customerId))
             ->groupByRaw('sales.sale_date::date')
             ->orderBy('date')
             ->get();
+
+        /** @var \Illuminate\Support\Collection<string, float> $quantityByDate */
+        $quantityByDate = Sale::query()
+            ->selectRaw('sales.sale_date::date as date')
+            ->selectRaw('SUM(sale_items.quantity_kg) as quantity')
+            ->join('sale_items', 'sales.id', '=', 'sale_items.sale_id')
+            ->whereBetween('sales.sale_date', [$startDate, $endDate])
+            ->when($customerId, fn (\Illuminate\Database\Eloquent\Builder $q) => $q->where('sales.customer_id', $customerId))
+            ->groupByRaw('sales.sale_date::date')
+            ->orderBy('date')
+            ->get()
+            ->mapWithKeys(fn (object $item): array => [
+                is_string($item->date ?? null) ? $item->date : '' => (isset($item->quantity) && is_numeric($item->quantity)) ? (float) $item->quantity : 0.0,
+            ]);
 
         /** @var float $totalRevenue */
         $totalRevenue = $sales->sum(fn (Sale $sale): float => (float) $sale->total_amount);
@@ -53,10 +66,10 @@ final readonly class GenerateSalesSummaryReportAction
                 'credit_sales' => (float) $creditSales,
                 'cash_sales' => (float) $cashSales,
             ],
-            'daily_data' => $dailyData->map(fn (object $item): array => [
-                'date' => $item->date ?? '',
+            'daily_data' => $revenueAndCount->map(fn (object $item): array => [
+                'date' => is_string($item->date ?? null) ? $item->date : '',
                 'revenue' => (isset($item->revenue) && is_numeric($item->revenue)) ? (float) $item->revenue : 0.0,
-                'quantity' => (isset($item->quantity) && is_numeric($item->quantity)) ? (float) $item->quantity : 0.0,
+                'quantity' => $quantityByDate->get(is_string($item->date ?? null) ? $item->date : '', 0.0),
                 'count' => (isset($item->count) && is_numeric($item->count)) ? (int) $item->count : 0,
             ]),
             'recent_sales' => $sales->take(10)->map(fn (Sale $sale): array => [
