@@ -216,8 +216,15 @@ export default function SalesIndex({
               ? 'true'
               : 'false',
     );
+    const [itemsError, setItemsError] = useState<string | null>(null);
 
     // Debounce search
+    useEffect(() => {
+        if (!createOpen) {
+            setItemsError(null);
+        }
+    }, [createOpen]);
+
     useEffect(() => {
         const timer = setTimeout(() => {
             if (searchValue !== (filters.search || '')) {
@@ -248,6 +255,7 @@ export default function SalesIndex({
     }, [searchValue, customerFilter, creditFilter, filters.search]);
 
     const addItem = () => {
+        setItemsError(null);
         const currentItems = createForm.data.items;
         createForm.setData('items', [
             ...currentItems,
@@ -256,6 +264,7 @@ export default function SalesIndex({
     };
 
     const removeItem = (index: number) => {
+        setItemsError(null);
         const currentItems = createForm.data.items;
         createForm.setData(
             'items',
@@ -268,6 +277,7 @@ export default function SalesIndex({
         field: keyof SaleItem,
         value: string,
     ) => {
+        setItemsError(null);
         const currentItems = [...createForm.data.items];
         currentItems[index] = { ...currentItems[index], [field]: value };
         createForm.setData('items', currentItems);
@@ -334,9 +344,10 @@ export default function SalesIndex({
     };
 
     const handleCreate = () => {
+        setItemsError(null);
         // Validate items before submitting
         if (createForm.data.items.length === 0) {
-            alert('Please add at least one item to the sale.');
+            setItemsError('Please add at least one item to the sale.');
             return;
         }
 
@@ -346,7 +357,7 @@ export default function SalesIndex({
         );
 
         if (hasEmptyFields) {
-            alert(
+            setItemsError(
                 'Please fill in all fields for each item (Supplier, Quantity, and Price).',
             );
             return;
@@ -357,6 +368,7 @@ export default function SalesIndex({
             onSuccess: () => {
                 setCreateOpen(false);
                 createForm.reset();
+                setItemsError(null);
             },
         });
     };
@@ -855,7 +867,7 @@ export default function SalesIndex({
                                                 checked={column.getIsVisible()}
                                                 onCheckedChange={(value) =>
                                                     column.toggleVisibility(
-                                                        !!value,
+                                                        value,
                                                     )
                                                 }
                                             >
@@ -1385,23 +1397,39 @@ export default function SalesIndex({
                                                         <TrashIcon className="h-4 w-4" />
                                                     </Button>
                                                 </div>
-                                                {createForm.errors[
-                                                    `items.${index}.quantity_kg` as keyof typeof createForm.errors
-                                                ] && (
-                                                    <div className="col-span-12 text-xs text-destructive">
-                                                        {
-                                                            createForm.errors[
-                                                                `items.${index}.quantity_kg` as keyof typeof createForm.errors
-                                                            ]
-                                                        }
-                                                    </div>
-                                                )}
+                                                {(
+                                                    [
+                                                        'purchase_id',
+                                                        'quantity_kg',
+                                                        'price_per_kg',
+                                                    ] as const
+                                                ).map((field) => {
+                                                    const errorKey =
+                                                        `items.${index}.${field}` as keyof typeof createForm.errors;
+                                                    const message =
+                                                        createForm.errors[
+                                                            errorKey
+                                                        ];
+
+                                                    if (!message) return null;
+
+                                                    return (
+                                                        <div
+                                                            key={field}
+                                                            className="col-span-12 text-xs text-destructive"
+                                                        >
+                                                            {message}
+                                                        </div>
+                                                    );
+                                                })}
                                             </div>
                                         ),
                                     )}
-                                    {createForm.errors.items && (
+                                    {(itemsError ||
+                                        createForm.errors.items) && (
                                         <div className="text-sm text-destructive">
-                                            {createForm.errors.items}
+                                            {itemsError ||
+                                                createForm.errors.items}
                                         </div>
                                     )}
                                 </div>
@@ -1803,17 +1831,29 @@ export default function SalesIndex({
                                                     <TrashIcon className="h-4 w-4" />
                                                 </Button>
                                             </div>
-                                            {editForm.errors[
-                                                `items.${index}.quantity_kg` as keyof typeof editForm.errors
-                                            ] && (
-                                                <div className="col-span-12 text-xs text-destructive">
-                                                    {
-                                                        editForm.errors[
-                                                            `items.${index}.quantity_kg` as keyof typeof editForm.errors
-                                                        ]
-                                                    }
-                                                </div>
-                                            )}
+                                            {(
+                                                [
+                                                    'purchase_id',
+                                                    'quantity_kg',
+                                                    'price_per_kg',
+                                                ] as const
+                                            ).map((field) => {
+                                                const errorKey =
+                                                    `items.${index}.${field}` as keyof typeof editForm.errors;
+                                                const message =
+                                                    editForm.errors[errorKey];
+
+                                                if (!message) return null;
+
+                                                return (
+                                                    <div
+                                                        key={field}
+                                                        className="col-span-12 text-xs text-destructive"
+                                                    >
+                                                        {message}
+                                                    </div>
+                                                );
+                                            })}
                                         </div>
                                     ))}
                                     {editForm.errors.items && (
