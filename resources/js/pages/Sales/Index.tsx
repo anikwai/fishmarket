@@ -2073,35 +2073,45 @@ export default function SalesIndex({
                                             </TableRow>
                                         </TableHeader>
                                         <TableBody>
-                                            {selectedSale.items?.map((item) => (
-                                                <TableRow key={item.id}>
-                                                    <TableCell>
-                                                        {item.purchase
-                                                            ?.description ||
-                                                            item.purchase
-                                                                ?.supplier
-                                                                ?.name ||
-                                                            'N/A'}
-                                                    </TableCell>
-                                                    <TableCell className="text-right">
-                                                        {Number(
-                                                            item.quantity_kg,
-                                                        ).toFixed(2)}
-                                                    </TableCell>
-                                                    <TableCell className="text-right">
-                                                        SBD{' '}
-                                                        {Number(
-                                                            item.price_per_kg,
-                                                        ).toFixed(2)}
-                                                    </TableCell>
-                                                    <TableCell className="text-right">
-                                                        SBD{' '}
-                                                        {Number(
-                                                            item.total_price,
-                                                        ).toFixed(2)}
-                                                    </TableCell>
-                                                </TableRow>
-                                            ))}
+                                            {selectedSale.items?.map(
+                                                (item, index) => (
+                                                    <TableRow
+                                                        key={
+                                                            item.id ??
+                                                            `item-${index}`
+                                                        }
+                                                    >
+                                                        <TableCell>
+                                                            {item.purchase
+                                                                ?.description ||
+                                                                item.purchase
+                                                                    ?.supplier
+                                                                    ?.name ||
+                                                                'N/A'}
+                                                        </TableCell>
+                                                        <TableCell className="text-right">
+                                                            {Number(
+                                                                item.quantity_kg ??
+                                                                    0,
+                                                            ).toFixed(2)}
+                                                        </TableCell>
+                                                        <TableCell className="text-right">
+                                                            SBD{' '}
+                                                            {Number(
+                                                                item.price_per_kg ??
+                                                                    0,
+                                                            ).toFixed(2)}
+                                                        </TableCell>
+                                                        <TableCell className="text-right">
+                                                            SBD{' '}
+                                                            {Number(
+                                                                item.total_price ??
+                                                                    0,
+                                                            ).toFixed(2)}
+                                                        </TableCell>
+                                                    </TableRow>
+                                                ),
+                                            )}
                                         </TableBody>
                                     </Table>
                                 </div>
