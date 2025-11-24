@@ -13,13 +13,22 @@ final class AdminUserSeeder extends Seeder
 {
     public function run(): void
     {
+        if (! app()->environment(['local', 'testing'])) {
+            return;
+        }
+
+        $emailConfig = config('admin_user.email', 'admin@example.com');
+        $passwordConfig = config('admin_user.password', 'password');
+        $email = is_string($emailConfig) ? $emailConfig : 'admin@example.com';
+        $password = is_string($passwordConfig) ? $passwordConfig : 'password';
+
         /** @var User $user */
         $user = User::query()->firstOrCreate(
-            ['email' => 'admin@example.com'],
+            ['email' => $email],
             [
                 'name' => 'Admin User',
                 'email_verified_at' => now(),
-                'password' => Hash::make('password'),
+                'password' => Hash::make($password),
                 'remember_token' => Str::random(10),
             ],
         );
