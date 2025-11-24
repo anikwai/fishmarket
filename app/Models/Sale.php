@@ -106,7 +106,7 @@ final class Sale extends Model
     protected static function booted(): void
     {
         self::saving(function (Sale $sale): void {
-            if ($sale->isDirty(['delivery_fee'])) {
+            if ($sale->isDirty(['subtotal', 'delivery_fee'])) {
                 $sale->total_amount = $sale->subtotal + $sale->delivery_fee;
             }
         });
