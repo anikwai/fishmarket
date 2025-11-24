@@ -25,6 +25,7 @@ final class UpdatePurchaseRequest extends FormRequest
             'purchase_date' => ['required', 'date'],
             'quantity_kg' => ['required', 'numeric', 'min:0.01'],
             'price_per_kg' => ['required', 'numeric', 'min:0'],
+            'description' => ['nullable', 'string', 'max:255'],
             'notes' => ['nullable', 'string'],
         ];
     }

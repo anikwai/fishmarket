@@ -11,10 +11,6 @@ use Illuminate\Validation\ValidationException;
 
 final readonly class UpdateSale
 {
-    public function __construct(
-        private AllocatePurchasesToSale $allocatePurchases,
-    ) {}
-
     /**
      * @param  array<string, mixed>  $attributes
      */
@@ -32,13 +28,10 @@ final readonly class UpdateSale
             }
         }
 
-        DB::transaction(function () use ($sale, $attributes, $newQuantityKg): void {
+        DB::transaction(function () use ($sale, $attributes): void {
             $sale->update($attributes);
 
-            // Reallocate purchases if quantity changed
-            if (isset($attributes['quantity_kg'])) {
-                $this->allocatePurchases->reallocate($sale, $newQuantityKg);
-            }
+            // If quantity changed, additional handling can be implemented here.
         });
     }
 }

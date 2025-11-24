@@ -112,12 +112,20 @@ const formatDate = (
 
 function SaleDetailsDrawer({ sale }: { sale: RecentSale }) {
     const isMobile = useIsMobile();
+    const quantityKg = Number(sale.quantity_kg ?? 0);
+    const subtotal = Number(sale.subtotal ?? 0);
+    const deliveryFee = Number(sale.delivery_fee ?? 0);
+    const totalAmount = Number(sale.total_amount ?? 0);
+    const pricePerKg =
+        sale.price_per_kg ?? (quantityKg > 0 ? subtotal / quantityKg : 0);
+    const discountPercentage = sale.discount_percentage ?? 0;
+
     const totalPaid = sale.payments.reduce(
         (sum, payment) => sum + payment.amount,
         0,
     );
     const paymentProgress =
-        sale.total_amount > 0 ? (totalPaid / sale.total_amount) * 100 : 0;
+        totalAmount > 0 ? (totalPaid / totalAmount) * 100 : 0;
 
     return (
         <Drawer direction={isMobile ? 'bottom' : 'right'}>
@@ -252,7 +260,7 @@ function SaleDetailsDrawer({ sale }: { sale: RecentSale }) {
                                         Quantity
                                     </span>
                                     <span className="font-semibold tabular-nums">
-                                        {sale.quantity_kg.toFixed(2)} kg
+                                        {quantityKg.toFixed(2)} kg
                                     </span>
                                 </div>
                                 <div className="flex items-center justify-between">
@@ -260,20 +268,16 @@ function SaleDetailsDrawer({ sale }: { sale: RecentSale }) {
                                         Price per kg
                                     </span>
                                     <span className="font-medium tabular-nums">
-                                        SBD {sale.price_per_kg.toFixed(2)}
+                                        SBD {pricePerKg.toFixed(2)}
                                     </span>
                                 </div>
-                                {sale.discount_percentage > 0 && (
+                                {discountPercentage > 0 && (
                                     <div className="flex items-center justify-between text-green-600 dark:text-green-400">
                                         <span className="text-sm">
                                             Discount
                                         </span>
                                         <span className="font-medium tabular-nums">
-                                            -
-                                            {sale.discount_percentage.toFixed(
-                                                1,
-                                            )}
-                                            %
+                                            -{discountPercentage.toFixed(1)}%
                                         </span>
                                     </div>
                                 )}
@@ -283,16 +287,16 @@ function SaleDetailsDrawer({ sale }: { sale: RecentSale }) {
                                         Subtotal
                                     </span>
                                     <span className="font-medium tabular-nums">
-                                        SBD {sale.subtotal.toFixed(2)}
+                                        SBD {subtotal.toFixed(2)}
                                     </span>
                                 </div>
-                                {sale.delivery_fee > 0 && (
+                                {deliveryFee > 0 && (
                                     <div className="flex items-center justify-between">
                                         <span className="text-sm text-muted-foreground">
                                             Delivery Fee
                                         </span>
                                         <span className="font-medium tabular-nums">
-                                            SBD {sale.delivery_fee.toFixed(2)}
+                                            SBD {deliveryFee.toFixed(2)}
                                         </span>
                                     </div>
                                 )}
@@ -302,7 +306,7 @@ function SaleDetailsDrawer({ sale }: { sale: RecentSale }) {
                                         Total Amount
                                     </span>
                                     <span className="text-xl font-bold tabular-nums">
-                                        SBD {sale.total_amount.toFixed(2)}
+                                        SBD {totalAmount.toFixed(2)}
                                     </span>
                                 </div>
                             </div>

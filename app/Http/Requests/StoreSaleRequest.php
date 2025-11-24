@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Http\Requests;
 
 use App\Models\Customer;
-use App\Support\Stock;
 use Closure;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -25,19 +24,32 @@ final class StoreSaleRequest extends FormRequest
         return [
             'customer_id' => ['required', Rule::exists(Customer::class, 'id')],
             'sale_date' => ['required', 'date'],
-            'quantity_kg' => [
+            'items' => ['required', 'array', 'min:1'],
+            'items.*.purchase_id' => ['required', Rule::exists('purchases', 'id')],
+            'items.*.quantity_kg' => [
                 'required',
                 'numeric',
                 'min:0.01',
                 function (string $attribute, mixed $value, Closure $fail): void {
-                    $currentStock = Stock::current();
-                    if (is_numeric($value) && (float) $value > $currentStock) {
-                        $fail('Insufficient stock. Available: '.number_format($currentStock, 2).' kg');
+                    // Get the index from the attribute name (items.0.quantity_kg)
+                    $index = explode('.', $attribute)[1];
+                    $purchaseId = request()->input("items.{$index}.purchase_id");
+
+                    if ($purchaseId) {
+                        $purchase = \App\Models\Purchase::query()->find($purchaseId);
+                        if ($purchase instanceof \App\Models\Purchase) {
+                            if (! is_numeric($value)) {
+                                return;
+                            }
+                            $remaining = (float) $purchase->remaining_quantity;
+                            if ((float) $value > $remaining) {
+                                $fail("Insufficient stock for this item. Available: {$remaining} kg");
+                            }
+                        }
                     }
                 },
             ],
-            'price_per_kg' => ['required', 'numeric', 'min:0'],
-            'discount_percentage' => ['nullable', 'numeric', 'min:0', 'max:100'],
+            'items.*.price_per_kg' => ['required', 'numeric', 'min:0'],
             'delivery_fee' => ['nullable', 'numeric', 'min:0'],
             'is_credit' => ['nullable', 'boolean'],
             'is_delivery' => ['nullable', 'boolean'],

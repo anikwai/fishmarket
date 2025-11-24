@@ -160,23 +160,19 @@
                     <th>Description</th>
                     <th>Quantity (kg)</th>
                     <th>Price per kg</th>
-                    @if($sale->discount_percentage > 0)
-                    <th>Discount</th>
-                    @endif
                     <th>Subtotal</th>
                 </tr>
             </thead>
             <tbody>
-                <tr>
-                    <td>Fish</td>
-                    <td>{{ number_format($sale->quantity_kg, 2) }}</td>
-                    <td>SBD {{ number_format($sale->price_per_kg, 2) }}</td>
-                    @if($sale->discount_percentage > 0)
-                    <td>{{ number_format($sale->discount_percentage, 2) }}%</td>
-                    @endif
-                    <td>SBD {{ number_format($sale->subtotal, 2) }}</td>
-                </tr>
-            </tbody>
+            @foreach($sale->items as $item)
+            <tr>
+                <td>{{ $item->purchase->description ?? $item->purchase->supplier->name ?? 'Fish' }}</td>
+                <td>{{ number_format($item->quantity_kg, 2) }}</td>
+                <td>SBD {{ number_format($item->price_per_kg, 2) }}</td>
+                <td>SBD {{ number_format($item->total_price, 2) }}</td>
+            </tr>
+            @endforeach
+        </tbody>
         </table>
     </div>
 

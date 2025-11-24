@@ -23,18 +23,23 @@ final class DemoDataSeeder extends Seeder
         // Create Customers
         $customers = Customer::factory()->count(10)->create();
 
-        // Create Purchases (spread over last 60 days)
+        // Create Purchases (spread over last 60 days) and track remaining stock per purchase
+        $purchaseStock = [];
         foreach ($suppliers as $supplier) {
-            // Each supplier has 3-6 purchases
             $count = fake()->numberBetween(3, 6);
             for ($i = 0; $i < $count; $i++) {
                 $date = Date::now()->subDays(fake()->numberBetween(1, 60));
                 $purchase = Purchase::factory()->create([
                     'supplier_id' => $supplier->id,
                     'purchase_date' => $date,
-                    'quantity_kg' => fake()->numberBetween(50, 200),
-                    'price_per_kg' => fake()->numberBetween(20, 40),
+                    'quantity_kg' => fake()->randomFloat(2, 50, 200),
+                    'price_per_kg' => fake()->randomFloat(2, 20, 40),
                 ]);
+
+                $purchaseStock[$purchase->id] = [
+                    'purchase' => $purchase,
+                    'remaining' => (float) $purchase->quantity_kg,
+                ];
 
                 // Add expenses linked to purchase (Shipping/Ice)
                 if (fake()->boolean()) {
@@ -42,7 +47,7 @@ final class DemoDataSeeder extends Seeder
                         'purchase_id' => $purchase->id,
                         'expense_date' => $date,
                         'type' => fake()->randomElement(['shipping', 'ice']),
-                        'amount' => fake()->numberBetween(50, 300),
+                        'amount' => fake()->randomFloat(2, 50, 300),
                     ]);
                 }
             }
@@ -53,48 +58,91 @@ final class DemoDataSeeder extends Seeder
             'purchase_id' => null,
             'expense_date' => Date::now()->subDays(fake()->numberBetween(1, 30)),
             'type' => 'other',
-            'amount' => fake()->numberBetween(20, 100),
+            'amount' => fake()->randomFloat(2, 20, 100),
         ]);
 
-        // Create Sales (spread over last 30 days)
+        // Create Sales with sale items tied to existing purchases
         foreach ($customers as $customer) {
-            // Each customer has 3-8 sales
             $count = fake()->numberBetween(3, 8);
-            for ($i = 0; $i < $count; $i++) {
-                $date = Date::now()->subDays(fake()->numberBetween(1, 30));
-                $quantity = fake()->numberBetween(5, 50);
-                $price = fake()->numberBetween(45, 60); // Higher than purchase price
-                $delivery = fake()->boolean() ? fake()->numberBetween(10, 50) : 0;
 
-                $sale = Sale::factory()->create([
+            for ($i = 0; $i < $count; $i++) {
+                // Skip if no stock remains
+                $availablePurchases = array_filter(
+                    $purchaseStock,
+                    fn (array $entry): bool => $entry['remaining'] > 1
+                );
+
+                if (count($availablePurchases) === 0) {
+                    break;
+                }
+
+                $date = Date::now()->subDays(fake()->numberBetween(1, 30));
+                $items = [];
+                $itemsToUse = fake()->numberBetween(1, min(3, count($availablePurchases)));
+                $selectedPurchaseIds = collect(array_keys($availablePurchases))
+                    ->shuffle()
+                    ->take($itemsToUse)
+                    ->all();
+
+                foreach ($selectedPurchaseIds as $purchaseId) {
+                    $entry = &$purchaseStock[$purchaseId];
+
+                    $maxQty = max(0.5, min(20.0, $entry['remaining']));
+                    $quantity = fake()->randomFloat(2, 0.5, $maxQty);
+                    $price = (float) $entry['purchase']->price_per_kg + fake()->randomFloat(2, 2, 15);
+                    $items[] = [
+                        'purchase_id' => $purchaseId,
+                        'quantity_kg' => $quantity,
+                        'price_per_kg' => $price,
+                        'total_price' => $quantity * $price,
+                    ];
+
+                    $entry['remaining'] -= $quantity;
+                    unset($entry);
+                }
+
+                if ($items === []) {
+                    continue;
+                }
+
+                /** @var list<array{purchase_id:int, quantity_kg:float, price_per_kg:float, total_price:float}> $items */
+                $subtotal = array_reduce(
+                    $items,
+                    fn (float $carry, array $item): float => $carry + $item['total_price'],
+                    0.0,
+                );
+                $deliveryFee = fake()->boolean() ? fake()->randomFloat(2, 10, 50) : 0.0;
+                $totalAmount = $subtotal + $deliveryFee;
+                $isCredit = fake()->boolean();
+
+                $sale = Sale::query()->create([
                     'customer_id' => $customer->id,
                     'sale_date' => $date,
-                    'quantity_kg' => $quantity,
-                    'price_per_kg' => $price,
-                    'delivery_fee' => $delivery,
-                    'is_delivery' => (bool) $delivery,
-                    'is_credit' => fake()->boolean(), // Randomize credit/cash sales
+                    'subtotal' => $subtotal,
+                    'delivery_fee' => $deliveryFee,
+                    'total_amount' => $totalAmount,
+                    'is_credit' => $isCredit,
+                    'is_delivery' => $deliveryFee > 0,
+                    'notes' => fake()->optional()->sentence(),
                 ]);
 
-                // Create Payment
-                // 70% Fully paid, 20% Partially paid, 10% Unpaid
+                $sale->items()->createMany($items);
+
+                // Payments: 70% fully paid, 20% partial, 10% unpaid (only for credit sales)
                 $paymentType = fake()->numberBetween(1, 10);
-                if ($paymentType <= 7) {
-                    // Full payment
+                if (! $isCredit || $paymentType <= 7) {
                     Payment::factory()->create([
                         'sale_id' => $sale->id,
                         'payment_date' => $date->copy()->addDays(fake()->numberBetween(0, 5)),
-                        'amount' => $sale->total_amount,
+                        'amount' => $totalAmount,
                     ]);
                 } elseif ($paymentType <= 9) {
-                    // Partial payment
                     Payment::factory()->create([
                         'sale_id' => $sale->id,
                         'payment_date' => $date->copy()->addDays(fake()->numberBetween(0, 5)),
-                        'amount' => $sale->total_amount * (fake()->numberBetween(20, 80) / 100),
+                        'amount' => $totalAmount * (fake()->numberBetween(20, 80) / 100),
                     ]);
                 }
-                // else unpaid
             }
         }
     }

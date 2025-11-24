@@ -11,7 +11,7 @@ final readonly class GenerateReceipt
 {
     public function handle(Receipt $receipt): \Barryvdh\DomPDF\PDF
     {
-        $receipt->load(['sale.customer', 'sale.payments']);
+        $receipt->load(['sale.customer', 'sale.payments', 'sale.items.purchase.supplier']);
 
         return Pdf::loadView('receipts.sale', [
             'receipt' => $receipt,

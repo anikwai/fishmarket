@@ -31,7 +31,7 @@ final readonly class SaleController
         $perPage = in_array($perPage, [10, 15, 20, 25, 50]) ? (int) $perPage : 10; // @phpstan-ignore cast.int
 
         $query = Sale::query()
-            ->with(['customer', 'payments'])
+            ->with(['customer', 'payments', 'items.purchase.supplier'])
             ->when($request->search, fn (\Illuminate\Database\Eloquent\Builder $query, mixed $search) => $query->whereHas('customer', fn (\Illuminate\Database\Eloquent\Builder $q) => $q->where('name', 'like', '%'.(is_string($search) ? $search : '').'%')))
             ->when($request->customer_id, fn (\Illuminate\Database\Eloquent\Builder $query, mixed $customerId) => $query->where('customer_id', is_numeric($customerId) ? (int) $customerId : $customerId))
             ->when($request->has('is_credit'), fn (\Illuminate\Database\Eloquent\Builder $query) => $query->where('is_credit', $request->boolean('is_credit')));
@@ -66,10 +66,31 @@ final readonly class SaleController
         $customers = Customer::query()->orderBy('name')->get();
         $currentStock = Stock::current();
 
+        // Get purchases with remaining stock for the sale form
+        // Also include purchases that are already used in existing sales for editing
+        $usedPurchaseIds = \App\Models\SaleItem::query()
+            ->pluck('purchase_id')
+            ->unique()
+            ->toArray();
+
+        $availablePurchases = \App\Models\Purchase::query()
+            ->with('supplier')
+            ->get()
+            ->filter(fn ($purchase): bool => $purchase->remaining_quantity > 0 || in_array($purchase->id, $usedPurchaseIds))
+            ->map(fn ($purchase): array => [
+                'id' => $purchase->id,
+                'supplier_name' => $purchase->supplier->name,
+                'purchase_date' => $purchase->purchase_date->format('Y-m-d'),
+                'remaining_quantity' => $purchase->remaining_quantity,
+                'price_per_kg' => $purchase->price_per_kg,
+            ])
+            ->values();
+
         return Inertia::render('Sales/Index', [
             'sales' => $sales,
             'customers' => $customers,
             'currentStock' => $currentStock,
+            'availablePurchases' => $availablePurchases,
             'filters' => $request->only(['customer_id', 'is_credit', 'search']),
         ]);
     }

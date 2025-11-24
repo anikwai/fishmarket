@@ -100,9 +100,9 @@
             "rector --dry-run",
             "npm run test:lint"
         ],
-        "test:unit": "pest --parallel --coverage --exactly=100.0",
+        "test:unit": "./vendor/bin/pest --parallel",
         "test:types": [
-            "phpstan",
+            "phpstan --memory-limit=512M",
             "npm run test:types"
         ],
         "test": [

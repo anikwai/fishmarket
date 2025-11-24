@@ -25,6 +25,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property-read Supplier $supplier
  * @property-read float $profit
  * @property-read float $total_revenue
+ * @property-read float $sold_quantity
+ * @property-read float $remaining_quantity
  */
 final class Purchase extends Model
 {
@@ -69,10 +71,21 @@ final class Purchase extends Model
     /**
      * @return BelongsToMany<Sale, $this>
      */
+    /**
+     * @return HasMany<SaleItem, $this>
+     */
+    public function saleItems(): HasMany
+    {
+        return $this->hasMany(SaleItem::class);
+    }
+
+    /**
+     * @return BelongsToMany<Sale, $this>
+     */
     public function sales(): BelongsToMany
     {
-        return $this->belongsToMany(Sale::class, 'purchase_sale')
-            ->withPivot('quantity_kg')
+        return $this->belongsToMany(Sale::class, 'sale_items')
+            ->withPivot(['quantity_kg', 'price_per_kg', 'total_price'])
             ->withTimestamps();
     }
 
@@ -105,26 +118,7 @@ final class Purchase extends Model
 
     protected function getProfitAttribute(): float
     {
-        // Use already loaded relationship if available, otherwise query with pivot
-        $sales = $this->relationLoaded('sales')
-            ? $this->sales
-            : $this->sales()->withPivot('quantity_kg')->get();
-
-        $revenue = $sales->sum(function (Sale $sale): float {
-            // Calculate revenue from this purchase: (sale price per kg - purchase price per kg) * quantity from this purchase
-            /** @var \Illuminate\Database\Eloquent\Relations\Pivot|null $pivot */
-            $pivot = $sale->pivot ?? null;
-            if ($pivot === null) {
-                return 0.0;
-            }
-            $quantityFromThisPurchase = isset($pivot->quantity_kg) && is_numeric($pivot->quantity_kg) ? (float) $pivot->quantity_kg : 0.0;
-            if ($quantityFromThisPurchase <= 0) {
-                return 0.0;
-            }
-            $revenuePerKg = (float) $sale->price_per_kg * (1 - ((float) $sale->discount_percentage / 100));
-
-            return ($revenuePerKg - (float) $this->price_per_kg) * $quantityFromThisPurchase;
-        });
+        $revenue = $this->saleItems->sum(fn (SaleItem $item): float => $item->total_price - ($item->quantity_kg * $this->price_per_kg));
 
         // Subtract expenses tied to this purchase
         $expenses = $this->relationLoaded('expenses')
@@ -136,30 +130,12 @@ final class Purchase extends Model
 
     protected function getTotalRevenueAttribute(): float
     {
-        // Use already loaded relationship if available, otherwise query with pivot
-        $sales = $this->relationLoaded('sales')
-            ? $this->sales
-            : $this->sales()->withPivot('quantity_kg')->get();
-
-        return $sales->sum(function (Sale $sale): float {
-            /** @var \Illuminate\Database\Eloquent\Relations\Pivot|null $pivot */
-            $pivot = $sale->pivot ?? null;
-            if ($pivot === null) {
-                return 0.0;
-            }
-            $quantityFromThisPurchase = isset($pivot->quantity_kg) && is_numeric($pivot->quantity_kg) ? (float) $pivot->quantity_kg : 0.0;
-            if ($quantityFromThisPurchase <= 0) {
-                return 0.0;
-            }
-            $revenuePerKg = (float) $sale->price_per_kg * (1 - ((float) $sale->discount_percentage / 100));
-
-            return $revenuePerKg * $quantityFromThisPurchase;
-        });
+        return (float) $this->saleItems()->sum('total_price');
     }
 
     protected function getSoldQuantityAttribute(): float
     {
-        return (float) $this->sales()->sum('purchase_sale.quantity_kg');
+        return (float) $this->saleItems()->sum('quantity_kg');
     }
 
     protected function getRemainingQuantityAttribute(): float
