@@ -16,7 +16,6 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
  * @property-read int $id
  * @property-read int $customer_id
  * @property-read CarbonInterface $sale_date
- * @property-read CarbonInterface $sale_date
  * @property float $subtotal
  * @property-read float $delivery_fee
  * @property float $total_amount

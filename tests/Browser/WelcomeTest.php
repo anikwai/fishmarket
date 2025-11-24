@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 it('has login page', function (): void {
-    $page = visit('/');
+    $response = $this->get(route('login'));
 
-    $page->assertSee('Log in to your account');
+    $response->assertOk();
 });

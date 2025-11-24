@@ -75,13 +75,11 @@ final class SaleItem extends Model
             self::refreshSaleTotals($item);
         };
 
-        static::saved($recalculate);
-        static::deleted($recalculate);
-        static::forceDeleted($recalculate);
-        static::restored($recalculate);
+        self::saved($recalculate);
+        self::deleted($recalculate);
     }
 
-    private static function refreshSaleTotals(SaleItem $saleItem): void
+    private static function refreshSaleTotals(self $saleItem): void
     {
         $sale = $saleItem->sale ?? $saleItem->sale()->first();
 
