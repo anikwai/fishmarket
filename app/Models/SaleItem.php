@@ -68,4 +68,32 @@ final class SaleItem extends Model
     {
         return $this->belongsTo(Purchase::class);
     }
+
+    protected static function booted(): void
+    {
+        $recalculate = static function (SaleItem $item): void {
+            self::refreshSaleTotals($item);
+        };
+
+        static::saved($recalculate);
+        static::deleted($recalculate);
+        static::forceDeleted($recalculate);
+        static::restored($recalculate);
+    }
+
+    private static function refreshSaleTotals(SaleItem $saleItem): void
+    {
+        $sale = $saleItem->sale ?? $saleItem->sale()->first();
+
+        if (! $sale instanceof Sale) {
+            return;
+        }
+
+        $subtotal = (float) $sale->items()->sum('total_price');
+
+        $sale->forceFill([
+            'subtotal' => $subtotal,
+            'total_amount' => $subtotal + (float) $sale->delivery_fee,
+        ])->saveQuietly();
+    }
 }
