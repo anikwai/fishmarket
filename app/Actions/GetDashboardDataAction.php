@@ -21,7 +21,7 @@ final readonly class GetDashboardDataAction
     {
         $currentStock = Stock::current();
         $recentSales = Sale::query()
-            ->with(['customer', 'payments'])
+            ->with(['customer', 'payments', 'items'])
             ->when($startDate && $endDate, fn ($q) => $q->whereBetween('sale_date', [$startDate, $endDate]))
             ->latest()
             ->limit(50)
@@ -30,8 +30,10 @@ final readonly class GetDashboardDataAction
                 'id' => $sale->id,
                 'sale_date' => $sale->sale_date->toISOString(),
                 'quantity_kg' => (float) $sale->quantity_kg,
-                'price_per_kg' => (float) $sale->price_per_kg,
-                'discount_percentage' => (float) $sale->discount_percentage,
+                'price_per_kg' => $sale->quantity_kg > 0
+                    ? (float) ($sale->subtotal / $sale->quantity_kg)
+                    : 0.0,
+                'discount_percentage' => 0.0,
                 'subtotal' => (float) $sale->subtotal,
                 'delivery_fee' => (float) $sale->delivery_fee,
                 'total_amount' => (float) $sale->total_amount,
@@ -41,15 +43,14 @@ final readonly class GetDashboardDataAction
                 'customer' => [
                     'id' => $sale->customer->id,
                     'name' => $sale->customer->name,
-                    'email' => $sale->customer->email,
-                    'phone' => $sale->customer->phone,
                 ],
+                'outstanding_balance' => (float) $sale->outstanding_balance,
+                'is_fully_paid' => $sale->is_fully_paid,
                 'payments' => $sale->payments->map(fn ($payment): array => [
                     'id' => $payment->id,
                     'amount' => (float) $payment->amount,
                     'payment_date' => $payment->payment_date->toISOString(),
                 ])->all(),
-                'outstanding_balance' => (float) $sale->outstanding_balance,
             ]);
 
         $outstandingCredits = Sale::query()
@@ -78,25 +79,49 @@ final readonly class GetDashboardDataAction
             ]);
 
         // Daily sales for last 30 days or selected period
-        $dailySalesQuery = Sale::query()
+        // Daily sales for last 30 days or selected period
+        $dateFilter = function (\Illuminate\Database\Eloquent\Builder|\Illuminate\Database\Query\Builder $query) use ($startDate, $endDate): void {
+            if ($startDate && $endDate) {
+                $query->whereBetween('sale_date', [$startDate, $endDate]);
+            } else {
+                $query->where('sale_date', '>=', now()->subDays(30));
+            }
+        };
+
+        $revenueQuery = Sale::query()
             ->selectRaw('sale_date::date as date')
             ->selectRaw('SUM(total_amount) as revenue')
-            ->selectRaw('SUM(quantity_kg) as quantity')
             ->groupByRaw('sale_date::date')
             ->orderBy('date');
 
-        if ($startDate && $endDate) {
-            $dailySalesQuery->whereBetween('sale_date', [$startDate, $endDate]);
-        } else {
-            $dailySalesQuery->where('sale_date', '>=', now()->subDays(30));
-        }
+        $dateFilter($revenueQuery);
 
-        $dailySalesData = $dailySalesQuery->get()
-            ->map(fn (object $item): array => [
-                'date' => $item->date ?? '',
-                'revenue' => (isset($item->revenue) && is_numeric($item->revenue)) ? (float) $item->revenue : 0.0,
-                'quantity' => (isset($item->quantity) && is_numeric($item->quantity)) ? (float) $item->quantity : 0.0,
-            ]);
+        $revenueData = $revenueQuery->get()->keyBy('date');
+
+        $quantityQuery = Sale::query()
+            ->join('sale_items', 'sales.id', '=', 'sale_items.sale_id')
+            ->selectRaw('sales.sale_date::date as date')
+            ->selectRaw('SUM(sale_items.quantity_kg) as quantity')
+            ->groupByRaw('sales.sale_date::date')
+            ->orderBy('date');
+
+        $dateFilter($quantityQuery);
+
+        $quantityData = $quantityQuery->get()->keyBy('date');
+
+        // Merge data
+        $allDates = $revenueData->keys()->merge($quantityData->keys())->unique()->sort();
+
+        $dailySalesData = $allDates->map(function ($date) use ($revenueData, $quantityData): array {
+            $revItem = $revenueData->get($date);
+            $qtyItem = $quantityData->get($date);
+
+            return [
+                'date' => $date,
+                'revenue' => (isset($revItem->revenue) && is_numeric($revItem->revenue)) ? (float) $revItem->revenue : 0.0,
+                'quantity' => (isset($qtyItem->quantity) && is_numeric($qtyItem->quantity)) ? (float) $qtyItem->quantity : 0.0,
+            ];
+        })->values();
 
         // Summary statistics
         $totalRevenue = Sale::query()
@@ -152,9 +177,9 @@ final readonly class GetDashboardDataAction
                     COALESCE((SELECT SUM(quantity_kg) FROM purchases WHERE supplier_id = suppliers.id), 0)
                     -
                     COALESCE((
-                        SELECT SUM(purchase_sale.quantity_kg) 
-                        FROM purchase_sale 
-                        JOIN purchases ON purchases.id = purchase_sale.purchase_id 
+                        SELECT SUM(sale_items.quantity_kg) 
+                        FROM sale_items 
+                        JOIN purchases ON purchases.id = sale_items.purchase_id 
                         WHERE purchases.supplier_id = suppliers.id
                     ), 0)
                 ) as remaining_stock

@@ -21,10 +21,8 @@ final readonly class PreparePurchaseIndexDataAction
         /** @var \Illuminate\Support\Collection<int, Purchase> $collection */
         $collection = $purchases->getCollection();
         $collection->transform(function (Purchase $purchase): Purchase {
-            // Load sales relationship with pivot data
-            $purchase->load(['sales' => function (\Illuminate\Database\Eloquent\Relations\BelongsToMany $query): void {
-                $query->withPivot('quantity_kg');
-            }, 'expenses']);
+            // Load saleItems relationship
+            $purchase->load(['saleItems', 'expenses']);
 
             // Ensure accessor attributes are appended
             $purchase->append(['profit', 'total_revenue']);

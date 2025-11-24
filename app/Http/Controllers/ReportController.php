@@ -136,7 +136,7 @@ final readonly class ReportController
         $sales = $query->get();
 
         // Header
-        fputcsv($handle, ['Sale ID', 'Date', 'Customer', 'Quantity (kg)', 'Price per kg', 'Discount %', 'Subtotal', 'Delivery Fee', 'Total Amount', 'Type', 'Notes'], escape: '\\');
+        fputcsv($handle, ['Sale ID', 'Date', 'Customer', 'Quantity (kg)', 'Subtotal', 'Delivery Fee', 'Total Amount', 'Type', 'Notes'], escape: '\\');
 
         // Data rows
         foreach ($sales as $sale) {
@@ -145,8 +145,6 @@ final readonly class ReportController
                 $sale->sale_date->format('Y-m-d'),
                 $sale->customer->name,
                 number_format((float) $sale->quantity_kg, 2),
-                number_format((float) $sale->price_per_kg, 2),
-                number_format((float) $sale->discount_percentage, 2),
                 number_format((float) $sale->subtotal, 2),
                 number_format((float) $sale->delivery_fee, 2),
                 number_format((float) $sale->total_amount, 2),

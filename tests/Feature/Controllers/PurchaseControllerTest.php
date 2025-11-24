@@ -44,3 +44,15 @@ test('does not send invoice email when supplier has no email', function (): void
 
     Mail::assertNothingSent();
 });
+
+test('can view purchases index', function (): void {
+    Purchase::factory()->count(3)->create();
+
+    actingAs($this->user)
+        ->get(route('purchases.index'))
+        ->assertOk()
+        ->assertInertia(fn ($page) => $page
+            ->component('Purchases/Index')
+            ->has('purchases.data', 3)
+        );
+});

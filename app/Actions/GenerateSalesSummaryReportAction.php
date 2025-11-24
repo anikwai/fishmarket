@@ -20,32 +20,56 @@ final readonly class GenerateSalesSummaryReportAction
             $query->where('customer_id', $customerId);
         }
 
-        $sales = $query->with('customer')->get();
+        /** @var \Illuminate\Database\Eloquent\Collection<int, Sale> $sales */
+        $sales = $query->with(['customer', 'items'])->get();
 
-        $dailyData = Sale::query()
-            ->selectRaw('sale_date::date as date')
-            ->selectRaw('SUM(total_amount) as revenue')
-            ->selectRaw('SUM(quantity_kg) as quantity')
+        /** @var \Illuminate\Support\Collection<int, object> $revenueAndCount */
+        $revenueAndCount = Sale::query()
+            ->selectRaw('sales.sale_date::date as date')
+            ->selectRaw('SUM(sales.total_amount) as revenue')
             ->selectRaw('COUNT(*) as count')
-            ->whereBetween('sale_date', [$startDate, $endDate])
-            ->when($customerId, fn (\Illuminate\Database\Eloquent\Builder $q) => $q->where('customer_id', $customerId))
-            ->groupByRaw('sale_date::date')
+            ->whereBetween('sales.sale_date', [$startDate, $endDate])
+            ->when($customerId, fn (\Illuminate\Database\Eloquent\Builder $q) => $q->where('sales.customer_id', $customerId))
+            ->groupByRaw('sales.sale_date::date')
             ->orderBy('date')
             ->get();
 
+        /** @var \Illuminate\Support\Collection<string, float> $quantityByDate */
+        $quantityByDate = Sale::query()
+            ->selectRaw('sales.sale_date::date as date')
+            ->selectRaw('SUM(sale_items.quantity_kg) as quantity')
+            ->join('sale_items', 'sales.id', '=', 'sale_items.sale_id')
+            ->whereBetween('sales.sale_date', [$startDate, $endDate])
+            ->when($customerId, fn (\Illuminate\Database\Eloquent\Builder $q) => $q->where('sales.customer_id', $customerId))
+            ->groupByRaw('sales.sale_date::date')
+            ->orderBy('date')
+            ->get()
+            ->mapWithKeys(fn (object $item): array => [
+                is_string($item->date ?? null) ? $item->date : '' => (isset($item->quantity) && is_numeric($item->quantity)) ? (float) $item->quantity : 0.0,
+            ]);
+
+        /** @var float $totalRevenue */
+        $totalRevenue = $sales->sum(fn (Sale $sale): float => (float) $sale->total_amount);
+        /** @var float $totalQuantity */
+        $totalQuantity = $sales->sum(fn (Sale $sale): float => (float) $sale->items->sum(fn (\App\Models\SaleItem $item): float => (float) $item->quantity_kg));
+        /** @var float $creditSales */
+        $creditSales = $sales->where('is_credit', true)->sum(fn (Sale $sale): float => (float) $sale->total_amount);
+        /** @var float $cashSales */
+        $cashSales = $sales->where('is_credit', false)->sum(fn (Sale $sale): float => (float) $sale->total_amount);
+
         return [
             'summary' => [
-                'total_revenue' => (float) $sales->sum('total_amount'), // @phpstan-ignore cast.double
-                'total_quantity' => (float) $sales->sum('quantity_kg'), // @phpstan-ignore cast.double
+                'total_revenue' => (float) $totalRevenue,
+                'total_quantity' => (float) $totalQuantity,
                 'total_sales' => $sales->count(),
-                'average_sale' => $sales->count() > 0 ? (float) $sales->sum('total_amount') / $sales->count() : 0.0, // @phpstan-ignore cast.double
-                'credit_sales' => (float) $sales->where('is_credit', true)->sum('total_amount'), // @phpstan-ignore cast.double
-                'cash_sales' => (float) $sales->where('is_credit', false)->sum('total_amount'), // @phpstan-ignore cast.double
+                'average_sale' => $sales->count() > 0 ? $totalRevenue / $sales->count() : 0.0,
+                'credit_sales' => (float) $creditSales,
+                'cash_sales' => (float) $cashSales,
             ],
-            'daily_data' => $dailyData->map(fn (object $item): array => [
-                'date' => $item->date ?? '',
+            'daily_data' => $revenueAndCount->map(fn (object $item): array => [
+                'date' => is_string($item->date ?? null) ? $item->date : '',
                 'revenue' => (isset($item->revenue) && is_numeric($item->revenue)) ? (float) $item->revenue : 0.0,
-                'quantity' => (isset($item->quantity) && is_numeric($item->quantity)) ? (float) $item->quantity : 0.0,
+                'quantity' => $quantityByDate->get(is_string($item->date ?? null) ? $item->date : '', 0.0),
                 'count' => (isset($item->count) && is_numeric($item->count)) ? (int) $item->count : 0,
             ]),
             'recent_sales' => $sales->take(10)->map(fn (Sale $sale): array => [
@@ -53,7 +77,7 @@ final readonly class GenerateSalesSummaryReportAction
                 'date' => $sale->sale_date->format('Y-m-d'),
                 'customer' => $sale->customer->name,
                 'amount' => (float) $sale->total_amount,
-                'quantity' => (float) $sale->quantity_kg,
+                'quantity' => (float) $sale->items->sum(fn (\App\Models\SaleItem $item): float => (float) $item->quantity_kg),
                 'is_credit' => $sale->is_credit,
             ]),
         ];

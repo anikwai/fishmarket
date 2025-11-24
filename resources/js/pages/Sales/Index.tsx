@@ -90,9 +90,7 @@ import {
     InfoIcon,
     MailIcon,
     MoreHorizontal,
-    Package,
     PencilIcon,
-    Percent,
     PlusIcon,
     Search,
     TrashIcon,
@@ -100,7 +98,7 @@ import {
     Truck,
     User,
 } from 'lucide-react';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -115,19 +113,43 @@ interface Customer {
     email?: string | null;
 }
 
+interface Purchase {
+    id: number;
+    supplier_name: string;
+    purchase_date: string;
+    remaining_quantity: number;
+    price_per_kg: number;
+    description?: string;
+    supplier?: {
+        name: string;
+    };
+}
+
 interface Payment {
     id: number;
+    amount: number;
     payment_date: string;
-    amount: number | string;
-    notes: string | null;
+    payment_method: string;
+}
+
+interface SaleItem {
+    id?: number;
+    purchase_id: string;
+    quantity_kg: string;
+    price_per_kg: string;
+    total_price?: string;
+    purchase?: {
+        supplier_name: string;
+        description?: string;
+        supplier?: {
+            name: string;
+        };
+    };
 }
 
 interface Sale {
     id: number;
     sale_date: string;
-    quantity_kg: number | string;
-    price_per_kg: number | string;
-    discount_percentage: number | string;
     subtotal: number | string;
     delivery_fee: number | string;
     total_amount: number | string;
@@ -136,131 +158,149 @@ interface Sale {
     notes: string | null;
     customer: Customer;
     payments?: Payment[];
+    items: SaleItem[];
 }
 
 interface SalesProps {
     sales: {
         data: Sale[];
-        links: Array<{ url: string | null; label: string; active: boolean }>;
         current_page: number;
         last_page: number;
         per_page: number;
         total: number;
-        from: number | null;
-        to: number | null;
+        from: number;
+        to: number;
+        links: {
+            url: string | null;
+            label: string;
+            active: boolean;
+        }[];
     };
     customers: Customer[];
+    availablePurchases: Purchase[];
     filters: {
         customer_id?: string;
         is_credit?: boolean;
         search?: string;
     };
-    currentStock?: number;
+    currentStock: number;
 }
 
 export default function SalesIndex({
     sales,
     customers,
+    availablePurchases,
     filters,
     currentStock = 0,
 }: SalesProps) {
     const [createOpen, setCreateOpen] = useState(false);
     const [editOpen, setEditOpen] = useState(false);
-    const [showOpen, setShowOpen] = useState(false);
     const [deleteOpen, setDeleteOpen] = useState(false);
+    const [showOpen, setShowOpen] = useState(false);
     const [selectedSale, setSelectedSale] = useState<Sale | null>(null);
+
     const [sorting, setSorting] = useState<SortingState>([]);
-    const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
     const [columnVisibility, setColumnVisibility] = useState<VisibilityState>(
         {},
     );
+    const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
+
+    const [searchValue, setSearchValue] = useState(filters.search || '');
     const [customerFilter, setCustomerFilter] = useState(
         filters.customer_id || 'all',
     );
     const [creditFilter, setCreditFilter] = useState(
-        filters.is_credit !== undefined ? filters.is_credit.toString() : 'all',
+        filters.is_credit === undefined
+            ? 'all'
+            : filters.is_credit
+              ? 'true'
+              : 'false',
     );
-    const [searchValue, setSearchValue] = useState(filters.search || '');
-    const isInitialMount = useRef(true);
+    const [itemsError, setItemsError] = useState<string | null>(null);
 
-    // Debounced search function
-    const performSearch = useCallback(
-        (search: string, customerId: string, isCredit: string) => {
-            router.get(
-                '/sales',
-                {
-                    search: search || undefined,
-                    customer_id: customerId === 'all' ? undefined : customerId,
-                    is_credit:
-                        isCredit === 'all' ? undefined : isCredit === 'true',
-                },
-                {
-                    preserveState: true,
-                    preserveScroll: true,
-                    replace: true,
-                    only: ['sales', 'filters'],
-                },
-            );
-        },
-        [],
-    );
-
-    // Debounce search input
+    // Debounce search
     useEffect(() => {
-        // Skip the initial mount to avoid unnecessary request
-        if (isInitialMount.current) {
-            isInitialMount.current = false;
-            return;
+        if (!createOpen) {
+            setItemsError(null);
         }
+    }, [createOpen]);
 
-        const timeoutId = setTimeout(() => {
-            performSearch(searchValue, customerFilter, creditFilter);
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            if (searchValue !== (filters.search || '')) {
+                router.get(
+                    '/sales',
+                    {
+                        search: searchValue || undefined,
+                        customer_id:
+                            customerFilter === 'all'
+                                ? undefined
+                                : customerFilter,
+                        is_credit:
+                            creditFilter === 'all'
+                                ? undefined
+                                : creditFilter === 'true',
+                    },
+                    {
+                        preserveState: true,
+                        preserveScroll: true,
+                        replace: true,
+                        only: ['sales', 'filters'],
+                    },
+                );
+            }
         }, 300);
 
-        return () => clearTimeout(timeoutId);
-    }, [searchValue, customerFilter, creditFilter, performSearch]);
+        return () => clearTimeout(timer);
+    }, [searchValue, customerFilter, creditFilter, filters.search]);
 
-    // Handle sorting changes
-    useEffect(() => {
-        if (isInitialMount.current) {
-            return;
-        }
+    const addItem = () => {
+        setItemsError(null);
+        const currentItems = createForm.data.items;
+        createForm.setData('items', [
+            ...currentItems,
+            { purchase_id: '', quantity_kg: '', price_per_kg: '' },
+        ]);
+    };
 
-        const sortParam =
-            sorting.length > 0
-                ? {
-                      sort_by: sorting[0].id,
-                      sort_dir: sorting[0].desc ? 'desc' : 'asc',
-                  }
-                : {};
-
-        router.get(
-            '/sales',
-            {
-                search: searchValue || undefined,
-                customer_id:
-                    customerFilter === 'all' ? undefined : customerFilter,
-                is_credit:
-                    creditFilter === 'all'
-                        ? undefined
-                        : creditFilter === 'true',
-                ...sortParam,
-            },
-            {
-                preserveState: true,
-                preserveScroll: true,
-                replace: true,
-                only: ['sales', 'filters'],
-            },
+    const removeItem = (index: number) => {
+        setItemsError(null);
+        const currentItems = createForm.data.items;
+        createForm.setData(
+            'items',
+            currentItems.filter((_, i) => i !== index),
         );
-    }, [sorting, searchValue, customerFilter, creditFilter]);
+    };
+
+    const updateItem = (
+        index: number,
+        field: keyof SaleItem,
+        value: string,
+    ) => {
+        setItemsError(null);
+        const currentItems = [...createForm.data.items];
+        currentItems[index] = { ...currentItems[index], [field]: value };
+        createForm.setData('items', currentItems);
+    };
+
+    const calculateSubtotal = (items: SaleItem[]) => {
+        return items.reduce((sum, item) => {
+            const qty = parseFloat(item.quantity_kg) || 0;
+            const price = parseFloat(item.price_per_kg) || 0;
+            return sum + qty * price;
+        }, 0);
+    };
+
+    const calculateTotal = (items: SaleItem[], deliveryFee: string) => {
+        const subtotal = calculateSubtotal(items);
+        const fee = parseFloat(deliveryFee) || 0;
+        return subtotal + fee;
+    };
 
     const createForm = useForm({
         customer_id: '',
         sale_date: new Date().toISOString().split('T')[0],
-        quantity_kg: '',
-        price_per_kg: '',
-        discount_percentage: '0',
+        items: [] as SaleItem[],
         delivery_fee: '0',
         is_credit: false,
         is_delivery: false,
@@ -270,44 +310,65 @@ export default function SalesIndex({
     const editForm = useForm({
         customer_id: '',
         sale_date: '',
-        quantity_kg: '',
-        price_per_kg: '',
-        discount_percentage: '0',
+        items: [] as SaleItem[],
         delivery_fee: '0',
         is_credit: false,
         is_delivery: false,
         notes: '',
     });
 
-    const calculateSubtotal = (
-        quantity: string,
-        price: string,
-        discount: string,
-    ): number => {
-        const qty = parseFloat(quantity) || 0;
-        const prc = parseFloat(price) || 0;
-        const disc = parseFloat(discount) || 0;
-        return qty * prc * (1 - disc / 100);
+    const addEditItem = () => {
+        const currentItems = editForm.data.items;
+        editForm.setData('items', [
+            ...currentItems,
+            { purchase_id: '', quantity_kg: '', price_per_kg: '' },
+        ]);
     };
 
-    const calculateTotal = (
-        quantity: string,
-        price: string,
-        discount: string,
-        delivery: string,
-    ): number => {
-        return (
-            calculateSubtotal(quantity, price, discount) +
-            (parseFloat(delivery) || 0)
+    const removeEditItem = (index: number) => {
+        const currentItems = editForm.data.items;
+        editForm.setData(
+            'items',
+            currentItems.filter((_, i) => i !== index),
         );
     };
 
+    const updateEditItem = (
+        index: number,
+        field: keyof SaleItem,
+        value: string,
+    ) => {
+        const currentItems = [...editForm.data.items];
+        currentItems[index] = { ...currentItems[index], [field]: value };
+        editForm.setData('items', currentItems);
+    };
+
     const handleCreate = () => {
+        setItemsError(null);
+        // Validate items before submitting
+        if (createForm.data.items.length === 0) {
+            setItemsError('Please add at least one item to the sale.');
+            return;
+        }
+
+        const hasEmptyFields = createForm.data.items.some(
+            (item) =>
+                !item.purchase_id || !item.quantity_kg || !item.price_per_kg,
+        );
+
+        if (hasEmptyFields) {
+            setItemsError(
+                'Please fill in all fields for each item (Supplier, Quantity, and Price).',
+            );
+            return;
+        }
+
         createForm.post('/sales', {
             preserveScroll: true,
             onSuccess: () => {
                 setCreateOpen(false);
                 createForm.reset();
+                setItemsError(null);
             },
         });
     };
@@ -318,9 +379,12 @@ export default function SalesIndex({
             editForm.setData({
                 customer_id: sale.customer.id.toString(),
                 sale_date: sale.sale_date,
-                quantity_kg: sale.quantity_kg.toString(),
-                price_per_kg: sale.price_per_kg.toString(),
-                discount_percentage: sale.discount_percentage.toString(),
+                items: sale.items.map((item) => ({
+                    id: item.id,
+                    purchase_id: item.purchase_id.toString(),
+                    quantity_kg: item.quantity_kg.toString(),
+                    price_per_kg: item.price_per_kg.toString(),
+                })),
                 delivery_fee: sale.delivery_fee.toString(),
                 is_credit: sale.is_credit,
                 is_delivery: sale.is_delivery,
@@ -803,7 +867,7 @@ export default function SalesIndex({
                                                 checked={column.getIsVisible()}
                                                 onCheckedChange={(value) =>
                                                     column.toggleVisibility(
-                                                        !!value,
+                                                        value,
                                                     )
                                                 }
                                             >
@@ -1185,99 +1249,192 @@ export default function SalesIndex({
                                         </FieldError>
                                     </Field>
                                 </div>
-                                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                                    <Field
-                                        data-invalid={
-                                            !!createForm.errors.quantity_kg
-                                        }
-                                    >
-                                        <FieldLabel htmlFor="quantity_kg">
-                                            Quantity (kg) *
-                                        </FieldLabel>
-                                        <div className="relative">
-                                            <Package className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                                            <Input
-                                                id="quantity_kg"
-                                                type="number"
-                                                step="0.01"
-                                                value={
-                                                    createForm.data.quantity_kg
-                                                }
-                                                onChange={(e) =>
-                                                    createForm.setData(
+
+                                <div className="space-y-4">
+                                    <div className="flex items-center justify-between">
+                                        <h3 className="text-sm font-medium">
+                                            Items
+                                        </h3>
+                                        <Button
+                                            type="button"
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={addItem}
+                                        >
+                                            <PlusIcon className="mr-2 h-4 w-4" />
+                                            Add Item
+                                        </Button>
+                                    </div>
+
+                                    {createForm.data.items.map(
+                                        (item, index) => (
+                                            <div
+                                                key={index}
+                                                className="grid grid-cols-12 items-start gap-2 rounded-lg border p-3"
+                                            >
+                                                <div className="col-span-5">
+                                                    <Label className="text-xs">
+                                                        Supplier / Stock
+                                                    </Label>
+                                                    <Select
+                                                        value={
+                                                            item.purchase_id ||
+                                                            ''
+                                                        }
+                                                        onValueChange={(
+                                                            value,
+                                                        ) => {
+                                                            const purchase =
+                                                                availablePurchases.find(
+                                                                    (p) =>
+                                                                        p.id.toString() ===
+                                                                        value,
+                                                                );
+                                                            const currentItems =
+                                                                [
+                                                                    ...createForm
+                                                                        .data
+                                                                        .items,
+                                                                ];
+                                                            currentItems[
+                                                                index
+                                                            ] = {
+                                                                ...currentItems[
+                                                                    index
+                                                                ],
+                                                                purchase_id:
+                                                                    value,
+                                                                price_per_kg:
+                                                                    purchase
+                                                                        ? purchase.price_per_kg.toString()
+                                                                        : currentItems[
+                                                                              index
+                                                                          ]
+                                                                              .price_per_kg,
+                                                            };
+                                                            createForm.setData(
+                                                                'items',
+                                                                currentItems,
+                                                            );
+                                                        }}
+                                                    >
+                                                        <SelectTrigger className="h-8 text-xs">
+                                                            <SelectValue placeholder="Select stock" />
+                                                        </SelectTrigger>
+                                                        <SelectContent>
+                                                            {availablePurchases.map(
+                                                                (purchase) => (
+                                                                    <SelectItem
+                                                                        key={
+                                                                            purchase.id
+                                                                        }
+                                                                        value={purchase.id.toString()}
+                                                                    >
+                                                                        {
+                                                                            purchase.supplier_name
+                                                                        }{' '}
+                                                                        -{' '}
+                                                                        {
+                                                                            purchase.remaining_quantity
+                                                                        }
+                                                                        kg left
+                                                                    </SelectItem>
+                                                                ),
+                                                            )}
+                                                        </SelectContent>
+                                                    </Select>
+                                                </div>
+                                                <div className="col-span-3">
+                                                    <Label className="text-xs">
+                                                        Qty (kg)
+                                                    </Label>
+                                                    <Input
+                                                        type="number"
+                                                        step="0.01"
+                                                        className="h-8 text-xs"
+                                                        value={item.quantity_kg}
+                                                        onChange={(e) =>
+                                                            updateItem(
+                                                                index,
+                                                                'quantity_kg',
+                                                                e.target.value,
+                                                            )
+                                                        }
+                                                        placeholder="0.00"
+                                                    />
+                                                </div>
+                                                <div className="col-span-3">
+                                                    <Label className="text-xs">
+                                                        Price (SBD)
+                                                    </Label>
+                                                    <Input
+                                                        type="number"
+                                                        step="0.01"
+                                                        className="h-8 text-xs"
+                                                        value={
+                                                            item.price_per_kg
+                                                        }
+                                                        onChange={(e) =>
+                                                            updateItem(
+                                                                index,
+                                                                'price_per_kg',
+                                                                e.target.value,
+                                                            )
+                                                        }
+                                                        placeholder="0.00"
+                                                    />
+                                                </div>
+                                                <div className="col-span-1 flex justify-end pt-5">
+                                                    <Button
+                                                        type="button"
+                                                        variant="ghost"
+                                                        size="icon"
+                                                        className="h-8 w-8 text-destructive"
+                                                        onClick={() =>
+                                                            removeItem(index)
+                                                        }
+                                                    >
+                                                        <TrashIcon className="h-4 w-4" />
+                                                    </Button>
+                                                </div>
+                                                {(
+                                                    [
+                                                        'purchase_id',
                                                         'quantity_kg',
-                                                        e.target.value,
-                                                    )
-                                                }
-                                                className="pl-9"
-                                                placeholder="0.00"
-                                                autoFocus
-                                            />
-                                        </div>
-                                        <FieldError>
-                                            {createForm.errors.quantity_kg}
-                                        </FieldError>
-                                    </Field>
-                                    <Field
-                                        data-invalid={
-                                            !!createForm.errors.price_per_kg
-                                        }
-                                    >
-                                        <FieldLabel htmlFor="price_per_kg">
-                                            Price per kg (SBD) *
-                                        </FieldLabel>
-                                        <div className="relative">
-                                            <DollarSign className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                                            <Input
-                                                id="price_per_kg"
-                                                type="number"
-                                                step="0.01"
-                                                value={
-                                                    createForm.data.price_per_kg
-                                                }
-                                                onChange={(e) =>
-                                                    createForm.setData(
                                                         'price_per_kg',
-                                                        e.target.value,
-                                                    )
-                                                }
-                                                className="pl-9"
-                                                placeholder="0.00"
-                                            />
+                                                    ] as const
+                                                ).map((field) => {
+                                                    const errorKey =
+                                                        `items.${index}.${field}` as keyof typeof createForm.errors;
+                                                    const message =
+                                                        createForm.errors[
+                                                            errorKey
+                                                        ];
+
+                                                    if (!message) return null;
+
+                                                    return (
+                                                        <div
+                                                            key={field}
+                                                            className="col-span-12 text-xs text-destructive"
+                                                        >
+                                                            {message}
+                                                        </div>
+                                                    );
+                                                })}
+                                            </div>
+                                        ),
+                                    )}
+                                    {(itemsError ||
+                                        createForm.errors.items) && (
+                                        <div className="text-sm text-destructive">
+                                            {itemsError ||
+                                                createForm.errors.items}
                                         </div>
-                                        <FieldError>
-                                            {createForm.errors.price_per_kg}
-                                        </FieldError>
-                                    </Field>
+                                    )}
                                 </div>
+
                                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                                    <Field>
-                                        <FieldLabel htmlFor="discount_percentage">
-                                            Discount (%)
-                                        </FieldLabel>
-                                        <div className="relative">
-                                            <Percent className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                                            <Input
-                                                id="discount_percentage"
-                                                type="number"
-                                                step="0.01"
-                                                min="0"
-                                                max="100"
-                                                value={
-                                                    createForm.data
-                                                        .discount_percentage
-                                                }
-                                                onChange={(e) =>
-                                                    createForm.setData(
-                                                        'discount_percentage',
-                                                        e.target.value,
-                                                    )
-                                                }
-                                                className="pl-9"
-                                                placeholder="0.00"
-                                            />
-                                        </div>
-                                    </Field>
                                     <Field>
                                         <FieldLabel htmlFor="delivery_fee">
                                             Delivery Fee (SBD)
@@ -1366,12 +1523,7 @@ export default function SalesIndex({
                                                 <span>
                                                     SBD{' '}
                                                     {calculateSubtotal(
-                                                        createForm.data
-                                                            .quantity_kg,
-                                                        createForm.data
-                                                            .price_per_kg,
-                                                        createForm.data
-                                                            .discount_percentage,
+                                                        createForm.data.items,
                                                     ).toFixed(2)}
                                                 </span>
                                             </div>
@@ -1394,12 +1546,7 @@ export default function SalesIndex({
                                                 <span>
                                                     SBD{' '}
                                                     {calculateTotal(
-                                                        createForm.data
-                                                            .quantity_kg,
-                                                        createForm.data
-                                                            .price_per_kg,
-                                                        createForm.data
-                                                            .discount_percentage,
+                                                        createForm.data.items,
                                                         createForm.data
                                                             .delivery_fee,
                                                     ).toFixed(2)}
@@ -1548,98 +1695,174 @@ export default function SalesIndex({
                                         </FieldError>
                                     </Field>
                                 </div>
-                                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                                    <Field
-                                        data-invalid={
-                                            !!editForm.errors.quantity_kg
-                                        }
-                                    >
-                                        <FieldLabel htmlFor="edit-quantity_kg">
-                                            Quantity (kg) *
-                                        </FieldLabel>
-                                        <div className="relative">
-                                            <Package className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                                            <Input
-                                                id="edit-quantity_kg"
-                                                type="number"
-                                                step="0.01"
-                                                value={
-                                                    editForm.data.quantity_kg
-                                                }
-                                                onChange={(e) =>
-                                                    editForm.setData(
-                                                        'quantity_kg',
-                                                        e.target.value,
-                                                    )
-                                                }
-                                                className="pl-9"
-                                                placeholder="0.00"
-                                            />
+                                <div className="space-y-4">
+                                    <div className="flex items-center justify-between">
+                                        <h3 className="text-sm font-medium">
+                                            Items
+                                        </h3>
+                                        <Button
+                                            type="button"
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={addEditItem}
+                                        >
+                                            <PlusIcon className="mr-2 h-4 w-4" />
+                                            Add Item
+                                        </Button>
+                                    </div>
+
+                                    {editForm.data.items.map((item, index) => (
+                                        <div
+                                            key={index}
+                                            className="grid grid-cols-12 items-start gap-2 rounded-lg border p-3"
+                                        >
+                                            <div className="col-span-5">
+                                                <Label className="text-xs">
+                                                    Supplier / Stock
+                                                </Label>
+                                                <Select
+                                                    value={
+                                                        item.purchase_id || ''
+                                                    }
+                                                    onValueChange={(value) => {
+                                                        const purchase =
+                                                            availablePurchases.find(
+                                                                (p) =>
+                                                                    p.id.toString() ===
+                                                                    value,
+                                                            );
+                                                        const currentItems = [
+                                                            ...editForm.data
+                                                                .items,
+                                                        ];
+                                                        currentItems[index] = {
+                                                            ...currentItems[
+                                                                index
+                                                            ],
+                                                            purchase_id: value,
+                                                            price_per_kg:
+                                                                purchase
+                                                                    ? purchase.price_per_kg.toString()
+                                                                    : currentItems[
+                                                                          index
+                                                                      ]
+                                                                          .price_per_kg,
+                                                        };
+                                                        editForm.setData(
+                                                            'items',
+                                                            currentItems,
+                                                        );
+                                                    }}
+                                                >
+                                                    <SelectTrigger className="h-8 text-xs">
+                                                        <SelectValue placeholder="Select stock" />
+                                                    </SelectTrigger>
+                                                    <SelectContent>
+                                                        {availablePurchases.map(
+                                                            (purchase) => (
+                                                                <SelectItem
+                                                                    key={
+                                                                        purchase.id
+                                                                    }
+                                                                    value={purchase.id.toString()}
+                                                                >
+                                                                    {
+                                                                        purchase.supplier_name
+                                                                    }{' '}
+                                                                    -{' '}
+                                                                    {
+                                                                        purchase.remaining_quantity
+                                                                    }
+                                                                    kg left
+                                                                </SelectItem>
+                                                            ),
+                                                        )}
+                                                    </SelectContent>
+                                                </Select>
+                                            </div>
+                                            <div className="col-span-3">
+                                                <Label className="text-xs">
+                                                    Qty (kg)
+                                                </Label>
+                                                <Input
+                                                    type="number"
+                                                    step="0.01"
+                                                    className="h-8 text-xs"
+                                                    value={item.quantity_kg}
+                                                    onChange={(e) =>
+                                                        updateEditItem(
+                                                            index,
+                                                            'quantity_kg',
+                                                            e.target.value,
+                                                        )
+                                                    }
+                                                    placeholder="0.00"
+                                                />
+                                            </div>
+                                            <div className="col-span-3">
+                                                <Label className="text-xs">
+                                                    Price (SBD)
+                                                </Label>
+                                                <Input
+                                                    type="number"
+                                                    step="0.01"
+                                                    className="h-8 text-xs"
+                                                    value={item.price_per_kg}
+                                                    onChange={(e) =>
+                                                        updateEditItem(
+                                                            index,
+                                                            'price_per_kg',
+                                                            e.target.value,
+                                                        )
+                                                    }
+                                                    placeholder="0.00"
+                                                />
+                                            </div>
+                                            <div className="col-span-1 flex justify-end pt-5">
+                                                <Button
+                                                    type="button"
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    className="h-8 w-8 text-destructive"
+                                                    onClick={() =>
+                                                        removeEditItem(index)
+                                                    }
+                                                >
+                                                    <TrashIcon className="h-4 w-4" />
+                                                </Button>
+                                            </div>
+                                            {(
+                                                [
+                                                    'purchase_id',
+                                                    'quantity_kg',
+                                                    'price_per_kg',
+                                                ] as const
+                                            ).map((field) => {
+                                                const errorKey =
+                                                    `items.${index}.${field}` as keyof typeof editForm.errors;
+                                                const message =
+                                                    editForm.errors[errorKey];
+
+                                                if (!message) return null;
+
+                                                return (
+                                                    <div
+                                                        key={field}
+                                                        className="col-span-12 text-xs text-destructive"
+                                                    >
+                                                        {message}
+                                                    </div>
+                                                );
+                                            })}
                                         </div>
-                                        <FieldError>
-                                            {editForm.errors.quantity_kg}
-                                        </FieldError>
-                                    </Field>
-                                    <Field
-                                        data-invalid={
-                                            !!editForm.errors.price_per_kg
-                                        }
-                                    >
-                                        <FieldLabel htmlFor="edit-price_per_kg">
-                                            Price per kg (SBD) *
-                                        </FieldLabel>
-                                        <div className="relative">
-                                            <DollarSign className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                                            <Input
-                                                id="edit-price_per_kg"
-                                                type="number"
-                                                step="0.01"
-                                                value={
-                                                    editForm.data.price_per_kg
-                                                }
-                                                onChange={(e) =>
-                                                    editForm.setData(
-                                                        'price_per_kg',
-                                                        e.target.value,
-                                                    )
-                                                }
-                                                className="pl-9"
-                                                placeholder="0.00"
-                                            />
+                                    ))}
+                                    {editForm.errors.items && (
+                                        <div className="text-sm text-destructive">
+                                            {editForm.errors.items}
                                         </div>
-                                        <FieldError>
-                                            {editForm.errors.price_per_kg}
-                                        </FieldError>
-                                    </Field>
+                                    )}
                                 </div>
                                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                                    <Field>
-                                        <FieldLabel htmlFor="edit-discount_percentage">
-                                            Discount (%)
-                                        </FieldLabel>
-                                        <div className="relative">
-                                            <Percent className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                                            <Input
-                                                id="edit-discount_percentage"
-                                                type="number"
-                                                step="0.01"
-                                                min="0"
-                                                max="100"
-                                                value={
-                                                    editForm.data
-                                                        .discount_percentage
-                                                }
-                                                onChange={(e) =>
-                                                    editForm.setData(
-                                                        'discount_percentage',
-                                                        e.target.value,
-                                                    )
-                                                }
-                                                className="pl-9"
-                                                placeholder="0.00"
-                                            />
-                                        </div>
-                                    </Field>
                                     <Field>
                                         <FieldLabel htmlFor="edit-delivery_fee">
                                             Delivery Fee (SBD)
@@ -1728,12 +1951,7 @@ export default function SalesIndex({
                                                 <span>
                                                     SBD{' '}
                                                     {calculateSubtotal(
-                                                        editForm.data
-                                                            .quantity_kg,
-                                                        editForm.data
-                                                            .price_per_kg,
-                                                        editForm.data
-                                                            .discount_percentage,
+                                                        editForm.data.items,
                                                     ).toFixed(2)}
                                                 </span>
                                             </div>
@@ -1756,12 +1974,7 @@ export default function SalesIndex({
                                                 <span>
                                                     SBD{' '}
                                                     {calculateTotal(
-                                                        editForm.data
-                                                            .quantity_kg,
-                                                        editForm.data
-                                                            .price_per_kg,
-                                                        editForm.data
-                                                            .discount_percentage,
+                                                        editForm.data.items,
                                                         editForm.data
                                                             .delivery_fee,
                                                     ).toFixed(2)}
@@ -1878,75 +2091,71 @@ export default function SalesIndex({
                                         </ItemDescription>
                                     </ItemContent>
                                 </Item>
-                                <Item
-                                    size="sm"
-                                    className="col-span-1 rounded-lg bg-muted/40"
-                                >
-                                    <ItemMedia
-                                        variant="icon"
-                                        className="bg-background text-muted-foreground"
-                                    >
-                                        <Package className="h-4 w-4" />
-                                    </ItemMedia>
-                                    <ItemContent>
-                                        <ItemTitle className="text-xs text-muted-foreground">
-                                            Quantity
-                                        </ItemTitle>
-                                        <ItemDescription className="text-base font-semibold text-foreground">
-                                            {Number(
-                                                selectedSale.quantity_kg,
-                                            ).toFixed(2)}{' '}
-                                            kg
-                                        </ItemDescription>
-                                    </ItemContent>
-                                </Item>
-                                <Item
-                                    size="sm"
-                                    className="col-span-1 rounded-lg bg-muted/40"
-                                >
-                                    <ItemMedia
-                                        variant="icon"
-                                        className="bg-background text-muted-foreground"
-                                    >
-                                        <DollarSign className="h-4 w-4" />
-                                    </ItemMedia>
-                                    <ItemContent>
-                                        <ItemTitle className="text-xs text-muted-foreground">
-                                            Price per kg
-                                        </ItemTitle>
-                                        <ItemDescription className="text-base font-semibold text-foreground">
-                                            SBD{' '}
-                                            {Number(
-                                                selectedSale.price_per_kg,
-                                            ).toFixed(2)}
-                                        </ItemDescription>
-                                    </ItemContent>
-                                </Item>
-                                {Number(selectedSale.discount_percentage) >
-                                    0 && (
-                                    <Item
-                                        size="sm"
-                                        className="col-span-1 rounded-lg bg-muted/40"
-                                    >
-                                        <ItemMedia
-                                            variant="icon"
-                                            className="bg-background text-muted-foreground"
-                                        >
-                                            <Percent className="h-4 w-4" />
-                                        </ItemMedia>
-                                        <ItemContent>
-                                            <ItemTitle className="text-xs text-muted-foreground">
-                                                Discount
-                                            </ItemTitle>
-                                            <ItemDescription className="text-base font-semibold text-foreground">
-                                                {Number(
-                                                    selectedSale.discount_percentage,
-                                                ).toFixed(2)}
-                                                %
-                                            </ItemDescription>
-                                        </ItemContent>
-                                    </Item>
-                                )}
+                                <div className="col-span-2 rounded-lg bg-muted/40 p-3">
+                                    <h4 className="mb-2 text-sm font-medium">
+                                        Items
+                                    </h4>
+                                    <Table>
+                                        <TableHeader>
+                                            <TableRow>
+                                                <TableHead>
+                                                    Description
+                                                </TableHead>
+                                                <TableHead className="text-right">
+                                                    Qty (kg)
+                                                </TableHead>
+                                                <TableHead className="text-right">
+                                                    Price
+                                                </TableHead>
+                                                <TableHead className="text-right">
+                                                    Total
+                                                </TableHead>
+                                            </TableRow>
+                                        </TableHeader>
+                                        <TableBody>
+                                            {selectedSale.items?.map(
+                                                (item, index) => (
+                                                    <TableRow
+                                                        key={
+                                                            item.id ??
+                                                            `item-${index}`
+                                                        }
+                                                    >
+                                                        <TableCell>
+                                                            {item.purchase
+                                                                ?.description ||
+                                                                item.purchase
+                                                                    ?.supplier
+                                                                    ?.name ||
+                                                                'N/A'}
+                                                        </TableCell>
+                                                        <TableCell className="text-right">
+                                                            {Number(
+                                                                item.quantity_kg ??
+                                                                    0,
+                                                            ).toFixed(2)}
+                                                        </TableCell>
+                                                        <TableCell className="text-right">
+                                                            SBD{' '}
+                                                            {Number(
+                                                                item.price_per_kg ??
+                                                                    0,
+                                                            ).toFixed(2)}
+                                                        </TableCell>
+                                                        <TableCell className="text-right">
+                                                            SBD{' '}
+                                                            {Number(
+                                                                item.total_price ??
+                                                                    0,
+                                                            ).toFixed(2)}
+                                                        </TableCell>
+                                                    </TableRow>
+                                                ),
+                                            )}
+                                        </TableBody>
+                                    </Table>
+                                </div>
+
                                 {Number(selectedSale.delivery_fee) > 0 && (
                                     <Item
                                         size="sm"

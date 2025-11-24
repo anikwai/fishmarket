@@ -9,7 +9,6 @@ use Database\Factories\SaleFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
@@ -17,9 +16,6 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
  * @property-read int $id
  * @property-read int $customer_id
  * @property-read CarbonInterface $sale_date
- * @property-read float $quantity_kg
- * @property-read float $price_per_kg
- * @property-read float $discount_percentage
  * @property float $subtotal
  * @property-read float $delivery_fee
  * @property float $total_amount
@@ -28,8 +24,11 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
  * @property-read string|null $notes
  * @property-read CarbonInterface $created_at
  * @property-read CarbonInterface $updated_at
+ * @property-read float $outstanding_balance
+ * @property-read bool $is_fully_paid
  * @property-read Customer $customer
  * @property-read \Illuminate\Database\Eloquent\Collection<int, Payment> $payments
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, SaleItem> $items
  */
 final class Sale extends Model
 {
@@ -37,6 +36,11 @@ final class Sale extends Model
      * @use HasFactory<SaleFactory>
      */
     use HasFactory;
+
+    /**
+     * @var list<string>
+     */
+    protected $appends = ['quantity_kg', 'is_fully_paid'];
 
     /**
      * @return array<string, string>
@@ -47,9 +51,6 @@ final class Sale extends Model
             'id' => 'integer',
             'customer_id' => 'integer',
             'sale_date' => 'date',
-            'quantity_kg' => 'decimal:2',
-            'price_per_kg' => 'decimal:2',
-            'discount_percentage' => 'decimal:2',
             'subtotal' => 'decimal:2',
             'delivery_fee' => 'decimal:2',
             'total_amount' => 'decimal:2',
@@ -78,13 +79,11 @@ final class Sale extends Model
     }
 
     /**
-     * @return BelongsToMany<Purchase, $this>
+     * @return HasMany<SaleItem, $this>
      */
-    public function purchases(): BelongsToMany
+    public function items(): HasMany
     {
-        return $this->belongsToMany(Purchase::class, 'purchase_sale')
-            ->withPivot('quantity_kg')
-            ->withTimestamps();
+        return $this->hasMany(SaleItem::class);
     }
 
     /**
@@ -106,27 +105,25 @@ final class Sale extends Model
     protected static function booted(): void
     {
         self::saving(function (Sale $sale): void {
-            if ($sale->isDirty(['quantity_kg', 'price_per_kg', 'discount_percentage', 'delivery_fee'])) {
-                $sale->subtotal = $sale->quantity_kg * $sale->price_per_kg * (1 - ($sale->discount_percentage / 100));
+            if ($sale->isDirty(['subtotal', 'delivery_fee'])) {
                 $sale->total_amount = $sale->subtotal + $sale->delivery_fee;
             }
         });
     }
 
+    protected function getQuantityKgAttribute(): float
+    {
+        return (float) $this->items->sum(fn (SaleItem $item): float => (float) $item->quantity_kg);
+    }
+
     protected function getProfitAttribute(): float
     {
-        return $this->purchases()
+        return $this->items()
             ->get()
-            ->sum(function (Purchase $purchase): float {
-                /** @var \Illuminate\Database\Eloquent\Relations\Pivot|null $pivot */
-                $pivot = $purchase->pivot ?? null;
-                $quantityFromThisPurchase = ($pivot !== null && property_exists($pivot, 'quantity_kg') && is_numeric($pivot->quantity_kg)) ? (float) $pivot->quantity_kg : 0.0;
-                if ($quantityFromThisPurchase <= 0) {
-                    return 0.0;
-                }
-                $revenuePerKg = (float) $this->price_per_kg * (1 - ((float) $this->discount_percentage / 100));
+            ->sum(function (SaleItem $item): float {
+                $purchasePrice = $item->purchase->price_per_kg;
 
-                return ($revenuePerKg - (float) $purchase->price_per_kg) * $quantityFromThisPurchase;
+                return ($item->price_per_kg - $purchasePrice) * $item->quantity_kg;
             });
     }
 
@@ -140,5 +137,14 @@ final class Sale extends Model
         $paidAmount = $this->relationLoaded('payments') ? $this->payments->sum('amount') : $this->payments()->sum('amount');
 
         return max(0.0, $this->total_amount - (is_numeric($paidAmount) ? (float) $paidAmount : 0.0));
+    }
+
+    protected function getIsFullyPaidAttribute(): bool
+    {
+        if (! $this->is_credit) {
+            return true;
+        }
+
+        return $this->outstanding_balance <= 0.0;
     }
 }

@@ -128,6 +128,7 @@ interface Purchase {
     quantity_kg: number | string;
     price_per_kg: number | string;
     total_cost: number | string;
+    description?: string | null;
     notes: string | null;
     supplier: Supplier;
     profit?: number | string;
@@ -253,6 +254,7 @@ export default function PurchasesIndex({
         purchase_date: new Date().toISOString().split('T')[0],
         quantity_kg: '',
         price_per_kg: '',
+        description: '',
         notes: '',
     });
 
@@ -268,6 +270,7 @@ export default function PurchasesIndex({
         purchase_date: '',
         quantity_kg: '',
         price_per_kg: '',
+        description: '',
         notes: '',
     });
 
@@ -305,6 +308,7 @@ export default function PurchasesIndex({
                 purchase_date: purchase.purchase_date,
                 quantity_kg: purchase.quantity_kg.toString(),
                 price_per_kg: purchase.price_per_kg.toString(),
+                description: purchase.description || '',
                 notes: purchase.notes || '',
             });
             setEditOpen(true);
@@ -1303,6 +1307,37 @@ export default function PurchasesIndex({
                                         </FieldError>
                                     </Field>
                                 </div>
+                                <Field
+                                    data-invalid={
+                                        !!createForm.errors.description
+                                    }
+                                >
+                                    <FieldLabel htmlFor="description">
+                                        Description
+                                    </FieldLabel>
+                                    <div className="relative">
+                                        <FileText className="absolute top-3 left-3 h-4 w-4 text-muted-foreground" />
+                                        <Input
+                                            id="description"
+                                            value={createForm.data.description}
+                                            onChange={(e) =>
+                                                createForm.setData(
+                                                    'description',
+                                                    e.target.value,
+                                                )
+                                            }
+                                            className="pl-9"
+                                            placeholder="e.g., Yellow Fin Flakes"
+                                        />
+                                    </div>
+                                    <FieldDescription>
+                                        Customer-facing product name (e.g.,
+                                        "Yellow Fin Flakes")
+                                    </FieldDescription>
+                                    <FieldError>
+                                        {createForm.errors.description}
+                                    </FieldError>
+                                </Field>
                                 <Field data-invalid={!!createForm.errors.notes}>
                                     <FieldLabel htmlFor="notes">
                                         Notes
@@ -1509,6 +1544,35 @@ export default function PurchasesIndex({
                                         </FieldError>
                                     </Field>
                                 </div>
+                                <Field
+                                    data-invalid={!!editForm.errors.description}
+                                >
+                                    <FieldLabel htmlFor="edit-description">
+                                        Description
+                                    </FieldLabel>
+                                    <div className="relative">
+                                        <FileText className="absolute top-3 left-3 h-4 w-4 text-muted-foreground" />
+                                        <Input
+                                            id="edit-description"
+                                            value={editForm.data.description}
+                                            onChange={(e) =>
+                                                editForm.setData(
+                                                    'description',
+                                                    e.target.value,
+                                                )
+                                            }
+                                            className="pl-9"
+                                            placeholder="e.g., Yellow Fin Flakes"
+                                        />
+                                    </div>
+                                    <FieldDescription>
+                                        Customer-facing product name (e.g.,
+                                        "Yellow Fin Flakes")
+                                    </FieldDescription>
+                                    <FieldError>
+                                        {editForm.errors.description}
+                                    </FieldError>
+                                </Field>
                                 <Field data-invalid={!!editForm.errors.notes}>
                                     <FieldLabel htmlFor="edit-notes">
                                         Notes

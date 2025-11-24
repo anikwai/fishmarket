@@ -38,7 +38,7 @@ final readonly class PurchaseController
 
         $query = Purchase::query()
             ->with('supplier')
-            ->withSum('sales as sold_quantity', 'purchase_sale.quantity_kg')
+            ->withSum('saleItems as sold_quantity', 'quantity_kg')
             ->withSum('expenses as total_expenses', 'amount')
             ->when($request->search, fn (\Illuminate\Database\Eloquent\Builder $query, mixed $search) => $query->whereHas('supplier', fn (\Illuminate\Database\Eloquent\Builder $q) => $q->where('name', 'like', '%'.(is_string($search) ? $search : '').'%')))
             ->when($request->supplier_id, fn (\Illuminate\Database\Eloquent\Builder $query, mixed $supplierId) => $query->where('supplier_id', is_numeric($supplierId) ? (int) $supplierId : $supplierId));

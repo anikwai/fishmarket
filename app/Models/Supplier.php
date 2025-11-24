@@ -61,10 +61,7 @@ final class Supplier extends Model
     {
         // Get all purchases from this supplier with their sold quantities
         $purchases = $this->purchases()
-            ->select('purchases.*')
-            ->selectRaw('COALESCE(SUM(purchase_sale.quantity_kg), 0) as sold_quantity')
-            ->leftJoin('purchase_sale', 'purchases.id', '=', 'purchase_sale.purchase_id')
-            ->groupBy('purchases.id', 'purchases.supplier_id', 'purchases.purchase_date', 'purchases.quantity_kg', 'purchases.price_per_kg', 'purchases.total_cost', 'purchases.notes', 'purchases.created_at', 'purchases.updated_at')
+            ->withSum('saleItems as sold_quantity', 'quantity_kg')
             ->get();
 
         return $purchases->sum(function (Purchase $purchase): float {
