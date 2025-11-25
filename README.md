@@ -9,7 +9,7 @@ A full-stack business management system for fish market operations with role-bas
 
 ## Features
 
-**Core Operations**
+### Core Operations
 - Supplier & customer management with contact tracking
 - Purchase and sales processing (cash/credit with delivery options)
 - Real-time inventory tracking with stock levels
@@ -17,12 +17,12 @@ A full-stack business management system for fish market operations with role-bas
 - Payment processing with automatic balance calculations
 - PDF receipt/invoice generation with email delivery
 
-**Financial Reporting**
+### Financial Reporting
 - Sales Summary, Profit & Loss, Outstanding Credits
 - Customer, Supplier, Purchase, Stock, and Expense reports
 - Date range filtering with CSV export
 
-**Security & Access**
+### Security & Access
 - Role-based permissions (Admin, Manager, Cashier)
 - Email verification & two-factor authentication (2FA)
 - Google OAuth integration with encrypted token storage
