@@ -73,6 +73,8 @@ test('it updates existing user from Google callback', function (): void {
     $existingUser->refresh();
     expect($existingUser->name)->toBe('New Name');
     expect($existingUser->email)->toBe('new@example.com');
+    expect($existingUser->google_token)->toBe('new-mock-token');
+    expect($existingUser->google_refresh_token)->toBe('new-mock-refresh-token');
     expect(Auth::id())->toBe($existingUser->id);
 });
 
