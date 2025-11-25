@@ -99,6 +99,12 @@ Route::middleware('guest')->group(function (): void {
         ->name('login');
     Route::post('login', [SessionController::class, 'store'])
         ->name('login.store');
+
+    // Google OAuth...
+    Route::get('auth/google/redirect', [App\Http\Controllers\GoogleAuthController::class, 'redirect'])
+        ->name('google.redirect');
+    Route::get('auth/google/callback', [App\Http\Controllers\GoogleAuthController::class, 'callback'])
+        ->name('google.callback');
 });
 
 Route::middleware('auth')->group(function (): void {

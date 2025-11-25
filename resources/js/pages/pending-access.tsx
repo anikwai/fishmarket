@@ -62,9 +62,11 @@ export default function PendingAccess() {
                 </div>
 
                 <div className="flex items-center justify-between">
-                    <Link href={logout()} method="post" as="button">
-                        <Button variant="outline">Sign Out</Button>
-                    </Link>
+                    <Button variant="outline" asChild>
+                        <Link href={logout()} method="post" as="button">
+                            Sign Out
+                        </Link>
+                    </Button>
                     <Button
                         onClick={() => window.location.reload()}
                         variant="default"

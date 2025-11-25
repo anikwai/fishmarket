@@ -18,7 +18,10 @@ use Spatie\Permission\Traits\HasRoles;
  * @property-read string $name
  * @property-read string $email
  * @property-read CarbonInterface|null $email_verified_at
- * @property-read string $password
+ * @property-read string|null $password
+ * @property-read string|null $google_id
+ * @property-read string|null $google_token
+ * @property-read string|null $google_refresh_token
  * @property-read string|null $remember_token
  * @property-read string|null $two_factor_secret
  * @property-read string|null $two_factor_recovery_codes
@@ -39,6 +42,8 @@ final class User extends Authenticatable implements MustVerifyEmail
     protected $hidden = [
         'password',
         'remember_token',
+        'google_token',
+        'google_refresh_token',
         'two_factor_secret',
         'two_factor_recovery_codes',
     ];
@@ -54,6 +59,9 @@ final class User extends Authenticatable implements MustVerifyEmail
             'email' => 'string',
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'google_id' => 'string',
+            'google_token' => 'string',
+            'google_refresh_token' => 'string',
             'remember_token' => 'string',
             'two_factor_secret' => 'string',
             'two_factor_recovery_codes' => 'string',
