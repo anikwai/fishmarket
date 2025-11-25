@@ -17,6 +17,7 @@ use Spatie\Permission\Traits\HasRoles;
  * @property-read int $id
  * @property-read string $name
  * @property-read string $email
+ * @property-read string|null $avatar
  * @property-read CarbonInterface|null $email_verified_at
  * @property-read string|null $password
  * @property-read string|null $google_id
@@ -57,6 +58,7 @@ final class User extends Authenticatable implements MustVerifyEmail
             'id' => 'integer',
             'name' => 'string',
             'email' => 'string',
+            'avatar' => 'string',
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'google_id' => 'string',

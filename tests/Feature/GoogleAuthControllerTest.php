@@ -25,6 +25,7 @@ test('it creates new user from Google callback', function (): void {
     $googleUser->id = '123456789';
     $googleUser->name = 'John Doe';
     $googleUser->email = 'john@example.com';
+    $googleUser->avatar = 'https://example.com/avatar.jpg';
     $googleUser->token = 'mock-token';
     $googleUser->refreshToken = 'mock-refresh-token';
 
@@ -40,6 +41,7 @@ test('it creates new user from Google callback', function (): void {
         'google_id' => '123456789',
         'name' => 'John Doe',
         'email' => 'john@example.com',
+        'avatar' => 'https://example.com/avatar.jpg',
     ]);
 
     expect(Auth::check())->toBeTrue();
@@ -53,12 +55,14 @@ test('it updates existing user from Google callback', function (): void {
         'google_id' => '123456789',
         'name' => 'Old Name',
         'email' => 'old@example.com',
+        'avatar' => 'https://example.com/old-avatar.jpg',
     ]);
 
     $googleUser = new SocialiteUser;
     $googleUser->id = '123456789';
     $googleUser->name = 'New Name';
     $googleUser->email = 'new@example.com';
+    $googleUser->avatar = 'https://example.com/new-avatar.jpg';
     $googleUser->token = 'new-mock-token';
     $googleUser->refreshToken = 'new-mock-refresh-token';
 
@@ -73,6 +77,7 @@ test('it updates existing user from Google callback', function (): void {
     $existingUser->refresh();
     expect($existingUser->name)->toBe('New Name');
     expect($existingUser->email)->toBe('new@example.com');
+    expect($existingUser->avatar)->toBe('https://example.com/new-avatar.jpg');
     expect($existingUser->google_token)->toBe('new-mock-token');
     expect($existingUser->google_refresh_token)->toBe('new-mock-refresh-token');
     expect(Auth::id())->toBe($existingUser->id);
@@ -113,6 +118,7 @@ test('it links Google account to existing user with same email', function (): vo
     $googleUser->id = '111222333';
     $googleUser->name = 'Google User';
     $googleUser->email = 'existing@example.com';
+    $googleUser->avatar = 'https://example.com/google-avatar.jpg';
     $googleUser->token = 'google-token';
     $googleUser->refreshToken = 'google-refresh-token';
 
@@ -132,6 +138,7 @@ test('it links Google account to existing user with same email', function (): vo
     expect($existingUser->google_id)->toBe('111222333');
     expect($existingUser->name)->toBe('Google User');
     expect($existingUser->email)->toBe('existing@example.com');
+    expect($existingUser->avatar)->toBe('https://example.com/google-avatar.jpg');
     expect($existingUser->google_token)->toBe('google-token');
     expect($existingUser->google_refresh_token)->toBe('google-refresh-token');
     expect($existingUser->email_verified_at)->not->toBeNull();
