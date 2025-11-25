@@ -38,18 +38,14 @@ A full-stack business management system for fish market operations with role-bas
 ## Quick Start
 
 ```bash
-# Install dependencies
-composer install && npm install
+# Complete setup (dependencies, env, migrations, build)
+composer setup
 
-# Configure environment
-cp .env.example .env
-php artisan key:generate
-
-# Setup database
-php artisan migrate --seed
+# Seed database with default admin user and roles
+php artisan db:seed
 
 # Start development server
-composer run dev  # Runs server, queue, logs, and Vite concurrently
+composer dev  # Runs server, queue, logs, and Vite concurrently
 ```
 
 Access at `http://localhost:8000`. Default admin credentials are seeded.
@@ -73,14 +69,23 @@ This application uses Laravel's Action pattern for business logic isolation. All
 ## Testing
 
 ```bash
-# Run all tests
-php artisan test
+# Run full test suite (type coverage, unit, lint, types)
+composer test
+
+# Run unit tests only
+composer test:unit
+
+# Run linting checks
+composer test:lint
+
+# Run type checks
+composer test:types
 
 # Run specific test file
-php artisan test tests/Feature/SaleControllerTest.php
+./vendor/bin/pest tests/Feature/SaleControllerTest.php
 
 # Run with filter
-php artisan test --filter=CreateSaleTest
+./vendor/bin/pest --filter=CreateSaleTest
 ```
 
 ## Developer & Maintainer
