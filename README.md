@@ -1,123 +1,94 @@
 # Fish Market Management System
 
-A comprehensive business management application for fish market operations. Manage suppliers, customers, purchases, sales, expenses, payments, and generate detailed reports and receipts.
+[![Laravel](https://img.shields.io/badge/Laravel-12-FF2D20?logo=laravel)](https://laravel.com)
+[![React](https://img.shields.io/badge/React-19-61DAFB?logo=react)](https://react.dev)
+[![PHP](https://img.shields.io/badge/PHP-8.4-777BB4?logo=php)](https://www.php.net)
+[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+
+A full-stack business management system for fish market operations with role-based access control, real-time analytics, and automated invoicing.
 
 ## Features
 
-- Dashboard with sales and purchase analytics
-- Supplier management
-- Customer management with contact information
-- Purchase tracking from suppliers
-- Sales management with cash and credit options
-- Expense tracking and categorization
-- Payment processing for credit sales
-- Receipt generation and email delivery
-- Comprehensive reporting system including:
-  - Sales Summary
-  - Sales by Customer
-  - Profit & Loss
-  - Outstanding Credits
-  - Expense Reports
-  - Purchase Reports
-  - Stock Reports
-  - Customer Reports
-  - Supplier Reports
-- PDF receipt generation
-- CSV export functionality
+**Core Operations**
+- Supplier & customer management with contact tracking
+- Purchase and sales processing (cash/credit with delivery options)
+- Real-time inventory tracking with stock levels
+- Multi-category expense management (shipping, ice, other)
+- Payment processing with automatic balance calculations
+- PDF receipt/invoice generation with email delivery
 
-## Technology Stack
+**Financial Reporting**
+- Sales Summary, Profit & Loss, Outstanding Credits
+- Customer, Supplier, Purchase, Stock, and Expense reports
+- Date range filtering with CSV export
 
-- Backend: Laravel 12
-- Frontend: React 19 with Inertia.js
-- Database: PostgreSQL (configurable)
-- PDF Generation: DomPDF
-- Styling: Tailwind CSS
-- UI Components: Radix UI and shadcn/ui
-- Testing: Pest PHP
+**Security & Access**
+- Role-based permissions (Admin, Manager, Cashier)
+- Email verification & two-factor authentication (2FA)
+- Google OAuth integration with encrypted token storage
+
+## Tech Stack
+
+**Backend:** Laravel 12, PHP 8.4, Spatie Permissions, Fortify, Socialite, DomPDF
+**Frontend:** React 19, TypeScript, Inertia.js v2, Tailwind CSS 4, shadcn/ui, Recharts
+**Database:** SQLite (default), PostgreSQL, MySQL
+**Testing:** Pest PHP v4 with browser testing
+**Build:** Vite 7, ESLint, Prettier
+
+## Quick Start
+
+```bash
+# Install dependencies
+composer install && npm install
+
+# Configure environment
+cp .env.example .env
+php artisan key:generate
+
+# Setup database
+php artisan migrate --seed
+
+# Start development server
+composer run dev  # Runs server, queue, logs, and Vite concurrently
+```
+
+Access at `http://localhost:8000`. Default admin credentials are seeded.
 
 ## Requirements
 
-- PHP 8.4 or higher
-- Composer
-- Node.js and npm
-- PostgreSQL database (or MySQL/SQLite)
-- Web server (Apache/Nginx) or PHP built-in server
+- PHP 8.4+, Composer
+- Node.js 18+, npm
+- SQLite/PostgreSQL/MySQL
 
-## Installation
+## Architecture
 
-1. Clone the repository
-2. Install PHP dependencies:
-   ```
-   composer install
-   ```
-3. Install Node.js dependencies:
-   ```
-   npm install
-   ```
-4. Copy the environment file:
-   ```
-   cp .env.example .env
-   ```
-5. Generate application key:
-   ```
-   php artisan key:generate
-   ```
-6. Configure your database in the `.env` file
-7. Run migrations:
-   ```
-   php artisan migrate
-   ```
-8. Build frontend assets:
-   ```
-   npm run build
-   ```
-9. Start the development server:
-   ```
-   composer run dev
-   ```
+This application uses Laravel's Action pattern for business logic isolation. All core operations (`CreateSale`, `GenerateReceipt`, `ProcessPayment`, etc.) are encapsulated in reusable Action classes with dependency injection.
 
-## Usage
+**Key Directories:**
+- `app/Actions/` - 48 business logic classes
+- `app/Http/Controllers/` - Request handlers (thin controllers)
+- `resources/js/Pages/` - React/Inertia page components
+- `tests/` - Feature, Unit, and Browser tests
 
-After installation, access the application through your web browser. The default route is `/` which redirects to the dashboard for authenticated users.
+## Testing
 
-### Key Functionality
+```bash
+# Run all tests
+php artisan test
 
-- Create and manage suppliers and customers
-- Record purchases from suppliers to track inventory
-- Record sales transactions (cash or credit)
-- Track expenses by category
-- Process payments for credit sales
-- Generate and download receipts as PDF
-- Email receipts directly to customers
-- View comprehensive business reports
-- Export report data as CSV
+# Run specific test file
+php artisan test tests/Feature/SaleControllerTest.php
 
-## Project Structure
+# Run with filter
+php artisan test --filter=CreateSaleTest
+```
 
-- `app/` - Laravel application code
-  - `Actions/` - Business logic actions
-  - `Http/Controllers/` - Request handlers
-  - `Models/` - Eloquent models
-  - `Mail/` - Email templates and classes
-- `resources/` - Frontend resources
-  - `js/` - React components and pages
-  - `views/` - Blade templates (receipts, emails)
-  - `css/` - Stylesheets
-- `database/` - Migrations, seeders, factories
-- `public/` - Public assets including logo
-- `tests/` - Pest test files
+## Developer & Maintainer
 
-## Company Information
-
-TZ HOLDING LIMITED
-20231076
-P O Box 407, Honiara, Solomon Islands
+**Anikwai** - [@anikwai](https://github.com/anikwai)
 
 ## License
 
-MIT License
-
-## Support
-
-For issues or questions, please contact the development team.
+MIT License - TZ HOLDING LIMITED (20231076)
+P O Box 407, Honiara, Solomon Islands
 
