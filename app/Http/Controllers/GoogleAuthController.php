@@ -22,15 +22,31 @@ final readonly class GoogleAuthController
         /** @var \Laravel\Socialite\Two\User $googleUser */
         $googleUser = Socialite::driver('google')->user();
 
-        $user = User::query()->updateOrCreate([
-            'google_id' => $googleUser->id,
-        ], [
-            'name' => $googleUser->name,
-            'email' => $googleUser->email,
-            'google_token' => $googleUser->token,
-            'google_refresh_token' => $googleUser->refreshToken,
-            'email_verified_at' => now(),
-        ]);
+        // Find user by google_id first, then by email to link existing accounts
+        $user = User::query()->where('google_id', $googleUser->id)->first()
+            ?? User::query()->where('email', $googleUser->email)->first();
+
+        if ($user) {
+            // Update existing user with Google data
+            $user->update([
+                'google_id' => $googleUser->id,
+                'name' => $googleUser->name,
+                'email' => $googleUser->email,
+                'google_token' => $googleUser->token,
+                'google_refresh_token' => $googleUser->refreshToken,
+                'email_verified_at' => now(),
+            ]);
+        } else {
+            // Create new user
+            $user = User::query()->create([
+                'google_id' => $googleUser->id,
+                'name' => $googleUser->name,
+                'email' => $googleUser->email,
+                'google_token' => $googleUser->token,
+                'google_refresh_token' => $googleUser->refreshToken,
+                'email_verified_at' => now(),
+            ]);
+        }
 
         Auth::login($user);
 

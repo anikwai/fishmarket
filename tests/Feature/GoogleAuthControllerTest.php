@@ -99,3 +99,39 @@ test('it redirects to dashboard when user has roles', function (): void {
 
     $response->assertRedirectToRoute('dashboard');
 });
+
+test('it links Google account to existing user with same email', function (): void {
+    $existingUser = User::factory()->withoutTwoFactor()->create([
+        'google_id' => null,
+        'name' => 'Existing User',
+        'email' => 'existing@example.com',
+    ]);
+
+    $googleUser = new SocialiteUser;
+    $googleUser->id = '111222333';
+    $googleUser->name = 'Google User';
+    $googleUser->email = 'existing@example.com';
+    $googleUser->token = 'google-token';
+    $googleUser->refreshToken = 'google-refresh-token';
+
+    Socialite::shouldReceive('driver->user')
+        ->once()
+        ->andReturn($googleUser);
+
+    $response = $this->get(route('google.callback'));
+
+    $response->assertRedirectToRoute('pending-access');
+
+    // Should only have one user in database
+    expect(User::query()->count())->toBe(1);
+
+    // Existing user should be updated with Google data
+    $existingUser->refresh();
+    expect($existingUser->google_id)->toBe('111222333');
+    expect($existingUser->name)->toBe('Google User');
+    expect($existingUser->email)->toBe('existing@example.com');
+    expect($existingUser->google_token)->toBe('google-token');
+    expect($existingUser->google_refresh_token)->toBe('google-refresh-token');
+    expect($existingUser->email_verified_at)->not->toBeNull();
+    expect(Auth::id())->toBe($existingUser->id);
+});
