@@ -890,7 +890,7 @@ export default function SuppliersIndex({
 
                 {/* Create Modal */}
                 <Dialog open={createOpen} onOpenChange={setCreateOpen}>
-                    <DialogContent className="flex max-h-[90vh] w-full flex-col gap-0 sm:max-w-[500px]">
+                    <DialogContent className="flex max-h-[90vh] w-full flex-col gap-0 sm:max-w-2xl">
                         <DialogHeader className="flex-shrink-0 pb-4">
                             <DialogTitle>Create Supplier</DialogTitle>
                             <DialogDescription>
@@ -1053,7 +1053,7 @@ export default function SuppliersIndex({
 
                 {/* Edit Modal */}
                 <Dialog open={editOpen} onOpenChange={setEditOpen}>
-                    <DialogContent className="flex max-h-[90vh] w-full flex-col gap-0 sm:max-w-[500px]">
+                    <DialogContent className="flex max-h-[90vh] w-full flex-col gap-0 sm:max-w-2xl">
                         <DialogHeader className="flex-shrink-0 pb-4">
                             <DialogTitle>Edit Supplier</DialogTitle>
                             <DialogDescription>
@@ -1213,7 +1213,7 @@ export default function SuppliersIndex({
 
                 {/* Show Modal */}
                 <Dialog open={showOpen} onOpenChange={setShowOpen}>
-                    <DialogContent className="w-full sm:max-w-[500px]">
+                    <DialogContent className="w-full sm:max-w-2xl">
                         <DialogHeader>
                             <DialogTitle>Supplier Details</DialogTitle>
                             <DialogDescription>
@@ -1222,68 +1222,104 @@ export default function SuppliersIndex({
                             </DialogDescription>
                         </DialogHeader>
                         {selectedSupplier && (
-                            <ItemGroup>
-                                <Item>
-                                    <ItemMedia variant="icon">
-                                        <UserCircle className="h-5 w-5" />
+                            <div className="grid gap-4 sm:grid-cols-2">
+                                <Item
+                                    size="sm"
+                                    className="col-span-1 rounded-lg bg-muted/40"
+                                >
+                                    <ItemMedia
+                                        variant="icon"
+                                        className="bg-background text-muted-foreground"
+                                    >
+                                        <UserCircle className="h-4 w-4" />
                                     </ItemMedia>
                                     <ItemContent>
-                                        <ItemTitle>Supplier Name</ItemTitle>
-                                        <ItemDescription>
+                                        <ItemTitle className="text-xs text-muted-foreground">
+                                            Supplier Name
+                                        </ItemTitle>
+                                        <ItemDescription className="text-base font-semibold text-foreground">
                                             {selectedSupplier.name}
                                         </ItemDescription>
                                     </ItemContent>
                                 </Item>
-                                <Item>
-                                    <ItemMedia variant="icon">
-                                        <Mail className="h-5 w-5" />
-                                    </ItemMedia>
-                                    <ItemContent>
-                                        <ItemTitle>Email Address</ItemTitle>
-                                        <ItemDescription>
-                                            {selectedSupplier.email || (
-                                                <span className="text-muted-foreground">
-                                                    Not provided
-                                                </span>
-                                            )}
-                                        </ItemDescription>
-                                    </ItemContent>
-                                </Item>
-                                <Item>
-                                    <ItemMedia variant="icon">
-                                        <Phone className="h-5 w-5" />
-                                    </ItemMedia>
-                                    <ItemContent>
-                                        <ItemTitle>Phone Number</ItemTitle>
-                                        <ItemDescription>
-                                            {selectedSupplier.phone || (
-                                                <span className="text-muted-foreground">
-                                                    Not provided
-                                                </span>
-                                            )}
-                                        </ItemDescription>
-                                    </ItemContent>
-                                </Item>
-                                {selectedSupplier.address && (
-                                    <Item>
-                                        <ItemMedia variant="icon">
-                                            <MapPin className="h-5 w-5" />
+                                {selectedSupplier.email && (
+                                    <Item
+                                        size="sm"
+                                        className="col-span-1 rounded-lg bg-muted/40"
+                                    >
+                                        <ItemMedia
+                                            variant="icon"
+                                            className="bg-background text-muted-foreground"
+                                        >
+                                            <Mail className="h-4 w-4" />
                                         </ItemMedia>
                                         <ItemContent>
-                                            <ItemTitle>Address</ItemTitle>
-                                            <ItemDescription>
+                                            <ItemTitle className="text-xs text-muted-foreground">
+                                                Email Address
+                                            </ItemTitle>
+                                            <ItemDescription className="text-base font-semibold text-foreground">
+                                                {selectedSupplier.email}
+                                            </ItemDescription>
+                                        </ItemContent>
+                                    </Item>
+                                )}
+                                {selectedSupplier.phone && (
+                                    <Item
+                                        size="sm"
+                                        className="col-span-1 rounded-lg bg-muted/40"
+                                    >
+                                        <ItemMedia
+                                            variant="icon"
+                                            className="bg-background text-muted-foreground"
+                                        >
+                                            <Phone className="h-4 w-4" />
+                                        </ItemMedia>
+                                        <ItemContent>
+                                            <ItemTitle className="text-xs text-muted-foreground">
+                                                Phone Number
+                                            </ItemTitle>
+                                            <ItemDescription className="text-base font-semibold text-foreground">
+                                                {selectedSupplier.phone}
+                                            </ItemDescription>
+                                        </ItemContent>
+                                    </Item>
+                                )}
+                                {selectedSupplier.address && (
+                                    <Item
+                                        size="sm"
+                                        className="col-span-1 rounded-lg bg-muted/40"
+                                    >
+                                        <ItemMedia
+                                            variant="icon"
+                                            className="bg-background text-muted-foreground"
+                                        >
+                                            <MapPin className="h-4 w-4" />
+                                        </ItemMedia>
+                                        <ItemContent>
+                                            <ItemTitle className="text-xs text-muted-foreground">
+                                                Address
+                                            </ItemTitle>
+                                            <ItemDescription className="text-base font-semibold text-foreground">
                                                 {selectedSupplier.address}
                                             </ItemDescription>
                                         </ItemContent>
                                     </Item>
                                 )}
-                                <Item>
-                                    <ItemMedia variant="icon">
-                                        <Package className="h-5 w-5" />
+                                <Item
+                                    size="sm"
+                                    className="col-span-1 rounded-lg bg-muted/40"
+                                >
+                                    <ItemMedia
+                                        variant="icon"
+                                        className="bg-background text-muted-foreground"
+                                    >
+                                        <Package className="h-4 w-4" />
                                     </ItemMedia>
                                     <ItemContent>
-                                        <ItemTitle>Total Purchases</ItemTitle>
-                                        <ItemDescription>
+                                        <ItemTitle className="text-xs text-muted-foreground">
+                                            Total Purchases
+                                        </ItemTitle>
+                                        <ItemDescription className="text-base font-semibold text-foreground">
                                             {selectedSupplier.purchases_sum_quantity_kg
                                                 ? Number(
                                                       selectedSupplier.purchases_sum_quantity_kg,
@@ -1293,22 +1329,28 @@ export default function SuppliersIndex({
                                         </ItemDescription>
                                     </ItemContent>
                                 </Item>
-                                <Item>
-                                    <ItemMedia variant="icon">
-                                        <Package className="h-5 w-5" />
+                                <Item
+                                    size="sm"
+                                    className="col-span-1 rounded-lg bg-muted/40"
+                                >
+                                    <ItemMedia
+                                        variant="icon"
+                                        className="bg-background text-muted-foreground"
+                                    >
+                                        <Package className="h-4 w-4" />
                                     </ItemMedia>
                                     <ItemContent>
-                                        <ItemTitle>Remaining Stock</ItemTitle>
-                                        <ItemDescription>
-                                            <span className="font-semibold">
-                                                {selectedSupplier.remaining_stock !==
-                                                undefined
-                                                    ? Number(
-                                                          selectedSupplier.remaining_stock,
-                                                      ).toFixed(2)
-                                                    : '0.00'}{' '}
-                                                kg
-                                            </span>
+                                        <ItemTitle className="text-xs text-muted-foreground">
+                                            Remaining Stock
+                                        </ItemTitle>
+                                        <ItemDescription className="text-base font-semibold text-foreground">
+                                            {selectedSupplier.remaining_stock !==
+                                            undefined
+                                                ? Number(
+                                                      selectedSupplier.remaining_stock,
+                                                  ).toFixed(2)
+                                                : '0.00'}{' '}
+                                            kg
                                             {selectedSupplier.purchases_sum_quantity_kg &&
                                                 selectedSupplier.remaining_stock !==
                                                     undefined &&
@@ -1333,25 +1375,41 @@ export default function SuppliersIndex({
                                     </ItemContent>
                                 </Item>
                                 {selectedSupplier.notes && (
-                                    <Item>
-                                        <ItemMedia variant="icon">
-                                            <FileText className="h-5 w-5" />
+                                    <Item
+                                        size="sm"
+                                        className="col-span-2 rounded-lg bg-muted/40"
+                                    >
+                                        <ItemMedia
+                                            variant="icon"
+                                            className="bg-background text-muted-foreground"
+                                        >
+                                            <FileText className="h-4 w-4" />
                                         </ItemMedia>
                                         <ItemContent>
-                                            <ItemTitle>Notes</ItemTitle>
-                                            <ItemDescription>
+                                            <ItemTitle className="text-xs text-muted-foreground">
+                                                Notes
+                                            </ItemTitle>
+                                            <ItemDescription className="text-base font-semibold text-foreground">
                                                 {selectedSupplier.notes}
                                             </ItemDescription>
                                         </ItemContent>
                                     </Item>
                                 )}
-                                <Item>
-                                    <ItemMedia variant="icon">
-                                        <Calendar className="h-5 w-5" />
+                                <Item
+                                    size="sm"
+                                    className="col-span-2 rounded-lg bg-muted/40"
+                                >
+                                    <ItemMedia
+                                        variant="icon"
+                                        className="bg-background text-muted-foreground"
+                                    >
+                                        <Calendar className="h-4 w-4" />
                                     </ItemMedia>
                                     <ItemContent>
-                                        <ItemTitle>Created At</ItemTitle>
-                                        <ItemDescription>
+                                        <ItemTitle className="text-xs text-muted-foreground">
+                                            Created At
+                                        </ItemTitle>
+                                        <ItemDescription className="text-base font-semibold text-foreground">
                                             {new Date(
                                                 selectedSupplier.created_at,
                                             ).toLocaleDateString('en-US', {
@@ -1364,7 +1422,7 @@ export default function SuppliersIndex({
                                         </ItemDescription>
                                     </ItemContent>
                                 </Item>
-                            </ItemGroup>
+                            </div>
                         )}
                         <DialogFooter>
                             <Button
