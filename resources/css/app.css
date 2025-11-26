@@ -65,6 +65,7 @@
         0px 8px 10px -3px hsl(0 0% 0% / 0.1);
     --shadow-2xl: 0px 4px 8px -2px hsl(0 0% 0% / 0.25);
     --tracking-normal: 0em;
+    /* Base spacing unit (0.25rem = 4px) used in component layout calculations */
     --spacing: 0.25rem;
 }
 
@@ -125,6 +126,9 @@
         0px 4px 8px -2px hsl(0 0% 0% / 0.1),
         0px 8px 10px -3px hsl(0 0% 0% / 0.1);
     --shadow-2xl: 0px 4px 8px -2px hsl(0 0% 0% / 0.25);
+    --tracking-normal: 0em;
+    /* Base spacing unit (0.25rem = 4px) used in component layout calculations */
+    --spacing: 0.25rem;
 }
 
 @theme inline {
