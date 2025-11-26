@@ -27,7 +27,6 @@ import {
     AlertCircle,
     ArrowRight,
     ArrowUpRight,
-    Download,
     Package,
     ShoppingCart,
     Wallet,
@@ -173,21 +172,13 @@ export default function Dashboard({
             <Head title="Dashboard" />
             <div className="flex h-full flex-1 flex-col gap-6 p-4 md:p-6 lg:p-8">
                 {/* Compact Header Section */}
-                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                    <div>
-                        <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
-                            Dashboard
-                        </h1>
-                        <p className="mt-1 text-sm text-muted-foreground">
-                            Overview of your fish shop business
-                        </p>
-                    </div>
-                    <div className="flex flex-wrap gap-2">
-                        <Button variant="outline" size="sm" className="h-9">
-                            <Download className="mr-2 h-4 w-4" />
-                            Export
-                        </Button>
-                    </div>
+                <div>
+                    <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
+                        Dashboard
+                    </h1>
+                    <p className="mt-1 text-sm text-muted-foreground">
+                        Overview of your fish shop business
+                    </p>
                 </div>
 
                 {/* Alert Section */}
