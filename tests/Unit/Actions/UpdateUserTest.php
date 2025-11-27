@@ -96,7 +96,25 @@ it('removes all roles when role is empty string', function (): void {
     expect($user->refresh()->roles()->count())->toBe(0);
 });
 
-it('does not change roles when role is null', function (): void {
+it('removes all roles when role is null', function (): void {
+    $user = User::factory()->create();
+    $user->assignRole('admin');
+    $user->assignRole('manager');
+
+    expect($user->roles()->count())->toBe(2);
+
+    $action = app(UpdateUser::class);
+
+    // null happens due to ConvertEmptyStringsToNull middleware
+    $action->handle($user, [
+        'name' => 'Updated Name',
+        'role' => null,
+    ]);
+
+    expect($user->refresh()->roles()->count())->toBe(0);
+});
+
+it('does not change roles when role key is not provided', function (): void {
     $user = User::factory()->create();
     $user->assignRole('admin');
 
@@ -106,7 +124,7 @@ it('does not change roles when role is null', function (): void {
 
     $action->handle($user, [
         'name' => 'Updated Name',
-        // role is not provided (null)
+        // role key is not in attributes - partial update, keep existing roles
     ]);
 
     expect($user->refresh()->hasRole('admin'))->toBeTrue()
