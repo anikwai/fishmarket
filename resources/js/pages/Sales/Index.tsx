@@ -161,6 +161,13 @@ interface Sale {
     items: SaleItem[];
 }
 
+interface PurchaseForFilter {
+    purchase_date: string;
+    supplier_name: string;
+    description: string | null;
+    quantity_kg: number;
+}
+
 interface SalesProps {
     sales: {
         data: Sale[];
@@ -178,10 +185,20 @@ interface SalesProps {
     };
     customers: Customer[];
     availablePurchases: Purchase[];
+    allPurchasesForFilter: PurchaseForFilter[];
     filters: {
         customer_id?: string;
         is_credit?: boolean;
         search?: string;
+        purchase_date?: string;
+    };
+    totals: {
+        total_sales: number;
+        total_count: number;
+        credit_total: number;
+        credit_count: number;
+        paid_total: number;
+        paid_count: number;
     };
     currentStock: number;
 }
@@ -190,7 +207,9 @@ export default function SalesIndex({
     sales,
     customers,
     availablePurchases,
+    allPurchasesForFilter,
     filters,
+    totals,
     currentStock = 0,
 }: SalesProps) {
     const [createOpen, setCreateOpen] = useState(false);
@@ -216,6 +235,9 @@ export default function SalesIndex({
               ? 'true'
               : 'false',
     );
+    const [purchaseDateFilter, setPurchaseDateFilter] = useState(
+        filters.purchase_date || '',
+    );
     const [itemsError, setItemsError] = useState<string | null>(null);
 
     // Debounce search
@@ -240,19 +262,26 @@ export default function SalesIndex({
                             creditFilter === 'all'
                                 ? undefined
                                 : creditFilter === 'true',
+                        purchase_date: purchaseDateFilter || undefined,
                     },
                     {
                         preserveState: true,
                         preserveScroll: true,
                         replace: true,
-                        only: ['sales', 'filters'],
+                        only: ['sales', 'filters', 'totals'],
                     },
                 );
             }
         }, 300);
 
         return () => clearTimeout(timer);
-    }, [searchValue, customerFilter, creditFilter, filters.search]);
+    }, [
+        searchValue,
+        customerFilter,
+        creditFilter,
+        purchaseDateFilter,
+        filters.search,
+    ]);
 
     const addItem = () => {
         setItemsError(null);
@@ -483,6 +512,29 @@ export default function SalesIndex({
 
     const handleSearch = (value: string) => {
         setSearchValue(value);
+    };
+
+    const handlePurchaseDateFilter = (value: string) => {
+        setPurchaseDateFilter(value);
+        router.get(
+            '/sales',
+            {
+                search: searchValue || undefined,
+                customer_id:
+                    customerFilter === 'all' ? undefined : customerFilter,
+                is_credit:
+                    creditFilter === 'all'
+                        ? undefined
+                        : creditFilter === 'true',
+                purchase_date: value || undefined,
+            },
+            {
+                preserveState: true,
+                preserveScroll: true,
+                replace: true,
+                only: ['sales', 'filters', 'totals'],
+            },
+        );
     };
 
     const handlePageChange = (url: string | null) => {
@@ -788,6 +840,55 @@ export default function SalesIndex({
                     </Card>
                 )}
 
+                {/* Transaction Totals Summary */}
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+                    <Card>
+                        <CardHeader className="pb-2">
+                            <CardTitle className="text-sm font-medium text-muted-foreground">
+                                Total Sales
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <p className="text-2xl font-bold">
+                                SBD {totals.total_sales.toFixed(2)}
+                            </p>
+                            <p className="text-sm text-muted-foreground">
+                                {totals.total_count} transactions
+                            </p>
+                        </CardContent>
+                    </Card>
+                    <Card>
+                        <CardHeader className="pb-2">
+                            <CardTitle className="text-sm font-medium text-destructive">
+                                Credit Sales
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <p className="text-2xl font-bold text-destructive">
+                                SBD {totals.credit_total.toFixed(2)}
+                            </p>
+                            <p className="text-sm text-muted-foreground">
+                                {totals.credit_count} transactions
+                            </p>
+                        </CardContent>
+                    </Card>
+                    <Card>
+                        <CardHeader className="pb-2">
+                            <CardTitle className="text-sm font-medium text-green-600">
+                                Paid Sales
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <p className="text-2xl font-bold text-green-600">
+                                SBD {totals.paid_total.toFixed(2)}
+                            </p>
+                            <p className="text-sm text-muted-foreground">
+                                {totals.paid_count} transactions
+                            </p>
+                        </CardContent>
+                    </Card>
+                </div>
+
                 {/* Filters and Table Controls */}
                 <div className="flex items-center justify-between gap-4">
                     <div className="flex flex-1 items-center gap-4">
@@ -838,6 +939,38 @@ export default function SalesIndex({
                                 <SelectItem value="false">
                                     Paid Sales
                                 </SelectItem>
+                            </SelectContent>
+                        </Select>
+                        <Select
+                            value={purchaseDateFilter || 'all'}
+                            onValueChange={(value) =>
+                                handlePurchaseDateFilter(
+                                    value === 'all' ? '' : value,
+                                )
+                            }
+                        >
+                            <SelectTrigger className="w-[280px]">
+                                <SelectValue placeholder="All Purchase Dates" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="all">
+                                    All Purchase Dates
+                                </SelectItem>
+                                {allPurchasesForFilter &&
+                                allPurchasesForFilter.length > 0
+                                    ? allPurchasesForFilter.map(
+                                          (purchase, index) => (
+                                              <SelectItem
+                                                  key={index}
+                                                  value={purchase.purchase_date}
+                                              >
+                                                  {purchase.purchase_date} -{' '}
+                                                  {purchase.supplier_name} (
+                                                  {purchase.quantity_kg}kg)
+                                              </SelectItem>
+                                          ),
+                                      )
+                                    : null}
                             </SelectContent>
                         </Select>
                     </div>

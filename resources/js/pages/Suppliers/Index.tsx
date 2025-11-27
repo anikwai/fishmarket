@@ -129,6 +129,13 @@ interface SuppliersProps {
     };
 }
 
+/**
+ * Renders the Suppliers index page with table, filters, pagination, and create/edit/view/delete modals.
+ *
+ * @param suppliers - Paginated suppliers data used to populate the table, rows, and pagination controls.
+ * @param filters - Optional initial filter values; `search` initializes the search input.
+ * @returns The suppliers management UI as a JSX element.
+ */
 export default function SuppliersIndex({
     suppliers,
     filters = {},
