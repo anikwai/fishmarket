@@ -11,6 +11,15 @@ import {
     DialogTitle,
 } from '@/components/ui/dialog';
 import {
+    Drawer,
+    DrawerClose,
+    DrawerContent,
+    DrawerDescription,
+    DrawerFooter,
+    DrawerHeader,
+    DrawerTitle,
+} from '@/components/ui/drawer';
+import {
     Empty,
     EmptyDescription,
     EmptyHeader,
@@ -307,6 +316,7 @@ export default function UsersIndex({ users, roles, filters }: UsersProps) {
     const [editOpen, setEditOpen] = useState(false);
     const [deleteOpen, setDeleteOpen] = useState(false);
     const [permissionsOpen, setPermissionsOpen] = useState(false);
+    const [userDetailOpen, setUserDetailOpen] = useState(false);
     const [selectedUser, setSelectedUser] = useState<User | null>(null);
     const [selectedRole, setSelectedRole] = useState<Role | null>(null);
     const [sorting, setSorting] = useState<SortingState>([]);
@@ -440,7 +450,15 @@ export default function UsersIndex({ users, roles, filters }: UsersProps) {
                                 />
                                 <AvatarFallback>{initials}</AvatarFallback>
                             </Avatar>
-                            <div className="font-medium">{user.name}</div>
+                            <button
+                                onClick={() => {
+                                    setSelectedUser(user);
+                                    setUserDetailOpen(true);
+                                }}
+                                className="font-medium text-primary hover:underline focus:underline focus:outline-none"
+                            >
+                                {user.name}
+                            </button>
                         </div>
                     );
                 },
@@ -554,6 +572,7 @@ export default function UsersIndex({ users, roles, filters }: UsersProps) {
             },
             {
                 id: 'actions',
+                header: () => <div className="text-right">Actions</div>,
                 enableHiding: false,
                 cell: ({ row }) => {
                     const user = row.original;
@@ -562,7 +581,19 @@ export default function UsersIndex({ users, roles, filters }: UsersProps) {
                             <Button
                                 variant="ghost"
                                 size="icon"
+                                onClick={() => {
+                                    setSelectedUser(user);
+                                    setUserDetailOpen(true);
+                                }}
+                                title="View details"
+                            >
+                                <Eye className="h-4 w-4" />
+                            </Button>
+                            <Button
+                                variant="ghost"
+                                size="icon"
                                 onClick={() => handleEdit(user)}
+                                title="Edit user"
                             >
                                 <PencilIcon className="h-4 w-4" />
                             </Button>
@@ -573,6 +604,7 @@ export default function UsersIndex({ users, roles, filters }: UsersProps) {
                                     setSelectedUser(user);
                                     setDeleteOpen(true);
                                 }}
+                                title="Delete user"
                             >
                                 <TrashIcon className="h-4 w-4" />
                             </Button>
@@ -1117,6 +1149,173 @@ export default function UsersIndex({ users, roles, filters }: UsersProps) {
                             </DialogFooter>
                         </DialogContent>
                     </Dialog>
+                )}
+
+                {/* User Detail Drawer */}
+                {selectedUser && (
+                    <Drawer
+                        open={userDetailOpen}
+                        onOpenChange={setUserDetailOpen}
+                        direction="right"
+                    >
+                        <DrawerContent>
+                            <DrawerHeader className="border-b">
+                                <DrawerTitle>User Details</DrawerTitle>
+                                <DrawerDescription>
+                                    View user information, role, and associated
+                                    permissions
+                                </DrawerDescription>
+                            </DrawerHeader>
+
+                            <div className="flex-1 overflow-y-auto p-6">
+                                <div className="space-y-6">
+                                    {/* User Information */}
+                                    <div className="flex items-center gap-4">
+                                        <Avatar className="h-20 w-20">
+                                            <AvatarImage
+                                                src={
+                                                    selectedUser.avatar ||
+                                                    undefined
+                                                }
+                                                alt={selectedUser.name}
+                                            />
+                                            <AvatarFallback className="text-lg">
+                                                {selectedUser.name
+                                                    .split(' ')
+                                                    .map((n) => n[0])
+                                                    .join('')
+                                                    .toUpperCase()
+                                                    .slice(0, 2)}
+                                            </AvatarFallback>
+                                        </Avatar>
+                                        <div className="flex-1">
+                                            <h3 className="text-lg font-semibold">
+                                                {selectedUser.name}
+                                            </h3>
+                                            <p className="text-sm text-muted-foreground">
+                                                {selectedUser.email}
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    {/* Account Status */}
+                                    <div className="space-y-3 rounded-lg border p-4">
+                                        <h4 className="font-medium">
+                                            Account Status
+                                        </h4>
+                                        <div className="grid gap-2 text-sm">
+                                            <div className="flex items-center justify-between">
+                                                <span className="text-muted-foreground">
+                                                    Email Verified
+                                                </span>
+                                                <span>
+                                                    {selectedUser.email_verified_at ? (
+                                                        <span className="flex items-center gap-1 text-green-600">
+                                                            <CheckCircle2 className="h-4 w-4" />
+                                                            Yes
+                                                        </span>
+                                                    ) : (
+                                                        <span className="text-destructive">
+                                                            No
+                                                        </span>
+                                                    )}
+                                                </span>
+                                            </div>
+                                            <div className="flex items-center justify-between">
+                                                <span className="text-muted-foreground">
+                                                    Created
+                                                </span>
+                                                <span>
+                                                    {new Date(
+                                                        selectedUser.created_at,
+                                                    ).toLocaleDateString(
+                                                        'en-US',
+                                                        {
+                                                            year: 'numeric',
+                                                            month: 'long',
+                                                            day: 'numeric',
+                                                        },
+                                                    )}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Role Information */}
+                                    <div className="space-y-3 rounded-lg border p-4">
+                                        <h4 className="font-medium">Role</h4>
+                                        {selectedUser.roles.length > 0 ? (
+                                            <div>
+                                                <span className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1.5 text-sm font-medium text-primary">
+                                                    <Shield className="h-4 w-4" />
+                                                    {selectedUser.roles[0].name
+                                                        .charAt(0)
+                                                        .toUpperCase() +
+                                                        selectedUser.roles[0].name.slice(
+                                                            1,
+                                                        )}
+                                                </span>
+                                            </div>
+                                        ) : (
+                                            <p className="text-sm text-muted-foreground">
+                                                No role assigned
+                                            </p>
+                                        )}
+                                    </div>
+
+                                    {/* Permissions */}
+                                    <div className="space-y-3 rounded-lg border p-4">
+                                        <h4 className="font-medium">
+                                            Permissions
+                                        </h4>
+                                        {selectedUser.roles.length > 0 &&
+                                        selectedUser.roles[0].permissions &&
+                                        selectedUser.roles[0].permissions
+                                            .length > 0 ? (
+                                            <div className="space-y-2">
+                                                {selectedUser.roles[0].permissions.map(
+                                                    (permission) => (
+                                                        <div
+                                                            key={permission.id}
+                                                            className="flex items-center gap-2 rounded-md bg-muted/50 p-2.5"
+                                                        >
+                                                            <CheckCircle2 className="h-4 w-4 shrink-0 text-green-600" />
+                                                            <span className="text-sm">
+                                                                {
+                                                                    permission.name
+                                                                }
+                                                            </span>
+                                                        </div>
+                                                    ),
+                                                )}
+                                            </div>
+                                        ) : (
+                                            <div className="py-4 text-center text-muted-foreground">
+                                                <Shield className="mx-auto mb-2 h-8 w-8 opacity-50" />
+                                                <p className="text-sm">
+                                                    No permissions assigned
+                                                </p>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <DrawerFooter className="border-t">
+                                <DrawerClose asChild>
+                                    <Button
+                                        variant="outline"
+                                        onClick={() => {
+                                            setUserDetailOpen(false);
+                                            setSelectedUser(null);
+                                        }}
+                                    >
+                                        Close
+                                    </Button>
+                                </DrawerClose>
+                            </DrawerFooter>
+                        </DrawerContent>
+                    </Drawer>
                 )}
 
                 {/* Delete Confirmation Modal */}
