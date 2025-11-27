@@ -1,5 +1,6 @@
 import UserController from '@/actions/App/Http/Controllers/UserController';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import {
     Dialog,
@@ -275,6 +276,7 @@ interface User {
     id: number;
     name: string;
     email: string;
+    avatar: string | null;
     email_verified_at: string | null;
     created_at: string;
     roles: Role[];
@@ -424,8 +426,25 @@ export default function UsersIndex({ users, roles, filters }: UsersProps) {
                     );
                 },
                 cell: ({ row }) => {
+                    const user = row.original;
+                    const initials = user.name
+                        .split(' ')
+                        .map((n) => n[0])
+                        .join('')
+                        .toUpperCase()
+                        .slice(0, 2);
+
                     return (
-                        <div className="font-medium">{row.original.name}</div>
+                        <div className="flex items-center gap-3">
+                            <Avatar>
+                                <AvatarImage
+                                    src={user.avatar || undefined}
+                                    alt={user.name}
+                                />
+                                <AvatarFallback>{initials}</AvatarFallback>
+                            </Avatar>
+                            <div className="font-medium">{user.name}</div>
+                        </div>
                     );
                 },
             },

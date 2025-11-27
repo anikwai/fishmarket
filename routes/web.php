@@ -52,8 +52,10 @@ Route::middleware(['auth', 'verified'])->group(function (): void {
 Route::middleware('auth')->group(function (): void {
     // Pending Access Page (for users without roles)
     Route::get('pending-access', function () {
-        if (auth()->user()->roles()->exists()) {
-            return redirect()->route('dashboard');
+        $user = auth()->user();
+
+        if ($user && $user->roles()->exists()) {
+            return to_route('dashboard');
         }
 
         return Inertia::render('pending-access');
