@@ -79,7 +79,6 @@ import {
 } from 'lucide-react';
 import * as React from 'react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { toast } from 'sonner';
 
 // RoleSelect component that works with native form submission
 function RoleSelect({
@@ -106,7 +105,10 @@ function RoleSelect({
             <div className="pointer-events-none absolute top-1/2 left-3 z-10 -translate-y-1/2">
                 <Shield className="h-4 w-4 text-muted-foreground" />
             </div>
-            <Select value={value} onValueChange={setValue}>
+            <Select
+                value={value || 'none'}
+                onValueChange={(val) => setValue(val === 'none' ? '' : val)}
+            >
                 <SelectTrigger
                     id={id}
                     className="mt-1 pl-9"
@@ -115,6 +117,7 @@ function RoleSelect({
                     <SelectValue placeholder="Select a role" />
                 </SelectTrigger>
                 <SelectContent>
+                    <SelectItem value="none">No role</SelectItem>
                     {roles.map((role) => (
                         <SelectItem key={role.id} value={role.name}>
                             {role.name.charAt(0).toUpperCase() +
@@ -385,14 +388,8 @@ export default function UsersIndex({ users, roles, filters }: UsersProps) {
         router.delete(UserController.destroy(selectedUser.id), {
             preserveScroll: true,
             onSuccess: () => {
-                toast.success(
-                    `User "${selectedUser.name}" deleted successfully!`,
-                );
                 setDeleteOpen(false);
                 setSelectedUser(null);
-            },
-            onError: () => {
-                toast.error('Failed to delete user. Please try again.');
             },
         });
     }, [selectedUser]);
@@ -786,14 +783,8 @@ export default function UsersIndex({ users, roles, filters }: UsersProps) {
                                 preserveScroll: true,
                             }}
                             onSuccess={() => {
-                                toast.success('User created successfully!');
                                 setCreateOpen(false);
                                 setPasswordValue('');
-                            }}
-                            onError={() => {
-                                toast.error(
-                                    'Failed to create user. Please check the form for errors.',
-                                );
                             }}
                             resetOnSuccess
                         >
@@ -953,16 +944,8 @@ export default function UsersIndex({ users, roles, filters }: UsersProps) {
                                     preserveScroll: true,
                                 }}
                                 onSuccess={() => {
-                                    toast.success(
-                                        `User "${selectedUser.name}" updated successfully!`,
-                                    );
                                     setEditOpen(false);
                                     setSelectedUser(null);
-                                }}
-                                onError={() => {
-                                    toast.error(
-                                        'Failed to update user. Please check the form for errors.',
-                                    );
                                 }}
                                 resetOnSuccess
                             >
