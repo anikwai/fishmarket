@@ -45,7 +45,7 @@ export default function PendingAccess() {
         <>
             <Head title="Access Pending" />
 
-            <div className="flex min-h-[100dvh] flex-col items-center justify-center bg-muted/40 p-4 py-12 sm:px-6 lg:px-8">
+            <div className="flex min-h-dvh flex-col items-center justify-center bg-muted/40 p-4 py-12 sm:px-6 lg:px-8">
                 <motion.div
                     initial="hidden"
                     animate="visible"
