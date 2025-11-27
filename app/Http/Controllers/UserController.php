@@ -133,7 +133,7 @@ final readonly class UserController
         return to_route('users.index')->with('success', 'User updated successfully.');
     }
 
-    public function destroy(DeleteUserRequest $request, User $user, DeleteUser $action): RedirectResponse
+    public function destroy(User $user, DeleteUser $action): RedirectResponse
     {
         Gate::authorize('delete users');
 
