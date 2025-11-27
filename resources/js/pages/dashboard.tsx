@@ -531,7 +531,9 @@ export default function Dashboard({
                                         variant="ghost"
                                         size="icon"
                                         onClick={() =>
-                                            router.visit('/sales?filter=unpaid')
+                                            router.visit(
+                                                '/sales?is_credit=true',
+                                            )
                                         }
                                         className="h-8 w-8"
                                     >
