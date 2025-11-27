@@ -1,6 +1,7 @@
 import UserController from '@/actions/App/Http/Controllers/UserController';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
     Dialog,
@@ -19,6 +20,14 @@ import {
     DrawerHeader,
     DrawerTitle,
 } from '@/components/ui/drawer';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import {
     Empty,
     EmptyDescription,
@@ -78,16 +87,43 @@ import {
     LoaderCircle,
     Lock,
     Mail,
+    MoreHorizontal,
     PencilIcon,
     PlusIcon,
     Search,
     Shield,
-    TrashIcon,
+    Trash2,
     User,
     Users,
 } from 'lucide-react';
 import * as React from 'react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+
+// Role badge variant helper - maps role names to badge styles
+// Supports: Admin, Manager, Cashier, and No Role
+function getRoleBadgeVariant(
+    roleName: string,
+): 'default' | 'secondary' | 'destructive' | 'outline' {
+    const normalizedRole = roleName.toLowerCase();
+
+    // Admin - destructive (red) for highest privilege
+    if (normalizedRole === 'admin') {
+        return 'destructive';
+    }
+
+    // Manager - default (primary/pink) for management privilege
+    if (normalizedRole === 'manager') {
+        return 'default';
+    }
+
+    // Cashier - outline (border) for operational role
+    if (normalizedRole === 'cashier') {
+        return 'outline';
+    }
+
+    // Default fallback for any other roles - outline
+    return 'outline';
+}
 
 // RoleSelect component that works with native form submission
 function RoleSelect({
@@ -495,9 +531,12 @@ export default function UsersIndex({ users, roles, filters }: UsersProps) {
                         <div className="flex items-center gap-2">
                             {role ? (
                                 <>
-                                    <span className="inline-flex items-center rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-medium text-primary">
+                                    <Badge
+                                        variant={getRoleBadgeVariant(role.name)}
+                                        className="capitalize"
+                                    >
                                         {role.name}
-                                    </span>
+                                    </Badge>
                                     {fullRole?.permissions &&
                                         fullRole.permissions.length > 0 && (
                                             <Button
@@ -515,9 +554,12 @@ export default function UsersIndex({ users, roles, filters }: UsersProps) {
                                         )}
                                 </>
                             ) : (
-                                <span className="text-muted-foreground">
+                                <Badge
+                                    variant="secondary"
+                                    className="text-muted-foreground"
+                                >
                                     No role
-                                </span>
+                                </Badge>
                             )}
                         </div>
                     );
@@ -572,42 +614,55 @@ export default function UsersIndex({ users, roles, filters }: UsersProps) {
             },
             {
                 id: 'actions',
-                header: () => <div className="text-right">Actions</div>,
                 enableHiding: false,
                 cell: ({ row }) => {
                     const user = row.original;
                     return (
-                        <div className="flex justify-end gap-2">
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                onClick={() => {
-                                    setSelectedUser(user);
-                                    setUserDetailOpen(true);
-                                }}
-                                title="View details"
-                            >
-                                <Eye className="h-4 w-4" />
-                            </Button>
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                onClick={() => handleEdit(user)}
-                                title="Edit user"
-                            >
-                                <PencilIcon className="h-4 w-4" />
-                            </Button>
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                onClick={() => {
-                                    setSelectedUser(user);
-                                    setDeleteOpen(true);
-                                }}
-                                title="Delete user"
-                            >
-                                <TrashIcon className="h-4 w-4" />
-                            </Button>
+                        <div className="flex justify-end">
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button
+                                        variant="ghost"
+                                        className="h-8 w-8 p-0"
+                                    >
+                                        <span className="sr-only">
+                                            Open menu
+                                        </span>
+                                        <MoreHorizontal className="h-4 w-4" />
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                    <DropdownMenuLabel>
+                                        Actions
+                                    </DropdownMenuLabel>
+                                    <DropdownMenuItem
+                                        onClick={() => {
+                                            setSelectedUser(user);
+                                            setUserDetailOpen(true);
+                                        }}
+                                    >
+                                        <Eye className="mr-2 h-4 w-4" />
+                                        View details
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem
+                                        onClick={() => handleEdit(user)}
+                                    >
+                                        <PencilIcon className="mr-2 h-4 w-4" />
+                                        Edit user
+                                    </DropdownMenuItem>
+                                    <DropdownMenuSeparator />
+                                    <DropdownMenuItem
+                                        onClick={() => {
+                                            setSelectedUser(user);
+                                            setDeleteOpen(true);
+                                        }}
+                                        className="text-destructive focus:text-destructive"
+                                    >
+                                        <Trash2 className="mr-2 h-4 w-4" />
+                                        Delete user
+                                    </DropdownMenuItem>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
                         </div>
                     );
                 },
@@ -656,14 +711,14 @@ export default function UsersIndex({ users, roles, filters }: UsersProps) {
                 </Alert>
 
                 {/* Filters and Table Controls */}
-                <div className="flex items-center justify-between gap-4">
-                    <div className="relative max-w-sm flex-1">
+                <div className="flex items-center gap-4">
+                    <div className="relative flex-1">
                         <Search className="absolute top-2.5 left-2.5 h-4 w-4 text-muted-foreground" />
                         <Input
-                            placeholder="Search users..."
+                            placeholder="Search users by name or email..."
                             value={searchValue}
                             onChange={(e) => handleSearch(e.target.value)}
-                            className="pl-8"
+                            className="max-w-sm pl-8"
                         />
                     </div>
                 </div>
@@ -684,7 +739,7 @@ export default function UsersIndex({ users, roles, filters }: UsersProps) {
                         </EmptyHeader>
                     </Empty>
                 ) : (
-                    <div className="rounded-md border">
+                    <div className="overflow-hidden rounded-lg border bg-card">
                         <Table>
                             <TableHeader>
                                 {table.getHeaderGroups().map((headerGroup) => (
@@ -743,7 +798,7 @@ export default function UsersIndex({ users, roles, filters }: UsersProps) {
 
                 {/* Pagination */}
                 {users.last_page > 1 && (
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-center justify-between border-t bg-muted/20 px-2 py-4">
                         <div className="text-sm text-muted-foreground">
                             Showing {users.from} to {users.to} of {users.total}{' '}
                             users
