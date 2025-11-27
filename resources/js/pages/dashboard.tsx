@@ -37,6 +37,7 @@ import {
     AreaChart,
     CartesianGrid,
     Cell,
+    Label,
     Pie,
     PieChart as RePieChart,
     XAxis,
@@ -115,14 +116,13 @@ const expenseConfig = {
     },
 } satisfies ChartConfig;
 
-// Generate consistent colors for charts
-const COLORS = [
-    '#0ea5e9', // sky-500
-    '#22c55e', // green-500
-    '#eab308', // yellow-500
-    '#f97316', // orange-500
-    '#ef4444', // red-500
-    '#8b5cf6', // violet-500
+// Chart colors from theme - ensures consistency across all charts
+const CHART_COLORS = [
+    'var(--chart-1)',
+    'var(--chart-2)',
+    'var(--chart-3)',
+    'var(--chart-4)',
+    'var(--chart-5)',
 ];
 
 export default function Dashboard({
@@ -150,14 +150,22 @@ export default function Dashboard({
     const safeDailySalesData = React.useMemo(() => {
         return Array.isArray(dailySalesData) ? dailySalesData : [];
     }, [dailySalesData]);
-    const safeExpenseBreakdown = Array.isArray(expenseBreakdown)
-        ? expenseBreakdown
-        : [];
+
+    const safeExpenseBreakdown = React.useMemo(() => {
+        return Array.isArray(expenseBreakdown) ? expenseBreakdown : [];
+    }, [expenseBreakdown]);
 
     const totalOutstandingCredits = outstandingCredits.reduce(
         (sum, credit) => sum + Number(credit.outstanding),
         0,
     );
+
+    const totalExpenses = React.useMemo(() => {
+        return safeExpenseBreakdown.reduce(
+            (sum, expense) => sum + Number(expense.total),
+            0,
+        );
+    }, [safeExpenseBreakdown]);
 
     const profitMargin =
         Number(summary.totalRevenue) > 0
@@ -185,15 +193,31 @@ export default function Dashboard({
                 {totalOutstandingCredits > 0 && (
                     <Alert className="border-destructive/50 bg-destructive/10">
                         <AlertCircle className="h-4 w-4" />
-                        <AlertTitle>Outstanding Payments</AlertTitle>
-                        <AlertDescription>
-                            You have{' '}
-                            <strong>
-                                SBD {totalOutstandingCredits.toFixed(2)}
-                            </strong>{' '}
-                            in outstanding credits from{' '}
-                            {outstandingCredits.length} customers.
-                        </AlertDescription>
+                        <div className="flex flex-1 items-center justify-between gap-4">
+                            <div className="flex-1">
+                                <AlertTitle>Outstanding Payments</AlertTitle>
+                                <AlertDescription>
+                                    <span className="block text-2xl font-bold text-destructive">
+                                        SBD {totalOutstandingCredits.toFixed(2)}
+                                    </span>
+                                    <span className="mt-1 block text-sm">
+                                        from {outstandingCredits.length}{' '}
+                                        {outstandingCredits.length === 1
+                                            ? 'customer'
+                                            : 'customers'}
+                                    </span>
+                                </AlertDescription>
+                            </div>
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() =>
+                                    router.visit('/sales?is_credit=true')
+                                }
+                            >
+                                View All
+                            </Button>
+                        </div>
                     </Alert>
                 )}
 
@@ -392,17 +416,17 @@ export default function Dashboard({
                 {/* Secondary Metrics & Outstanding Credits - 2 Column Grid */}
                 <div className="grid gap-6 md:grid-cols-2">
                     {/* Expenses Breakdown */}
-                    <Card>
-                        <CardHeader>
+                    <Card className="flex flex-col">
+                        <CardHeader className="items-center pb-0">
                             <CardTitle>Expenses Breakdown</CardTitle>
                             <CardDescription>
                                 Distribution by expense type
                             </CardDescription>
                         </CardHeader>
-                        <CardContent>
+                        <CardContent className="flex-1 pb-0">
                             <ChartContainer
                                 config={expenseConfig}
-                                className="h-[280px] w-full"
+                                className="mx-auto aspect-square max-h-[280px]"
                             >
                                 <RePieChart>
                                     <ChartTooltip
@@ -416,27 +440,63 @@ export default function Dashboard({
                                         dataKey="total"
                                         nameKey="type"
                                         innerRadius={60}
-                                        outerRadius={80}
-                                        paddingAngle={4}
-                                        strokeWidth={0}
+                                        strokeWidth={5}
                                     >
                                         {safeExpenseBreakdown.map(
                                             (entry, index) => (
                                                 <Cell
                                                     key={`cell-${index}`}
                                                     fill={
-                                                        COLORS[
+                                                        CHART_COLORS[
                                                             index %
-                                                                COLORS.length
+                                                                CHART_COLORS.length
                                                         ]
                                                     }
                                                 />
                                             ),
                                         )}
+                                        <Label
+                                            content={({ viewBox }) => {
+                                                if (
+                                                    viewBox &&
+                                                    'cx' in viewBox &&
+                                                    'cy' in viewBox
+                                                ) {
+                                                    return (
+                                                        <text
+                                                            x={viewBox.cx}
+                                                            y={viewBox.cy}
+                                                            textAnchor="middle"
+                                                            dominantBaseline="middle"
+                                                        >
+                                                            <tspan
+                                                                x={viewBox.cx}
+                                                                y={viewBox.cy}
+                                                                className="fill-foreground text-3xl font-bold"
+                                                            >
+                                                                {totalExpenses.toLocaleString()}
+                                                            </tspan>
+                                                            <tspan
+                                                                x={viewBox.cx}
+                                                                y={
+                                                                    (viewBox.cy ||
+                                                                        0) + 24
+                                                                }
+                                                                className="fill-muted-foreground"
+                                                            >
+                                                                SBD Total
+                                                            </tspan>
+                                                        </text>
+                                                    );
+                                                }
+                                            }}
+                                        />
                                     </Pie>
                                 </RePieChart>
                             </ChartContainer>
-                            <div className="mt-4 flex flex-wrap justify-center gap-4 text-xs">
+                        </CardContent>
+                        <CardFooter className="flex-col gap-2 pt-4 text-sm">
+                            <div className="flex flex-wrap justify-center gap-4 text-xs">
                                 {safeExpenseBreakdown.map((entry, index) => (
                                     <div
                                         key={entry.type}
@@ -446,8 +506,9 @@ export default function Dashboard({
                                             className="h-2 w-2 rounded-full"
                                             style={{
                                                 backgroundColor:
-                                                    COLORS[
-                                                        index % COLORS.length
+                                                    CHART_COLORS[
+                                                        index %
+                                                            CHART_COLORS.length
                                                     ],
                                             }}
                                         />
@@ -457,7 +518,7 @@ export default function Dashboard({
                                     </div>
                                 ))}
                             </div>
-                        </CardContent>
+                        </CardFooter>
                     </Card>
 
                     {/* Outstanding Credits */}
