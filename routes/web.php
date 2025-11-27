@@ -51,7 +51,13 @@ Route::middleware(['auth', 'verified'])->group(function (): void {
 
 Route::middleware('auth')->group(function (): void {
     // Pending Access Page (for users without roles)
-    Route::get('pending-access', fn () => Inertia::render('pending-access'))->name('pending-access');
+    Route::get('pending-access', function () {
+        if (auth()->user()->roles()->exists()) {
+            return redirect()->route('dashboard');
+        }
+
+        return Inertia::render('pending-access');
+    })->name('pending-access');
 
     // User deleting themselves...
     Route::delete('user', [UserController::class, 'destroySelf'])->name('user.destroy');
