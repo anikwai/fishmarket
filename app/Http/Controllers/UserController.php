@@ -31,7 +31,7 @@ final readonly class UserController
         $perPage = is_numeric($perPageInput) && in_array((int) $perPageInput, [10, 15, 20, 25, 50], true) ? (int) $perPageInput : 10;
 
         $query = User::query()
-            ->with('roles')
+            ->with('roles.permissions')
             ->when($request->search, fn (\Illuminate\Database\Eloquent\Builder $query, mixed $search) => $query->where(function (\Illuminate\Database\Eloquent\Builder $q) use ($search): void {
                 $searchStr = is_string($search) ? $search : '';
                 $q->where('name', 'like', '%'.$searchStr.'%')
