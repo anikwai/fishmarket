@@ -74,7 +74,7 @@ export default function PendingAccess() {
                                 >
                                     <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-muted-foreground" />
                                     <div className="space-y-1">
-                                        <p className="text-sm font-medium leading-none">
+                                        <p className="text-sm leading-none font-medium">
                                             Account Created
                                         </p>
                                         <p className="text-sm text-muted-foreground">
@@ -90,7 +90,7 @@ export default function PendingAccess() {
                                 >
                                     <ShieldAlert className="mt-0.5 h-5 w-5 shrink-0 animate-pulse text-primary" />
                                     <div className="space-y-1">
-                                        <p className="text-sm font-medium leading-none text-primary">
+                                        <p className="text-sm leading-none font-medium text-primary">
                                             Admin Review
                                         </p>
                                         <p className="text-sm text-muted-foreground">
