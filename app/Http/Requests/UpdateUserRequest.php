@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Requests;
 
 use App\Models\User;
+use Closure;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -35,7 +36,15 @@ final class UpdateUserRequest extends FormRequest
                 'max:255',
                 Rule::unique(User::class)->ignore($user->id),
             ],
-            'role' => ['nullable', 'string', Rule::exists(Role::class, 'name')],
+            'role' => [
+                'nullable',
+                'string',
+                function (string $attribute, mixed $value, Closure $fail): void {
+                    if (is_string($value) && $value !== '' && ! Role::query()->where('name', $value)->exists()) {
+                        $fail("The selected {$attribute} is invalid.");
+                    }
+                },
+            ],
         ];
     }
 }
