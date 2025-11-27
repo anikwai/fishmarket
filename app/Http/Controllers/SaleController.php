@@ -34,7 +34,16 @@ final readonly class SaleController
             ->with(['customer', 'payments', 'items.purchase.supplier'])
             ->when($request->search, fn (\Illuminate\Database\Eloquent\Builder $query, mixed $search) => $query->whereHas('customer', fn (\Illuminate\Database\Eloquent\Builder $q) => $q->where('name', 'like', '%'.(is_string($search) ? $search : '').'%')))
             ->when($request->customer_id, fn (\Illuminate\Database\Eloquent\Builder $query, mixed $customerId) => $query->where('customer_id', is_numeric($customerId) ? (int) $customerId : $customerId))
-            ->when($request->has('is_credit'), fn (\Illuminate\Database\Eloquent\Builder $query) => $query->where('is_credit', $request->boolean('is_credit')));
+            ->when($request->has('is_credit'), fn (\Illuminate\Database\Eloquent\Builder $query) => $query->where('is_credit', $request->boolean('is_credit')))
+            ->when($request->purchase_date, function (\Illuminate\Database\Eloquent\Builder $query, mixed $purchaseDate) {
+                if (! is_string($purchaseDate)) {
+                    return $query;
+                }
+
+                // Filter sales where ALL items are from purchases with the specified date
+                return $query->whereDoesntHave('items.purchase', fn (\Illuminate\Database\Eloquent\Builder $q) => $q->whereDate('purchase_date', '!=', $purchaseDate))
+                    ->whereHas('items.purchase', fn (\Illuminate\Database\Eloquent\Builder $q) => $q->whereDate('purchase_date', $purchaseDate));
+            });
 
         // Handle sorting
         $sortBy = $request->get('sort_by');
@@ -86,12 +95,51 @@ final readonly class SaleController
             ])
             ->values();
 
+        // Get all purchases for the filter dropdown
+        $allPurchasesForFilter = \App\Models\Purchase::query()
+            ->with('supplier')
+            ->latest('purchase_date')
+            ->get()
+            ->map(fn ($purchase): array => [
+                'purchase_date' => $purchase->purchase_date->format('Y-m-d'),
+                'supplier_name' => $purchase->supplier->name,
+                'description' => $purchase->description,
+                'quantity_kg' => $purchase->quantity_kg,
+            ])
+            ->values();
+
+        // Calculate totals based on all active filters (search, customer_id, purchase_date)
+        // Note: We don't include is_credit filter here as we need separate totals for credit/paid
+        $totalsQuery = Sale::query()
+            ->when($request->search, fn (\Illuminate\Database\Eloquent\Builder $query, mixed $search) => $query->whereHas('customer', fn (\Illuminate\Database\Eloquent\Builder $q) => $q->where('name', 'like', '%'.(is_string($search) ? $search : '').'%')))
+            ->when($request->customer_id, fn (\Illuminate\Database\Eloquent\Builder $query, mixed $customerId) => $query->where('customer_id', is_numeric($customerId) ? (int) $customerId : $customerId))
+            ->when($request->purchase_date, function (\Illuminate\Database\Eloquent\Builder $query, mixed $purchaseDate) {
+                if (! is_string($purchaseDate)) {
+                    return $query;
+                }
+
+                // Filter sales where ALL items are from purchases with the specified date
+                return $query->whereDoesntHave('items.purchase', fn (\Illuminate\Database\Eloquent\Builder $q) => $q->whereDate('purchase_date', '!=', $purchaseDate))
+                    ->whereHas('items.purchase', fn (\Illuminate\Database\Eloquent\Builder $q) => $q->whereDate('purchase_date', $purchaseDate));
+            });
+
+        $totals = [
+            'total_sales' => (float) (clone $totalsQuery)->sum('total_amount'),
+            'total_count' => (clone $totalsQuery)->count(),
+            'credit_total' => (float) (clone $totalsQuery)->where('is_credit', true)->sum('total_amount'),
+            'credit_count' => (clone $totalsQuery)->where('is_credit', true)->count(),
+            'paid_total' => (float) (clone $totalsQuery)->where('is_credit', false)->sum('total_amount'),
+            'paid_count' => (clone $totalsQuery)->where('is_credit', false)->count(),
+        ];
+
         return Inertia::render('Sales/Index', [
             'sales' => $sales,
             'customers' => $customers,
             'currentStock' => $currentStock,
             'availablePurchases' => $availablePurchases,
-            'filters' => $request->only(['customer_id', 'is_credit', 'search']),
+            'allPurchasesForFilter' => $allPurchasesForFilter,
+            'totals' => $totals,
+            'filters' => $request->only(['customer_id', 'is_credit', 'search', 'purchase_date']),
         ]);
     }
 
