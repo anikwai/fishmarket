@@ -153,7 +153,7 @@ export default function PendingAccess() {
                                     <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-green-600 dark:text-green-400" />
                                     <div className="flex-1 space-y-1">
                                         <div className="flex items-center justify-between">
-                                            <p className="text-sm leading-none font-medium">
+                                            <p className="text-sm leading-tight font-medium">
                                                 Account Created
                                             </p>
                                             <Badge
@@ -184,7 +184,7 @@ export default function PendingAccess() {
                                     </div>
                                     <div className="flex-1 space-y-1">
                                         <div className="flex items-center justify-between">
-                                            <p className="text-sm leading-none font-medium text-primary">
+                                            <p className="text-sm leading-tight font-medium text-primary">
                                                 Admin Review
                                             </p>
                                             <Badge
@@ -209,7 +209,7 @@ export default function PendingAccess() {
                                     <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-muted-foreground" />
                                     <div className="flex-1 space-y-1">
                                         <div className="flex items-center justify-between">
-                                            <p className="text-sm leading-none font-medium text-muted-foreground">
+                                            <p className="text-sm leading-tight font-medium text-muted-foreground">
                                                 Access Granted
                                             </p>
                                             <Badge
