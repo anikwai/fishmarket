@@ -7,17 +7,21 @@ namespace App\Http\Controllers;
 use App\Actions\CreateSale;
 use App\Actions\DeleteSale;
 use App\Actions\GenerateReceipt;
+use App\Actions\GenerateSaleInvoice;
 use App\Actions\SendReceiptEmail;
+use App\Actions\SendSaleInvoiceEmail;
 use App\Actions\UpdateSale;
 use App\Http\Requests\StoreSaleRequest;
 use App\Http\Requests\UpdateSaleRequest;
 use App\Models\Customer;
 use App\Models\Sale;
 use App\Support\Stock;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response as HttpResponse;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\URL;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -197,5 +201,55 @@ final readonly class SaleController
         $action->handle($receipt);
 
         return back()->with('success', 'Receipt email sent successfully.');
+    }
+
+    public function downloadInvoice(Sale $sale, GenerateSaleInvoice $generator): HttpResponse
+    {
+        Gate::authorize('view sales');
+
+        $pdf = $generator->handle($sale);
+        $invoiceNumber = $sale->invoice_number;
+
+        return response($pdf->output(), 200, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'attachment; filename="'.$invoiceNumber.'.pdf"',
+        ]);
+    }
+
+    public function sendInvoiceEmail(Sale $sale, SendSaleInvoiceEmail $sender): RedirectResponse
+    {
+        Gate::authorize('view sales');
+
+        if ($sender->handle($sale)) {
+            return back()->with('success', 'Invoice emailed to customer successfully.');
+        }
+
+        return back()->with('error', 'Customer has no email; invoice not sent.');
+    }
+
+    public function printInvoice(Request $request, Sale $sale, GenerateSaleInvoice $generator): HttpResponse
+    {
+        abort_unless((bool) $request->hasValidSignature(), 403);
+
+        $pdf = $generator->handle($sale);
+        $invoiceNumber = $sale->invoice_number;
+
+        return response($pdf->output(), 200, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'inline; filename="'.$invoiceNumber.'.pdf"',
+        ]);
+    }
+
+    public function generateInvoiceLink(Sale $sale): JsonResponse
+    {
+        Gate::authorize('view sales');
+
+        $url = URL::temporarySignedRoute(
+            'sales.invoice.print',
+            now()->addDays(7),
+            ['sale' => $sale]
+        );
+
+        return response()->json(['url' => $url]);
     }
 }
