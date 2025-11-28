@@ -54,7 +54,8 @@ final readonly class SessionController
             return to_route('pending-access');
         }
 
-        return redirect()->intended(route('dashboard', absolute: false));
+        return redirect()->intended(route('dashboard', absolute: false))
+            ->with('success', 'Welcome back!');
     }
 
     public function destroy(Request $request): RedirectResponse

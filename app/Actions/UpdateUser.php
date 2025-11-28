@@ -17,7 +17,6 @@ final readonly class UpdateUser
     public function handle(User $user, array $attributes): void
     {
         $email = $attributes['email'] ?? null;
-        $roleName = $attributes['role'] ?? null;
 
         // Exclude 'role' from attributes since it's handled separately via Spatie Permission
         $userAttributes = array_diff_key($attributes, ['role' => true]);
@@ -28,17 +27,24 @@ final readonly class UpdateUser
         ]);
 
         // Handle role assignment separately using Spatie Permission
-        if (is_string($roleName) && $roleName !== '') {
-            try {
-                $role = Role::findByName($roleName);
-                $user->syncRoles([$role]);
-            } catch (RoleDoesNotExist $e) {
-                throw new DomainException("Role '{$roleName}' does not exist.", 0, $e);
+        // Only process role if the 'role' key exists in attributes (even if null/empty)
+        // This distinguishes between "remove role" and "don't touch roles" (partial update)
+        if (array_key_exists('role', $attributes)) {
+            $roleName = $attributes['role'];
+
+            if (is_string($roleName) && $roleName !== '') {
+                try {
+                    $role = Role::findByName($roleName);
+                    $user->syncRoles([$role]);
+                } catch (RoleDoesNotExist $e) {
+                    throw new DomainException("Role '{$roleName}' does not exist.", 0, $e);
+                }
+            } else {
+                // If role is null or empty string, remove all roles
+                // (null happens due to ConvertEmptyStringsToNull middleware)
+                $user->syncRoles([]);
             }
-        } elseif ($roleName === '') {
-            // If role is empty string, remove all roles
-            $user->syncRoles([]);
         }
-        // If $roleName is null, do nothing - don't change roles (partial update)
+        // If 'role' key doesn't exist in attributes, don't change roles (partial update)
     }
 }

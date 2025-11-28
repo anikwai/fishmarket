@@ -195,3 +195,64 @@ it('redirects authenticated users away from registration', function (): void {
 
     $response->assertRedirectToRoute('dashboard');
 });
+
+it('may update user and remove role with empty string', function (): void {
+    $admin = User::factory()->create();
+    $admin->assignRole('admin');
+
+    $userToUpdate = User::factory()->create([
+        'name' => 'Old Name',
+        'email' => 'old@example.com',
+    ]);
+    $userToUpdate->assignRole('manager');
+
+    expect($userToUpdate->roles()->count())->toBe(1)
+        ->and($userToUpdate->hasRole('manager'))->toBeTrue();
+
+    $response = $this->actingAs($admin)
+        ->from(route('users.index'))
+        ->patch(route('users.update', $userToUpdate), [
+            'name' => 'New Name',
+            'email' => 'new@example.com',
+            'role' => '',
+        ]);
+
+    $response->assertRedirect(route('users.index'))
+        ->assertSessionHas('success', 'User updated successfully.');
+
+    $userToUpdate->refresh();
+
+    expect($userToUpdate->name)->toBe('New Name')
+        ->and($userToUpdate->email)->toBe('new@example.com')
+        ->and($userToUpdate->roles()->count())->toBe(0);
+});
+
+it('may update user and assign a role', function (): void {
+    $admin = User::factory()->create();
+    $admin->assignRole('admin');
+
+    $userToUpdate = User::factory()->create([
+        'name' => 'Old Name',
+        'email' => 'old@example.com',
+    ]);
+
+    expect($userToUpdate->roles()->count())->toBe(0);
+
+    $response = $this->actingAs($admin)
+        ->from(route('users.index'))
+        ->patch(route('users.update', $userToUpdate), [
+            'name' => 'New Name',
+            'email' => 'new@example.com',
+            'role' => 'cashier',
+        ]);
+
+    $response->assertRedirect(route('users.index'))
+        ->assertSessionHas('success', 'User updated successfully.');
+
+    $userToUpdate->refresh();
+
+    expect($userToUpdate->name)->toBe('New Name')
+        ->and($userToUpdate->email)->toBe('new@example.com')
+        ->and($userToUpdate->hasRole('cashier'))->toBeTrue()
+        ->and($userToUpdate->roles()->count())->toBe(1);
+});

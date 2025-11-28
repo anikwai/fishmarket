@@ -1,5 +1,7 @@
 import UserController from '@/actions/App/Http/Controllers/UserController';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
     Dialog,
@@ -9,6 +11,23 @@ import {
     DialogHeader,
     DialogTitle,
 } from '@/components/ui/dialog';
+import {
+    Drawer,
+    DrawerClose,
+    DrawerContent,
+    DrawerDescription,
+    DrawerFooter,
+    DrawerHeader,
+    DrawerTitle,
+} from '@/components/ui/drawer';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import {
     Empty,
     EmptyDescription,
@@ -68,17 +87,43 @@ import {
     LoaderCircle,
     Lock,
     Mail,
+    MoreHorizontal,
     PencilIcon,
     PlusIcon,
     Search,
     Shield,
-    TrashIcon,
+    Trash2,
     User,
     Users,
 } from 'lucide-react';
 import * as React from 'react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { toast } from 'sonner';
+
+// Role badge variant helper - maps role names to badge styles
+// Supports: Admin, Manager, Cashier, and No Role
+function getRoleBadgeVariant(
+    roleName: string,
+): 'default' | 'secondary' | 'destructive' | 'outline' {
+    const normalizedRole = roleName.toLowerCase();
+
+    // Admin - destructive (red) for highest privilege
+    if (normalizedRole === 'admin') {
+        return 'destructive';
+    }
+
+    // Manager - default (primary/pink) for management privilege
+    if (normalizedRole === 'manager') {
+        return 'default';
+    }
+
+    // Cashier - outline (border) for operational role
+    if (normalizedRole === 'cashier') {
+        return 'outline';
+    }
+
+    // Default fallback for any other roles - outline
+    return 'outline';
+}
 
 // RoleSelect component that works with native form submission
 function RoleSelect({
@@ -105,7 +150,10 @@ function RoleSelect({
             <div className="pointer-events-none absolute top-1/2 left-3 z-10 -translate-y-1/2">
                 <Shield className="h-4 w-4 text-muted-foreground" />
             </div>
-            <Select value={value} onValueChange={setValue}>
+            <Select
+                value={value || 'none'}
+                onValueChange={(val) => setValue(val === 'none' ? '' : val)}
+            >
                 <SelectTrigger
                     id={id}
                     className="mt-1 pl-9"
@@ -114,6 +162,7 @@ function RoleSelect({
                     <SelectValue placeholder="Select a role" />
                 </SelectTrigger>
                 <SelectContent>
+                    <SelectItem value="none">No role</SelectItem>
                     {roles.map((role) => (
                         <SelectItem key={role.id} value={role.name}>
                             {role.name.charAt(0).toUpperCase() +
@@ -275,6 +324,7 @@ interface User {
     id: number;
     name: string;
     email: string;
+    avatar: string | null;
     email_verified_at: string | null;
     created_at: string;
     roles: Role[];
@@ -302,6 +352,7 @@ export default function UsersIndex({ users, roles, filters }: UsersProps) {
     const [editOpen, setEditOpen] = useState(false);
     const [deleteOpen, setDeleteOpen] = useState(false);
     const [permissionsOpen, setPermissionsOpen] = useState(false);
+    const [userDetailOpen, setUserDetailOpen] = useState(false);
     const [selectedUser, setSelectedUser] = useState<User | null>(null);
     const [selectedRole, setSelectedRole] = useState<Role | null>(null);
     const [sorting, setSorting] = useState<SortingState>([]);
@@ -383,14 +434,8 @@ export default function UsersIndex({ users, roles, filters }: UsersProps) {
         router.delete(UserController.destroy(selectedUser.id), {
             preserveScroll: true,
             onSuccess: () => {
-                toast.success(
-                    `User "${selectedUser.name}" deleted successfully!`,
-                );
                 setDeleteOpen(false);
                 setSelectedUser(null);
-            },
-            onError: () => {
-                toast.error('Failed to delete user. Please try again.');
             },
         });
     }, [selectedUser]);
@@ -424,8 +469,33 @@ export default function UsersIndex({ users, roles, filters }: UsersProps) {
                     );
                 },
                 cell: ({ row }) => {
+                    const user = row.original;
+                    const initials = user.name
+                        .split(' ')
+                        .map((n) => n[0])
+                        .join('')
+                        .toUpperCase()
+                        .slice(0, 2);
+
                     return (
-                        <div className="font-medium">{row.original.name}</div>
+                        <div className="flex items-center gap-3">
+                            <Avatar>
+                                <AvatarImage
+                                    src={user.avatar || undefined}
+                                    alt={user.name}
+                                />
+                                <AvatarFallback>{initials}</AvatarFallback>
+                            </Avatar>
+                            <button
+                                onClick={() => {
+                                    setSelectedUser(user);
+                                    setUserDetailOpen(true);
+                                }}
+                                className="font-medium text-primary hover:underline focus:underline focus:outline-none"
+                            >
+                                {user.name}
+                            </button>
+                        </div>
                     );
                 },
             },
@@ -461,9 +531,12 @@ export default function UsersIndex({ users, roles, filters }: UsersProps) {
                         <div className="flex items-center gap-2">
                             {role ? (
                                 <>
-                                    <span className="inline-flex items-center rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-medium text-primary">
+                                    <Badge
+                                        variant={getRoleBadgeVariant(role.name)}
+                                        className="capitalize"
+                                    >
                                         {role.name}
-                                    </span>
+                                    </Badge>
                                     {fullRole?.permissions &&
                                         fullRole.permissions.length > 0 && (
                                             <Button
@@ -481,9 +554,12 @@ export default function UsersIndex({ users, roles, filters }: UsersProps) {
                                         )}
                                 </>
                             ) : (
-                                <span className="text-muted-foreground">
+                                <Badge
+                                    variant="secondary"
+                                    className="text-muted-foreground"
+                                >
                                     No role
-                                </span>
+                                </Badge>
                             )}
                         </div>
                     );
@@ -542,24 +618,51 @@ export default function UsersIndex({ users, roles, filters }: UsersProps) {
                 cell: ({ row }) => {
                     const user = row.original;
                     return (
-                        <div className="flex justify-end gap-2">
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                onClick={() => handleEdit(user)}
-                            >
-                                <PencilIcon className="h-4 w-4" />
-                            </Button>
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                onClick={() => {
-                                    setSelectedUser(user);
-                                    setDeleteOpen(true);
-                                }}
-                            >
-                                <TrashIcon className="h-4 w-4" />
-                            </Button>
+                        <div className="flex justify-end">
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button
+                                        variant="ghost"
+                                        className="h-8 w-8 p-0"
+                                    >
+                                        <span className="sr-only">
+                                            Open menu
+                                        </span>
+                                        <MoreHorizontal className="h-4 w-4" />
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                    <DropdownMenuLabel>
+                                        Actions
+                                    </DropdownMenuLabel>
+                                    <DropdownMenuItem
+                                        onClick={() => {
+                                            setSelectedUser(user);
+                                            setUserDetailOpen(true);
+                                        }}
+                                    >
+                                        <Eye className="mr-2 h-4 w-4" />
+                                        View details
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem
+                                        onClick={() => handleEdit(user)}
+                                    >
+                                        <PencilIcon className="mr-2 h-4 w-4" />
+                                        Edit user
+                                    </DropdownMenuItem>
+                                    <DropdownMenuSeparator />
+                                    <DropdownMenuItem
+                                        onClick={() => {
+                                            setSelectedUser(user);
+                                            setDeleteOpen(true);
+                                        }}
+                                        className="text-destructive focus:text-destructive"
+                                    >
+                                        <Trash2 className="mr-2 h-4 w-4" />
+                                        Delete user
+                                    </DropdownMenuItem>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
                         </div>
                     );
                 },
@@ -608,14 +711,14 @@ export default function UsersIndex({ users, roles, filters }: UsersProps) {
                 </Alert>
 
                 {/* Filters and Table Controls */}
-                <div className="flex items-center justify-between gap-4">
-                    <div className="relative max-w-sm flex-1">
+                <div className="flex items-center gap-4">
+                    <div className="relative flex-1">
                         <Search className="absolute top-2.5 left-2.5 h-4 w-4 text-muted-foreground" />
                         <Input
-                            placeholder="Search users..."
+                            placeholder="Search users by name or email..."
                             value={searchValue}
                             onChange={(e) => handleSearch(e.target.value)}
-                            className="pl-8"
+                            className="max-w-sm pl-8"
                         />
                     </div>
                 </div>
@@ -636,7 +739,7 @@ export default function UsersIndex({ users, roles, filters }: UsersProps) {
                         </EmptyHeader>
                     </Empty>
                 ) : (
-                    <div className="rounded-md border">
+                    <div className="overflow-hidden rounded-lg border bg-card">
                         <Table>
                             <TableHeader>
                                 {table.getHeaderGroups().map((headerGroup) => (
@@ -695,7 +798,7 @@ export default function UsersIndex({ users, roles, filters }: UsersProps) {
 
                 {/* Pagination */}
                 {users.last_page > 1 && (
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-center justify-between border-t bg-muted/20 px-2 py-4">
                         <div className="text-sm text-muted-foreground">
                             Showing {users.from} to {users.to} of {users.total}{' '}
                             users
@@ -767,14 +870,8 @@ export default function UsersIndex({ users, roles, filters }: UsersProps) {
                                 preserveScroll: true,
                             }}
                             onSuccess={() => {
-                                toast.success('User created successfully!');
                                 setCreateOpen(false);
                                 setPasswordValue('');
-                            }}
-                            onError={() => {
-                                toast.error(
-                                    'Failed to create user. Please check the form for errors.',
-                                );
                             }}
                             resetOnSuccess
                         >
@@ -934,16 +1031,8 @@ export default function UsersIndex({ users, roles, filters }: UsersProps) {
                                     preserveScroll: true,
                                 }}
                                 onSuccess={() => {
-                                    toast.success(
-                                        `User "${selectedUser.name}" updated successfully!`,
-                                    );
                                     setEditOpen(false);
                                     setSelectedUser(null);
-                                }}
-                                onError={() => {
-                                    toast.error(
-                                        'Failed to update user. Please check the form for errors.',
-                                    );
                                 }}
                                 resetOnSuccess
                             >
@@ -1115,6 +1204,173 @@ export default function UsersIndex({ users, roles, filters }: UsersProps) {
                             </DialogFooter>
                         </DialogContent>
                     </Dialog>
+                )}
+
+                {/* User Detail Drawer */}
+                {selectedUser && (
+                    <Drawer
+                        open={userDetailOpen}
+                        onOpenChange={setUserDetailOpen}
+                        direction="right"
+                    >
+                        <DrawerContent>
+                            <DrawerHeader className="border-b">
+                                <DrawerTitle>User Details</DrawerTitle>
+                                <DrawerDescription>
+                                    View user information, role, and associated
+                                    permissions
+                                </DrawerDescription>
+                            </DrawerHeader>
+
+                            <div className="flex-1 overflow-y-auto p-6">
+                                <div className="space-y-6">
+                                    {/* User Information */}
+                                    <div className="flex items-center gap-4">
+                                        <Avatar className="h-20 w-20">
+                                            <AvatarImage
+                                                src={
+                                                    selectedUser.avatar ||
+                                                    undefined
+                                                }
+                                                alt={selectedUser.name}
+                                            />
+                                            <AvatarFallback className="text-lg">
+                                                {selectedUser.name
+                                                    .split(' ')
+                                                    .map((n) => n[0])
+                                                    .join('')
+                                                    .toUpperCase()
+                                                    .slice(0, 2)}
+                                            </AvatarFallback>
+                                        </Avatar>
+                                        <div className="flex-1">
+                                            <h3 className="text-lg font-semibold">
+                                                {selectedUser.name}
+                                            </h3>
+                                            <p className="text-sm text-muted-foreground">
+                                                {selectedUser.email}
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    {/* Account Status */}
+                                    <div className="space-y-3 rounded-lg border p-4">
+                                        <h4 className="font-medium">
+                                            Account Status
+                                        </h4>
+                                        <div className="grid gap-2 text-sm">
+                                            <div className="flex items-center justify-between">
+                                                <span className="text-muted-foreground">
+                                                    Email Verified
+                                                </span>
+                                                <span>
+                                                    {selectedUser.email_verified_at ? (
+                                                        <span className="flex items-center gap-1 text-green-600">
+                                                            <CheckCircle2 className="h-4 w-4" />
+                                                            Yes
+                                                        </span>
+                                                    ) : (
+                                                        <span className="text-destructive">
+                                                            No
+                                                        </span>
+                                                    )}
+                                                </span>
+                                            </div>
+                                            <div className="flex items-center justify-between">
+                                                <span className="text-muted-foreground">
+                                                    Created
+                                                </span>
+                                                <span>
+                                                    {new Date(
+                                                        selectedUser.created_at,
+                                                    ).toLocaleDateString(
+                                                        'en-US',
+                                                        {
+                                                            year: 'numeric',
+                                                            month: 'long',
+                                                            day: 'numeric',
+                                                        },
+                                                    )}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Role Information */}
+                                    <div className="space-y-3 rounded-lg border p-4">
+                                        <h4 className="font-medium">Role</h4>
+                                        {selectedUser.roles.length > 0 ? (
+                                            <div>
+                                                <span className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1.5 text-sm font-medium text-primary">
+                                                    <Shield className="h-4 w-4" />
+                                                    {selectedUser.roles[0].name
+                                                        .charAt(0)
+                                                        .toUpperCase() +
+                                                        selectedUser.roles[0].name.slice(
+                                                            1,
+                                                        )}
+                                                </span>
+                                            </div>
+                                        ) : (
+                                            <p className="text-sm text-muted-foreground">
+                                                No role assigned
+                                            </p>
+                                        )}
+                                    </div>
+
+                                    {/* Permissions */}
+                                    <div className="space-y-3 rounded-lg border p-4">
+                                        <h4 className="font-medium">
+                                            Permissions
+                                        </h4>
+                                        {selectedUser.roles.length > 0 &&
+                                        selectedUser.roles[0].permissions &&
+                                        selectedUser.roles[0].permissions
+                                            .length > 0 ? (
+                                            <div className="space-y-2">
+                                                {selectedUser.roles[0].permissions.map(
+                                                    (permission) => (
+                                                        <div
+                                                            key={permission.id}
+                                                            className="flex items-center gap-2 rounded-md bg-muted/50 p-2.5"
+                                                        >
+                                                            <CheckCircle2 className="h-4 w-4 shrink-0 text-green-600" />
+                                                            <span className="text-sm">
+                                                                {
+                                                                    permission.name
+                                                                }
+                                                            </span>
+                                                        </div>
+                                                    ),
+                                                )}
+                                            </div>
+                                        ) : (
+                                            <div className="py-4 text-center text-muted-foreground">
+                                                <Shield className="mx-auto mb-2 h-8 w-8 opacity-50" />
+                                                <p className="text-sm">
+                                                    No permissions assigned
+                                                </p>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <DrawerFooter className="border-t">
+                                <DrawerClose asChild>
+                                    <Button
+                                        variant="outline"
+                                        onClick={() => {
+                                            setUserDetailOpen(false);
+                                            setSelectedUser(null);
+                                        }}
+                                    >
+                                        Close
+                                    </Button>
+                                </DrawerClose>
+                            </DrawerFooter>
+                        </DrawerContent>
+                    </Drawer>
                 )}
 
                 {/* Delete Confirmation Modal */}
