@@ -9,6 +9,14 @@ import {
     DialogTitle,
 } from '@/components/ui/dialog';
 import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import {
     Empty,
     EmptyContent,
     EmptyDescription,
@@ -60,6 +68,7 @@ import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Head, router, useForm } from '@inertiajs/react';
 import {
+    Column,
     ColumnDef,
     flexRender,
     getCoreRowModel,
@@ -74,6 +83,7 @@ import {
     InfoIcon,
     Mail,
     MapPin,
+    MoreHorizontal,
     PencilIcon,
     Phone,
     PlusIcon,
@@ -129,6 +139,21 @@ export default function CustomersIndex({ customers, filters }: CustomersProps) {
     const [searchValue, setSearchValue] = useState(filters.search || '');
     const [typeFilter, setTypeFilter] = useState(filters.type || 'all');
     const isInitialMount = useRef(true);
+    const renderSortableHeader = (
+        label: string,
+        column: Column<Customer, unknown>,
+    ) => (
+        <Button
+            variant="ghost"
+            className="group h-8 px-2 lg:px-3"
+            onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+        >
+            {label}
+            <ArrowUpDown
+                className={`ml-2 h-4 w-4 transition-opacity duration-150 ${column.getIsSorted() ? 'opacity-100' : 'opacity-0 group-hover:opacity-100 group-focus:opacity-100'}`}
+            />
+        </Button>
+    );
 
     // Debounced search function
     const performSearch = useCallback((search: string, type: string) => {
@@ -220,20 +245,7 @@ export default function CustomersIndex({ customers, filters }: CustomersProps) {
             {
                 accessorKey: 'name',
                 header: ({ column }) => {
-                    return (
-                        <Button
-                            variant="ghost"
-                            onClick={() =>
-                                column.toggleSorting(
-                                    column.getIsSorted() === 'asc',
-                                )
-                            }
-                            className="h-8 px-2 lg:px-3"
-                        >
-                            Name
-                            <ArrowUpDown className="ml-2 h-4 w-4" />
-                        </Button>
-                    );
+                    return renderSortableHeader('Name', column);
                 },
                 cell: ({ row }) => (
                     <div className="font-medium">{row.getValue('name')}</div>
@@ -241,7 +253,7 @@ export default function CustomersIndex({ customers, filters }: CustomersProps) {
             },
             {
                 accessorKey: 'email',
-                header: 'Email',
+                header: ({ column }) => renderSortableHeader('Email', column),
                 cell: ({ row }) => (
                     <div className="text-muted-foreground">
                         {row.getValue('email') || '-'}
@@ -250,7 +262,7 @@ export default function CustomersIndex({ customers, filters }: CustomersProps) {
             },
             {
                 accessorKey: 'phone',
-                header: 'Phone',
+                header: ({ column }) => renderSortableHeader('Phone', column),
                 cell: ({ row }) => (
                     <div className="text-muted-foreground">
                         {row.getValue('phone') || '-'}
@@ -258,46 +270,83 @@ export default function CustomersIndex({ customers, filters }: CustomersProps) {
                 ),
             },
             {
+                accessorKey: 'address',
+                header: () => (
+                    <div className="hidden max-w-[220px] truncate text-left md:block">
+                        Address
+                    </div>
+                ),
+                cell: ({ row }) => {
+                    const address = row.original.address;
+                    return (
+                        <div
+                            className="hidden max-w-[220px] truncate text-muted-foreground md:block"
+                            title={address || undefined}
+                        >
+                            {address || '-'}
+                        </div>
+                    );
+                },
+            },
+            {
                 accessorKey: 'type',
-                header: 'Type',
+                header: ({ column }) => renderSortableHeader('Type', column),
                 cell: ({ row }) => (
                     <div className="capitalize">{row.getValue('type')}</div>
                 ),
             },
             {
                 id: 'actions',
+                header: 'Actions',
                 enableHiding: false,
                 cell: ({ row }) => {
                     const customer = row.original;
                     return (
-                        <div className="flex justify-end gap-2">
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                onClick={() => {
-                                    setSelectedCustomer(customer);
-                                    setShowOpen(true);
-                                }}
-                            >
-                                <EyeIcon className="h-4 w-4" />
-                            </Button>
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                onClick={() => handleEdit(customer)}
-                            >
-                                <PencilIcon className="h-4 w-4" />
-                            </Button>
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                onClick={() => {
-                                    setSelectedCustomer(customer);
-                                    setDeleteOpen(true);
-                                }}
-                            >
-                                <TrashIcon className="h-4 w-4" />
-                            </Button>
+                        <div className="flex justify-start pl-1">
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button
+                                        variant="ghost"
+                                        className="h-8 w-8 p-0"
+                                    >
+                                        <span className="sr-only">
+                                            Open menu
+                                        </span>
+                                        <MoreHorizontal className="h-4 w-4" />
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                    <DropdownMenuLabel>
+                                        Actions
+                                    </DropdownMenuLabel>
+                                    <DropdownMenuItem
+                                        onClick={() => {
+                                            setSelectedCustomer(customer);
+                                            setShowOpen(true);
+                                        }}
+                                    >
+                                        <EyeIcon className="mr-2 h-4 w-4" />
+                                        View
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem
+                                        onClick={() => handleEdit(customer)}
+                                    >
+                                        <PencilIcon className="mr-2 h-4 w-4" />
+                                        Edit
+                                    </DropdownMenuItem>
+                                    <DropdownMenuSeparator />
+                                    <DropdownMenuItem
+                                        className="text-destructive focus:text-destructive"
+                                        onClick={() => {
+                                            setSelectedCustomer(customer);
+                                            setDeleteOpen(true);
+                                        }}
+                                    >
+                                        <TrashIcon className="mr-2 h-4 w-4" />
+                                        Delete
+                                    </DropdownMenuItem>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
                         </div>
                     );
                 },
@@ -325,6 +374,12 @@ export default function CustomersIndex({ customers, filters }: CustomersProps) {
 
     const handleTypeFilter = (value: string) => {
         setTypeFilter(value);
+    };
+
+    const handleClearFilters = () => {
+        setSearchValue('');
+        setTypeFilter('all');
+        performSearch('', 'all');
     };
 
     const handlePageChange = (url: string | null) => {
@@ -422,6 +477,15 @@ export default function CustomersIndex({ customers, filters }: CustomersProps) {
                             <SelectItem value="business">Business</SelectItem>
                         </SelectContent>
                     </Select>
+                    {(searchValue || typeFilter !== 'all') && (
+                        <Button
+                            variant="ghost"
+                            onClick={handleClearFilters}
+                            className="text-sm"
+                        >
+                            Clear filters
+                        </Button>
+                    )}
                 </div>
 
                 {/* Data Table */}
