@@ -17,6 +17,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Response;
 use Spatie\Permission\Models\Role;
@@ -30,13 +31,24 @@ final readonly class UserController
         $perPageInput = $request->get('per_page', 10);
         $perPage = is_numeric($perPageInput) && in_array((int) $perPageInput, [10, 15, 20, 25, 50], true) ? (int) $perPageInput : 10;
 
+        $roleFilter = (string) Str::of($request->string('role')->value())->trim();
+
         $query = User::query()
             ->with('roles.permissions')
             ->when($request->search, fn (\Illuminate\Database\Eloquent\Builder $query, mixed $search) => $query->where(function (\Illuminate\Database\Eloquent\Builder $q) use ($search): void {
                 $searchStr = is_string($search) ? $search : '';
                 $q->where('name', 'like', '%'.$searchStr.'%')
                     ->orWhere('email', 'like', '%'.$searchStr.'%');
-            }));
+            }))
+            ->when($roleFilter !== '' && $roleFilter !== 'all', function (\Illuminate\Database\Eloquent\Builder $query) use ($roleFilter): void {
+                if ($roleFilter === 'none') {
+                    $query->whereDoesntHave('roles');
+
+                    return;
+                }
+
+                $query->whereHas('roles', fn (\Illuminate\Database\Eloquent\Builder $roleQuery): \Illuminate\Database\Eloquent\Builder => $roleQuery->where('name', $roleFilter));
+            });
 
         // Handle sorting
         $sortBy = $request->get('sort_by');
@@ -62,7 +74,7 @@ final readonly class UserController
         return Inertia::render('Users/Index', [
             'users' => $users,
             'roles' => $roles,
-            'filters' => $request->only(['search']),
+            'filters' => $request->only(['search', 'role']),
         ]);
     }
 
