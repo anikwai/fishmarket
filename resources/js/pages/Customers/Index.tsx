@@ -663,7 +663,7 @@ export default function CustomersIndex({ customers, filters }: CustomersProps) {
                 {/* Create Modal */}
                 <Dialog open={createOpen} onOpenChange={setCreateOpen}>
                     <DialogContent className="flex max-h-[90vh] w-full flex-col gap-0 sm:max-w-[500px]">
-                        <DialogHeader className="flex-shrink-0 pb-4">
+                        <DialogHeader className="shrink-0 pb-4">
                             <DialogTitle>Create Customer</DialogTitle>
                             <DialogDescription>
                                 Add a new customer to the system. All fields
@@ -795,7 +795,7 @@ export default function CustomersIndex({ customers, filters }: CustomersProps) {
                                                     e.target.value,
                                                 )
                                             }
-                                            className="flex min-h-[80px] w-full rounded-md border border-input bg-transparent px-3 py-2 pl-9 text-sm"
+                                            className="flex min-h-20 w-full rounded-md border border-input bg-transparent px-3 py-2 pl-9 text-sm"
                                             placeholder="123 Main St, City, State ZIP"
                                         />
                                     </div>
@@ -805,7 +805,7 @@ export default function CustomersIndex({ customers, filters }: CustomersProps) {
                                 </Field>
                             </FieldGroup>
                         </div>
-                        <DialogFooter className="flex-shrink-0 border-t pt-4">
+                        <DialogFooter className="shrink-0 border-t pt-4">
                             <Button
                                 variant="outline"
                                 onClick={() => setCreateOpen(false)}
@@ -835,7 +835,7 @@ export default function CustomersIndex({ customers, filters }: CustomersProps) {
                 {/* Edit Modal */}
                 <Dialog open={editOpen} onOpenChange={setEditOpen}>
                     <DialogContent className="flex max-h-[90vh] w-full flex-col gap-0 sm:max-w-[500px]">
-                        <DialogHeader className="flex-shrink-0 pb-4">
+                        <DialogHeader className="shrink-0 pb-4">
                             <DialogTitle>Edit Customer</DialogTitle>
                             <DialogDescription>
                                 Update customer information. All fields marked
@@ -964,7 +964,7 @@ export default function CustomersIndex({ customers, filters }: CustomersProps) {
                                                     e.target.value,
                                                 )
                                             }
-                                            className="flex min-h-[80px] w-full rounded-md border border-input bg-transparent px-3 py-2 pl-9 text-sm"
+                                            className="flex min-h-20 w-full rounded-md border border-input bg-transparent px-3 py-2 pl-9 text-sm"
                                             placeholder="123 Main St, City, State ZIP"
                                         />
                                     </div>
@@ -974,7 +974,7 @@ export default function CustomersIndex({ customers, filters }: CustomersProps) {
                                 </Field>
                             </FieldGroup>
                         </div>
-                        <DialogFooter className="flex-shrink-0 border-t pt-4">
+                        <DialogFooter className="shrink-0 border-t pt-4">
                             <Button
                                 variant="outline"
                                 onClick={() => setEditOpen(false)}
