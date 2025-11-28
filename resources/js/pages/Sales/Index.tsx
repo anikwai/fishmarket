@@ -217,6 +217,13 @@ export default function SalesIndex({
     const [deleteOpen, setDeleteOpen] = useState(false);
     const [showOpen, setShowOpen] = useState(false);
     const [selectedSale, setSelectedSale] = useState<Sale | null>(null);
+    const formatQuantity = (value: number | string) => {
+        const parsed = Number(value);
+        if (Number.isNaN(parsed)) {
+            return value;
+        }
+        return parsed.toFixed(3);
+    };
 
     const [sorting, setSorting] = useState<SortingState>([]);
     const [columnVisibility, setColumnVisibility] = useState<VisibilityState>(
@@ -647,7 +654,7 @@ export default function SalesIndex({
                     );
                 },
                 cell: ({ row }) => (
-                    <div>{Number(row.getValue('quantity_kg')).toFixed(2)}</div>
+                    <div>{Number(row.getValue('quantity_kg')).toFixed(3)}</div>
                 ),
             },
             {
@@ -834,7 +841,7 @@ export default function SalesIndex({
                         </CardHeader>
                         <CardContent>
                             <p className="text-2xl font-bold">
-                                {currentStock.toFixed(2)} kg
+                                {currentStock.toFixed(3)} kg
                             </p>
                         </CardContent>
                     </Card>
@@ -966,7 +973,10 @@ export default function SalesIndex({
                                               >
                                                   {purchase.purchase_date} -{' '}
                                                   {purchase.supplier_name} (
-                                                  {purchase.quantity_kg}kg)
+                                                  {formatQuantity(
+                                                      purchase.quantity_kg,
+                                                  )}
+                                                  kg)
                                               </SelectItem>
                                           ),
                                       )
@@ -1297,7 +1307,7 @@ export default function SalesIndex({
                             <DialogDescription>
                                 Record a new sale. Available stock:{' '}
                                 <span className="font-semibold">
-                                    {currentStock.toFixed(2)} kg
+                                    {currentStock.toFixed(3)} kg
                                 </span>
                                 . All fields marked with * are required.
                             </DialogDescription>
@@ -1467,9 +1477,9 @@ export default function SalesIndex({
                                                                             purchase.supplier_name
                                                                         }{' '}
                                                                         -{' '}
-                                                                        {
-                                                                            purchase.remaining_quantity
-                                                                        }
+                                                                        {formatQuantity(
+                                                                            purchase.remaining_quantity,
+                                                                        )}
                                                                         kg left
                                                                     </SelectItem>
                                                                 ),
@@ -1903,9 +1913,9 @@ export default function SalesIndex({
                                                                         purchase.supplier_name
                                                                     }{' '}
                                                                     -{' '}
-                                                                    {
-                                                                        purchase.remaining_quantity
-                                                                    }
+                                                                    {formatQuantity(
+                                                                        purchase.remaining_quantity,
+                                                                    )}
                                                                     kg left
                                                                 </SelectItem>
                                                             ),
@@ -2266,7 +2276,7 @@ export default function SalesIndex({
                                                             {Number(
                                                                 item.quantity_kg ??
                                                                     0,
-                                                            ).toFixed(2)}
+                                                            ).toFixed(3)}
                                                         </TableCell>
                                                         <TableCell className="text-right">
                                                             SBD{' '}
