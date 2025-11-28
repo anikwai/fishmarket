@@ -20,7 +20,6 @@
 
         @php
             $paid = $sale->payments->sum('amount');
-            $balance = max(0, (float) $sale->total_amount - (float) $paid);
         @endphp
 
         <div style="background-color: #f5f5f5; padding: 15px; border-radius: 5px; margin: 20px 0;">
