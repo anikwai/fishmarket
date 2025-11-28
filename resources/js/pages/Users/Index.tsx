@@ -618,11 +618,12 @@ export default function UsersIndex({ users, roles, filters }: UsersProps) {
             },
             {
                 id: 'actions',
+                header: 'Actions',
                 enableHiding: false,
                 cell: ({ row }) => {
                     const user = row.original;
                     return (
-                        <div className="flex justify-end">
+                        <div className="flex justify-start">
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
                                     <Button
