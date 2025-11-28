@@ -344,6 +344,7 @@ interface UsersProps {
     roles: Role[];
     filters: {
         search?: string;
+        role?: string;
     };
 }
 
@@ -357,15 +358,17 @@ export default function UsersIndex({ users, roles, filters }: UsersProps) {
     const [selectedRole, setSelectedRole] = useState<Role | null>(null);
     const [sorting, setSorting] = useState<SortingState>([]);
     const [searchValue, setSearchValue] = useState(filters.search || '');
+    const [roleFilter, setRoleFilter] = useState(filters.role ?? 'all');
     const [passwordValue, setPasswordValue] = useState('');
     const isInitialMount = useRef(true);
 
     // Debounced search function
-    const performSearch = useCallback((search: string) => {
+    const performSearch = useCallback((search: string, role: string) => {
         router.get(
             '/users',
             {
                 search: search || undefined,
+                role: role === 'all' ? undefined : role,
             },
             {
                 preserveState: true,
@@ -384,11 +387,11 @@ export default function UsersIndex({ users, roles, filters }: UsersProps) {
         }
 
         const timeoutId = setTimeout(() => {
-            performSearch(searchValue);
+            performSearch(searchValue, roleFilter);
         }, 300);
 
         return () => clearTimeout(timeoutId);
-    }, [searchValue, performSearch]);
+    }, [searchValue, roleFilter, performSearch]);
 
     // Handle sorting changes
     useEffect(() => {
@@ -408,6 +411,7 @@ export default function UsersIndex({ users, roles, filters }: UsersProps) {
             '/users',
             {
                 search: searchValue || undefined,
+                role: roleFilter === 'all' ? undefined : roleFilter,
                 ...sortParam,
             },
             {
@@ -417,7 +421,7 @@ export default function UsersIndex({ users, roles, filters }: UsersProps) {
                 only: ['users', 'filters'],
             },
         );
-    }, [sorting, searchValue]);
+    }, [sorting, searchValue, roleFilter]);
 
     const handleEdit = useCallback((user: User) => {
         if (user?.id != null) {
@@ -688,6 +692,10 @@ export default function UsersIndex({ users, roles, filters }: UsersProps) {
         setSearchValue(value);
     };
 
+    const handleRoleFilterChange = (value: string) => {
+        setRoleFilter(value);
+    };
+
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Users" />
@@ -721,6 +729,24 @@ export default function UsersIndex({ users, roles, filters }: UsersProps) {
                             className="max-w-sm pl-8"
                         />
                     </div>
+                    <Select
+                        value={roleFilter}
+                        onValueChange={handleRoleFilterChange}
+                    >
+                        <SelectTrigger className="w-[200px]">
+                            <SelectValue placeholder="All roles" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="all">All roles</SelectItem>
+                            <SelectItem value="none">No role</SelectItem>
+                            {roles.map((role) => (
+                                <SelectItem key={role.id} value={role.name}>
+                                    {role.name.charAt(0).toUpperCase() +
+                                        role.name.slice(1)}
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
                 </div>
 
                 {/* Table */}
