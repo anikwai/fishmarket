@@ -40,7 +40,7 @@ final class Sale extends Model
     /**
      * @var list<string>
      */
-    protected $appends = ['quantity_kg', 'is_fully_paid'];
+    protected $appends = ['quantity_kg', 'is_fully_paid', 'invoice_number'];
 
     /**
      * @return array<string, string>
@@ -114,6 +114,11 @@ final class Sale extends Model
     protected function getQuantityKgAttribute(): float
     {
         return (float) $this->items->sum(fn (SaleItem $item): float => (float) $item->quantity_kg);
+    }
+
+    protected function getInvoiceNumberAttribute(): string
+    {
+        return 'SINV-'.mb_str_pad((string) $this->id, 6, '0', STR_PAD_LEFT);
     }
 
     protected function getProfitAttribute(): float
