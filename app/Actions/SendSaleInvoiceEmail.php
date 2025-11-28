@@ -24,7 +24,7 @@ final readonly class SendSaleInvoiceEmail
             return false;
         }
 
-        Mail::to($recipient)->send(new SaleInvoice($sale));
+        Mail::to($recipient)->queue(new SaleInvoice($sale));
 
         return true;
     }
