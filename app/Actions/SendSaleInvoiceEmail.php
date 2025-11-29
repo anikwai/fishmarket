@@ -14,7 +14,9 @@ final readonly class SendSaleInvoiceEmail
     public function handle(Sale $sale): bool
     {
         $sale->loadMissing('customer');
-        $recipient = $sale->customer->email ?? $sale->customer()->value('email');
+        /** @var \App\Models\Customer|null $customer */
+        $customer = $sale->customer;
+        $recipient = $customer?->email;
 
         // Ensure we have a customer with a valid email before attempting to send.
         if (! is_string($recipient) || $recipient === '') {
