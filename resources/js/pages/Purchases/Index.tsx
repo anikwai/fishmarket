@@ -1,15 +1,5 @@
 import { DatePicker } from '@/components/date-picker';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import {
-    AlertDialog,
-    AlertDialogAction,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
@@ -67,7 +57,6 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
-import { useClipboard } from '@/hooks/use-clipboard';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Head, router, useForm } from '@inertiajs/react';
@@ -95,8 +84,6 @@ import {
     FileDown,
     FileText,
     InfoIcon,
-    Link as LinkIcon,
-    Mail,
     MoreHorizontal,
     Package,
     PencilIcon,
@@ -108,7 +95,6 @@ import {
     UserCircle,
 } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { toast } from 'sonner';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -136,6 +122,17 @@ interface Purchase {
     remaining_quantity?: number | string;
     sold_quantity?: number | string;
     total_expenses?: number | string;
+    receipt_number?: string;
+    supplier_invoice_number?: string | null;
+    supplier_invoice_date?: string | null;
+    supplier_invoice_amount?: number | string | null;
+    supplier_invoice_path?: string | null;
+    supplier_invoice_original_name?: string | null;
+    supplier_receipt_number?: string | null;
+    supplier_receipt_date?: string | null;
+    supplier_receipt_amount?: number | string | null;
+    supplier_receipt_path?: string | null;
+    supplier_receipt_original_name?: string | null;
 }
 
 interface PurchasesProps {
@@ -165,14 +162,9 @@ export default function PurchasesIndex({
     const [editOpen, setEditOpen] = useState(false);
     const [showOpen, setShowOpen] = useState(false);
     const [deleteOpen, setDeleteOpen] = useState(false);
-    const [emailDialogOpen, setEmailDialogOpen] = useState(false);
-    const [purchaseToEmail, setPurchaseToEmail] = useState<Purchase | null>(
-        null,
-    );
     const [selectedPurchase, setSelectedPurchase] = useState<Purchase | null>(
         null,
     );
-    const [isEmailingInvoice, setIsEmailingInvoice] = useState(false);
     const [showAddSupplier, setShowAddSupplier] = useState(false);
     const [sorting, setSorting] = useState<SortingState>([]);
     const [supplierFilter, setSupplierFilter] = useState(
@@ -184,7 +176,6 @@ export default function PurchasesIndex({
     );
     const [searchValue, setSearchValue] = useState(filters.search || '');
     const isInitialMount = useRef(true);
-    const [, copyToClipboard] = useClipboard();
 
     // Debounced search function
     const performSearch = useCallback((search: string, supplierId: string) => {
@@ -256,6 +247,14 @@ export default function PurchasesIndex({
         price_per_kg: '',
         description: '',
         notes: '',
+        supplier_invoice_number: '',
+        supplier_invoice_date: '',
+        supplier_invoice_amount: '',
+        supplier_invoice_file: null as File | null,
+        supplier_receipt_number: '',
+        supplier_receipt_date: '',
+        supplier_receipt_amount: '',
+        supplier_receipt_file: null as File | null,
     });
 
     const supplierForm = useForm({
@@ -272,6 +271,14 @@ export default function PurchasesIndex({
         price_per_kg: '',
         description: '',
         notes: '',
+        supplier_invoice_number: '',
+        supplier_invoice_date: '',
+        supplier_invoice_amount: '',
+        supplier_invoice_file: null as File | null,
+        supplier_receipt_number: '',
+        supplier_receipt_date: '',
+        supplier_receipt_amount: '',
+        supplier_receipt_file: null as File | null,
     });
 
     const handleCreate = () => {
@@ -310,6 +317,16 @@ export default function PurchasesIndex({
                 price_per_kg: purchase.price_per_kg.toString(),
                 description: purchase.description || '',
                 notes: purchase.notes || '',
+                supplier_invoice_number: purchase.supplier_invoice_number || '',
+                supplier_invoice_date: purchase.supplier_invoice_date || '',
+                supplier_invoice_amount:
+                    purchase.supplier_invoice_amount?.toString() || '',
+                supplier_invoice_file: null,
+                supplier_receipt_number: purchase.supplier_receipt_number || '',
+                supplier_receipt_date: purchase.supplier_receipt_date || '',
+                supplier_receipt_amount:
+                    purchase.supplier_receipt_amount?.toString() || '',
+                supplier_receipt_file: null,
             });
             setEditOpen(true);
         },
@@ -367,60 +384,9 @@ export default function PurchasesIndex({
         });
     };
 
-    const handleDownloadInvoice = useCallback((purchase: Purchase) => {
-        window.open(`/purchases/${purchase.id}/invoice/download`, '_blank');
+    const handleDownloadReceipt = useCallback((purchase: Purchase) => {
+        window.open(`/purchases/${purchase.id}/receipt/download`, '_blank');
     }, []);
-
-    const handleEmailInvoice = useCallback((purchase: Purchase) => {
-        setPurchaseToEmail(purchase);
-        setEmailDialogOpen(true);
-    }, []);
-
-    const handleCopyInvoiceLink = useCallback(
-        async (purchase: Purchase) => {
-            try {
-                const response = await fetch(
-                    `/purchases/${purchase.id}/invoice/link`,
-                );
-                if (!response.ok) throw new Error('Failed to generate link');
-                const data = await response.json();
-
-                const success = await copyToClipboard(data.url);
-                if (success) {
-                    toast.success('Invoice link copied to clipboard');
-                } else {
-                    toast.error('Failed to copy link');
-                }
-            } catch (error) {
-                toast.error('Could not generate invoice link');
-                console.error(error);
-            }
-        },
-        [copyToClipboard],
-    );
-
-    const confirmEmailInvoice = () => {
-        if (!purchaseToEmail || isEmailingInvoice) return;
-
-        setIsEmailingInvoice(true);
-        router.post(
-            `/purchases/${purchaseToEmail.id}/invoice/email`,
-            {},
-            {
-                preserveScroll: true,
-                onSuccess: () => {
-                    setEmailDialogOpen(false);
-                    setPurchaseToEmail(null);
-                },
-                onError: () => {
-                    setEmailDialogOpen(false);
-                },
-                onFinish: () => {
-                    setIsEmailingInvoice(false);
-                },
-            },
-        );
-    };
 
     const columns = useMemo<ColumnDef<Purchase>[]>(
         () => [
@@ -656,27 +622,11 @@ export default function PurchasesIndex({
                                 <DropdownMenuContent align="end">
                                     <DropdownMenuItem
                                         onClick={() =>
-                                            handleDownloadInvoice(purchase)
+                                            handleDownloadReceipt(purchase)
                                         }
                                     >
                                         <FileDown className="mr-2 h-4 w-4" />
-                                        Download Invoice
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem
-                                        onClick={() =>
-                                            handleEmailInvoice(purchase)
-                                        }
-                                    >
-                                        <Mail className="mr-2 h-4 w-4" />
-                                        Email Invoice
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem
-                                        onClick={() =>
-                                            handleCopyInvoiceLink(purchase)
-                                        }
-                                    >
-                                        <LinkIcon className="mr-2 h-4 w-4" />
-                                        Copy Invoice Link
+                                        Download Purchase PDF
                                     </DropdownMenuItem>
                                     <DropdownMenuSeparator />
                                     <DropdownMenuItem
@@ -712,12 +662,7 @@ export default function PurchasesIndex({
                 },
             },
         ],
-        [
-            handleEdit,
-            handleDownloadInvoice,
-            handleEmailInvoice,
-            handleCopyInvoiceLink,
-        ],
+        [handleEdit, handleDownloadReceipt],
     );
 
     const table = useReactTable({
@@ -1364,6 +1309,254 @@ export default function PurchasesIndex({
                                         {createForm.errors.notes}
                                     </FieldError>
                                 </Field>
+                                <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                                    <Field
+                                        data-invalid={
+                                            !!createForm.errors
+                                                .supplier_invoice_number
+                                        }
+                                    >
+                                        <FieldLabel htmlFor="supplier_invoice_number">
+                                            Supplier Invoice #
+                                        </FieldLabel>
+                                        <Input
+                                            id="supplier_invoice_number"
+                                            value={
+                                                createForm.data
+                                                    .supplier_invoice_number
+                                            }
+                                            onChange={(e) =>
+                                                createForm.setData(
+                                                    'supplier_invoice_number',
+                                                    e.target.value,
+                                                )
+                                            }
+                                            placeholder="e.g., INV-1234"
+                                        />
+                                        <FieldError>
+                                            {
+                                                createForm.errors
+                                                    .supplier_invoice_number
+                                            }
+                                        </FieldError>
+                                    </Field>
+                                    <Field
+                                        data-invalid={
+                                            !!createForm.errors
+                                                .supplier_invoice_date
+                                        }
+                                    >
+                                        <FieldLabel htmlFor="supplier_invoice_date">
+                                            Supplier Invoice Date
+                                        </FieldLabel>
+                                        <Input
+                                            id="supplier_invoice_date"
+                                            type="date"
+                                            value={
+                                                createForm.data
+                                                    .supplier_invoice_date
+                                            }
+                                            onChange={(e) =>
+                                                createForm.setData(
+                                                    'supplier_invoice_date',
+                                                    e.target.value,
+                                                )
+                                            }
+                                        />
+                                        <FieldError>
+                                            {
+                                                createForm.errors
+                                                    .supplier_invoice_date
+                                            }
+                                        </FieldError>
+                                    </Field>
+                                    <Field
+                                        data-invalid={
+                                            !!createForm.errors
+                                                .supplier_invoice_amount
+                                        }
+                                    >
+                                        <FieldLabel htmlFor="supplier_invoice_amount">
+                                            Supplier Invoice Amount (SBD)
+                                        </FieldLabel>
+                                        <Input
+                                            id="supplier_invoice_amount"
+                                            type="number"
+                                            step="0.01"
+                                            value={
+                                                createForm.data
+                                                    .supplier_invoice_amount
+                                            }
+                                            onChange={(e) =>
+                                                createForm.setData(
+                                                    'supplier_invoice_amount',
+                                                    e.target.value,
+                                                )
+                                            }
+                                            placeholder="0.00"
+                                        />
+                                        <FieldError>
+                                            {
+                                                createForm.errors
+                                                    .supplier_invoice_amount
+                                            }
+                                        </FieldError>
+                                    </Field>
+                                    <Field
+                                        data-invalid={
+                                            !!createForm.errors
+                                                .supplier_invoice_file
+                                        }
+                                    >
+                                        <FieldLabel htmlFor="supplier_invoice_file">
+                                            Upload Supplier Invoice
+                                            (PDF/JPG/PNG)
+                                        </FieldLabel>
+                                        <Input
+                                            id="supplier_invoice_file"
+                                            type="file"
+                                            accept=".pdf,.jpg,.jpeg,.png"
+                                            onChange={(e) =>
+                                                createForm.setData(
+                                                    'supplier_invoice_file',
+                                                    e.target.files?.[0] ?? null,
+                                                )
+                                            }
+                                        />
+                                        <FieldDescription>
+                                            Optional; max 2MB.
+                                        </FieldDescription>
+                                        <FieldError>
+                                            {
+                                                createForm.errors
+                                                    .supplier_invoice_file
+                                            }
+                                        </FieldError>
+                                    </Field>
+                                    <Field
+                                        data-invalid={
+                                            !!createForm.errors
+                                                .supplier_receipt_number
+                                        }
+                                    >
+                                        <FieldLabel htmlFor="supplier_receipt_number">
+                                            Supplier Receipt #
+                                        </FieldLabel>
+                                        <Input
+                                            id="supplier_receipt_number"
+                                            value={
+                                                createForm.data
+                                                    .supplier_receipt_number
+                                            }
+                                            onChange={(e) =>
+                                                createForm.setData(
+                                                    'supplier_receipt_number',
+                                                    e.target.value,
+                                                )
+                                            }
+                                            placeholder="e.g., RCT-1234"
+                                        />
+                                        <FieldError>
+                                            {
+                                                createForm.errors
+                                                    .supplier_receipt_number
+                                            }
+                                        </FieldError>
+                                    </Field>
+                                    <Field
+                                        data-invalid={
+                                            !!createForm.errors
+                                                .supplier_receipt_date
+                                        }
+                                    >
+                                        <FieldLabel htmlFor="supplier_receipt_date">
+                                            Supplier Receipt Date
+                                        </FieldLabel>
+                                        <Input
+                                            id="supplier_receipt_date"
+                                            type="date"
+                                            value={
+                                                createForm.data
+                                                    .supplier_receipt_date
+                                            }
+                                            onChange={(e) =>
+                                                createForm.setData(
+                                                    'supplier_receipt_date',
+                                                    e.target.value,
+                                                )
+                                            }
+                                        />
+                                        <FieldError>
+                                            {
+                                                createForm.errors
+                                                    .supplier_receipt_date
+                                            }
+                                        </FieldError>
+                                    </Field>
+                                    <Field
+                                        data-invalid={
+                                            !!createForm.errors
+                                                .supplier_receipt_amount
+                                        }
+                                    >
+                                        <FieldLabel htmlFor="supplier_receipt_amount">
+                                            Supplier Receipt Amount (SBD)
+                                        </FieldLabel>
+                                        <Input
+                                            id="supplier_receipt_amount"
+                                            type="number"
+                                            step="0.01"
+                                            value={
+                                                createForm.data
+                                                    .supplier_receipt_amount
+                                            }
+                                            onChange={(e) =>
+                                                createForm.setData(
+                                                    'supplier_receipt_amount',
+                                                    e.target.value,
+                                                )
+                                            }
+                                            placeholder="0.00"
+                                        />
+                                        <FieldError>
+                                            {
+                                                createForm.errors
+                                                    .supplier_receipt_amount
+                                            }
+                                        </FieldError>
+                                    </Field>
+                                    <Field
+                                        data-invalid={
+                                            !!createForm.errors
+                                                .supplier_receipt_file
+                                        }
+                                    >
+                                        <FieldLabel htmlFor="supplier_receipt_file">
+                                            Upload Supplier Receipt
+                                            (PDF/JPG/PNG)
+                                        </FieldLabel>
+                                        <Input
+                                            id="supplier_receipt_file"
+                                            type="file"
+                                            accept=".pdf,.jpg,.jpeg,.png"
+                                            onChange={(e) =>
+                                                createForm.setData(
+                                                    'supplier_receipt_file',
+                                                    e.target.files?.[0] ?? null,
+                                                )
+                                            }
+                                        />
+                                        <FieldDescription>
+                                            Optional; max 2MB.
+                                        </FieldDescription>
+                                        <FieldError>
+                                            {
+                                                createForm.errors
+                                                    .supplier_receipt_file
+                                            }
+                                        </FieldError>
+                                    </Field>
+                                </div>
                             </FieldGroup>
                         </div>
                         <DialogFooter className="flex-shrink-0 border-t pt-4">
@@ -1599,6 +1792,286 @@ export default function PurchasesIndex({
                                         {editForm.errors.notes}
                                     </FieldError>
                                 </Field>
+                                <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                                    <Field
+                                        data-invalid={
+                                            !!editForm.errors
+                                                .supplier_invoice_number
+                                        }
+                                    >
+                                        <FieldLabel htmlFor="edit-supplier_invoice_number">
+                                            Supplier Invoice #
+                                        </FieldLabel>
+                                        <Input
+                                            id="edit-supplier_invoice_number"
+                                            value={
+                                                editForm.data
+                                                    .supplier_invoice_number
+                                            }
+                                            onChange={(e) =>
+                                                editForm.setData(
+                                                    'supplier_invoice_number',
+                                                    e.target.value,
+                                                )
+                                            }
+                                            placeholder="e.g., INV-1234"
+                                        />
+                                        {selectedPurchase?.supplier_invoice_original_name && (
+                                            <FieldDescription>
+                                                Current file:{' '}
+                                                <a
+                                                    className="text-primary underline"
+                                                    href={`/storage/${selectedPurchase.supplier_invoice_path}`}
+                                                    target="_blank"
+                                                    rel="noreferrer"
+                                                >
+                                                    {
+                                                        selectedPurchase.supplier_invoice_original_name
+                                                    }
+                                                </a>
+                                            </FieldDescription>
+                                        )}
+                                        <FieldError>
+                                            {
+                                                editForm.errors
+                                                    .supplier_invoice_number
+                                            }
+                                        </FieldError>
+                                    </Field>
+                                    <Field
+                                        data-invalid={
+                                            !!editForm.errors
+                                                .supplier_invoice_date
+                                        }
+                                    >
+                                        <FieldLabel htmlFor="edit-supplier_invoice_date">
+                                            Supplier Invoice Date
+                                        </FieldLabel>
+                                        <Input
+                                            id="edit-supplier_invoice_date"
+                                            type="date"
+                                            value={
+                                                editForm.data
+                                                    .supplier_invoice_date
+                                            }
+                                            onChange={(e) =>
+                                                editForm.setData(
+                                                    'supplier_invoice_date',
+                                                    e.target.value,
+                                                )
+                                            }
+                                        />
+                                        <FieldError>
+                                            {
+                                                editForm.errors
+                                                    .supplier_invoice_date
+                                            }
+                                        </FieldError>
+                                    </Field>
+                                    <Field
+                                        data-invalid={
+                                            !!editForm.errors
+                                                .supplier_invoice_amount
+                                        }
+                                    >
+                                        <FieldLabel htmlFor="edit-supplier_invoice_amount">
+                                            Supplier Invoice Amount (SBD)
+                                        </FieldLabel>
+                                        <Input
+                                            id="edit-supplier_invoice_amount"
+                                            type="number"
+                                            step="0.01"
+                                            value={
+                                                editForm.data
+                                                    .supplier_invoice_amount
+                                            }
+                                            onChange={(e) =>
+                                                editForm.setData(
+                                                    'supplier_invoice_amount',
+                                                    e.target.value,
+                                                )
+                                            }
+                                            placeholder="0.00"
+                                        />
+                                        <FieldError>
+                                            {
+                                                editForm.errors
+                                                    .supplier_invoice_amount
+                                            }
+                                        </FieldError>
+                                    </Field>
+                                    <Field
+                                        data-invalid={
+                                            !!editForm.errors
+                                                .supplier_invoice_file
+                                        }
+                                    >
+                                        <FieldLabel htmlFor="edit-supplier_invoice_file">
+                                            Upload Supplier Invoice
+                                            (PDF/JPG/PNG)
+                                        </FieldLabel>
+                                        <Input
+                                            id="edit-supplier_invoice_file"
+                                            type="file"
+                                            accept=".pdf,.jpg,.jpeg,.png"
+                                            onChange={(e) =>
+                                                editForm.setData(
+                                                    'supplier_invoice_file',
+                                                    e.target.files?.[0] ?? null,
+                                                )
+                                            }
+                                        />
+                                        <FieldDescription>
+                                            Upload to replace the current file
+                                            (optional, max 2MB).
+                                        </FieldDescription>
+                                        <FieldError>
+                                            {
+                                                editForm.errors
+                                                    .supplier_invoice_file
+                                            }
+                                        </FieldError>
+                                    </Field>
+                                    <Field
+                                        data-invalid={
+                                            !!editForm.errors
+                                                .supplier_receipt_number
+                                        }
+                                    >
+                                        <FieldLabel htmlFor="edit-supplier_receipt_number">
+                                            Supplier Receipt #
+                                        </FieldLabel>
+                                        <Input
+                                            id="edit-supplier_receipt_number"
+                                            value={
+                                                editForm.data
+                                                    .supplier_receipt_number
+                                            }
+                                            onChange={(e) =>
+                                                editForm.setData(
+                                                    'supplier_receipt_number',
+                                                    e.target.value,
+                                                )
+                                            }
+                                            placeholder="e.g., RCT-1234"
+                                        />
+                                        {selectedPurchase?.supplier_receipt_original_name && (
+                                            <FieldDescription>
+                                                Current file:{' '}
+                                                <a
+                                                    className="text-primary underline"
+                                                    href={`/storage/${selectedPurchase.supplier_receipt_path}`}
+                                                    target="_blank"
+                                                    rel="noreferrer"
+                                                >
+                                                    {
+                                                        selectedPurchase.supplier_receipt_original_name
+                                                    }
+                                                </a>
+                                            </FieldDescription>
+                                        )}
+                                        <FieldError>
+                                            {
+                                                editForm.errors
+                                                    .supplier_receipt_number
+                                            }
+                                        </FieldError>
+                                    </Field>
+                                    <Field
+                                        data-invalid={
+                                            !!editForm.errors
+                                                .supplier_receipt_date
+                                        }
+                                    >
+                                        <FieldLabel htmlFor="edit-supplier_receipt_date">
+                                            Supplier Receipt Date
+                                        </FieldLabel>
+                                        <Input
+                                            id="edit-supplier_receipt_date"
+                                            type="date"
+                                            value={
+                                                editForm.data
+                                                    .supplier_receipt_date
+                                            }
+                                            onChange={(e) =>
+                                                editForm.setData(
+                                                    'supplier_receipt_date',
+                                                    e.target.value,
+                                                )
+                                            }
+                                        />
+                                        <FieldError>
+                                            {
+                                                editForm.errors
+                                                    .supplier_receipt_date
+                                            }
+                                        </FieldError>
+                                    </Field>
+                                    <Field
+                                        data-invalid={
+                                            !!editForm.errors
+                                                .supplier_receipt_amount
+                                        }
+                                    >
+                                        <FieldLabel htmlFor="edit-supplier_receipt_amount">
+                                            Supplier Receipt Amount (SBD)
+                                        </FieldLabel>
+                                        <Input
+                                            id="edit-supplier_receipt_amount"
+                                            type="number"
+                                            step="0.01"
+                                            value={
+                                                editForm.data
+                                                    .supplier_receipt_amount
+                                            }
+                                            onChange={(e) =>
+                                                editForm.setData(
+                                                    'supplier_receipt_amount',
+                                                    e.target.value,
+                                                )
+                                            }
+                                            placeholder="0.00"
+                                        />
+                                        <FieldError>
+                                            {
+                                                editForm.errors
+                                                    .supplier_receipt_amount
+                                            }
+                                        </FieldError>
+                                    </Field>
+                                    <Field
+                                        data-invalid={
+                                            !!editForm.errors
+                                                .supplier_receipt_file
+                                        }
+                                    >
+                                        <FieldLabel htmlFor="edit-supplier_receipt_file">
+                                            Upload Supplier Receipt
+                                            (PDF/JPG/PNG)
+                                        </FieldLabel>
+                                        <Input
+                                            id="edit-supplier_receipt_file"
+                                            type="file"
+                                            accept=".pdf,.jpg,.jpeg,.png"
+                                            onChange={(e) =>
+                                                editForm.setData(
+                                                    'supplier_receipt_file',
+                                                    e.target.files?.[0] ?? null,
+                                                )
+                                            }
+                                        />
+                                        <FieldDescription>
+                                            Upload to replace the current file
+                                            (optional, max 2MB).
+                                        </FieldDescription>
+                                        <FieldError>
+                                            {
+                                                editForm.errors
+                                                    .supplier_receipt_file
+                                            }
+                                        </FieldError>
+                                    </Field>
+                                </div>
                             </FieldGroup>
                         </div>
                         <DialogFooter className="flex-shrink-0 border-t pt-4">
@@ -1748,6 +2221,72 @@ export default function PurchasesIndex({
                                                 selectedPurchase.total_cost,
                                             ).toFixed(2)}
                                         </ItemDescription>
+                                    </ItemContent>
+                                </Item>
+                                <Item
+                                    size="sm"
+                                    className="col-span-1 rounded-lg bg-muted/40"
+                                >
+                                    <ItemMedia
+                                        variant="icon"
+                                        className="bg-background text-muted-foreground"
+                                    >
+                                        <FileText className="h-4 w-4" />
+                                    </ItemMedia>
+                                    <ItemContent>
+                                        <ItemTitle className="text-xs text-muted-foreground">
+                                            Supplier Invoice
+                                        </ItemTitle>
+                                        <ItemDescription className="text-base font-semibold text-foreground">
+                                            {selectedPurchase.supplier_invoice_number ||
+                                                'Not provided'}
+                                        </ItemDescription>
+                                        {selectedPurchase.supplier_invoice_original_name && (
+                                            <ItemDescription className="text-xs text-primary">
+                                                <a
+                                                    href={`/storage/${selectedPurchase.supplier_invoice_path}`}
+                                                    target="_blank"
+                                                    rel="noreferrer"
+                                                >
+                                                    {
+                                                        selectedPurchase.supplier_invoice_original_name
+                                                    }
+                                                </a>
+                                            </ItemDescription>
+                                        )}
+                                    </ItemContent>
+                                </Item>
+                                <Item
+                                    size="sm"
+                                    className="col-span-1 rounded-lg bg-muted/40"
+                                >
+                                    <ItemMedia
+                                        variant="icon"
+                                        className="bg-background text-muted-foreground"
+                                    >
+                                        <FileText className="h-4 w-4" />
+                                    </ItemMedia>
+                                    <ItemContent>
+                                        <ItemTitle className="text-xs text-muted-foreground">
+                                            Supplier Receipt
+                                        </ItemTitle>
+                                        <ItemDescription className="text-base font-semibold text-foreground">
+                                            {selectedPurchase.supplier_receipt_number ||
+                                                'Not provided'}
+                                        </ItemDescription>
+                                        {selectedPurchase.supplier_receipt_original_name && (
+                                            <ItemDescription className="text-xs text-primary">
+                                                <a
+                                                    href={`/storage/${selectedPurchase.supplier_receipt_path}`}
+                                                    target="_blank"
+                                                    rel="noreferrer"
+                                                >
+                                                    {
+                                                        selectedPurchase.supplier_receipt_original_name
+                                                    }
+                                                </a>
+                                            </ItemDescription>
+                                        )}
                                     </ItemContent>
                                 </Item>
                                 <Item
@@ -1915,37 +2454,6 @@ export default function PurchasesIndex({
                         </DialogFooter>
                     </DialogContent>
                 </Dialog>
-
-                {/* Email Invoice Alert Dialog */}
-                <AlertDialog
-                    open={emailDialogOpen}
-                    onOpenChange={setEmailDialogOpen}
-                >
-                    <AlertDialogContent>
-                        <AlertDialogHeader>
-                            <AlertDialogTitle>Email Invoice</AlertDialogTitle>
-                            <AlertDialogDescription>
-                                Are you sure you want to email this invoice to
-                                the supplier?
-                            </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                            <AlertDialogCancel
-                                onClick={() => setPurchaseToEmail(null)}
-                            >
-                                Cancel
-                            </AlertDialogCancel>
-                            <AlertDialogAction
-                                onClick={confirmEmailInvoice}
-                                disabled={isEmailingInvoice}
-                            >
-                                {isEmailingInvoice
-                                    ? 'Sending...'
-                                    : 'Email Invoice'}
-                            </AlertDialogAction>
-                        </AlertDialogFooter>
-                    </AlertDialogContent>
-                </AlertDialog>
 
                 {/* Add Supplier Modal */}
                 <Dialog
