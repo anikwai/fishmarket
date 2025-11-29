@@ -6,20 +6,18 @@ namespace App\Http\Controllers;
 
 use App\Actions\CreatePurchase;
 use App\Actions\DeletePurchase;
-use App\Actions\GeneratePurchaseInvoice;
+use App\Actions\GeneratePurchaseReceipt;
 use App\Actions\PreparePurchaseIndexDataAction;
-use App\Actions\SendPurchaseInvoiceEmail;
 use App\Actions\UpdatePurchase;
 use App\Http\Requests\StorePurchaseRequest;
 use App\Http\Requests\UpdatePurchaseRequest;
 use App\Models\Purchase;
 use App\Models\Supplier;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response as HttpResponse;
 use Illuminate\Support\Facades\Gate;
-use Illuminate\Support\Facades\URL;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -86,7 +84,20 @@ final readonly class PurchaseController
     {
         Gate::authorize('create purchases');
 
-        $action->handle($request->validated());
+        /** @var array<string, mixed> $payload */
+        $payload = $request->validated();
+
+        $supplierIdInput = $request->input('supplier_id');
+        $supplierId = is_numeric($supplierIdInput) ? (int) $supplierIdInput : 0;
+
+        $data = $this->withSupplierDocuments(
+            $payload,
+            $request->file('supplier_invoice_file'),
+            $request->file('supplier_receipt_file'),
+            $supplierId
+        );
+
+        $action->handle($data);
 
         return back()->with('success', 'Purchase created successfully.');
     }
@@ -95,7 +106,21 @@ final readonly class PurchaseController
     {
         Gate::authorize('update purchases');
 
-        $action->handle($purchase, $request->validated());
+        /** @var array<string, mixed> $payload */
+        $payload = $request->validated();
+
+        $supplierIdInput = $request->input('supplier_id', $purchase->supplier_id);
+        $supplierId = is_numeric($supplierIdInput) ? (int) $supplierIdInput : $purchase->supplier_id;
+
+        $data = $this->withSupplierDocuments(
+            $payload,
+            $request->file('supplier_invoice_file'),
+            $request->file('supplier_receipt_file'),
+            $supplierId,
+            $purchase
+        );
+
+        $action->handle($purchase, $data);
 
         return back()->with('success', 'Purchase updated successfully.');
     }
@@ -109,53 +134,50 @@ final readonly class PurchaseController
         return back()->with('success', 'Purchase deleted successfully.');
     }
 
-    public function downloadInvoice(Purchase $purchase, GeneratePurchaseInvoice $generator): HttpResponse
+    public function downloadReceipt(Purchase $purchase, GeneratePurchaseReceipt $generator): HttpResponse
     {
         Gate::authorize('view purchases');
 
         $pdf = $generator->handle($purchase);
-        $invoiceNumber = $purchase->invoice_number;
+        $receiptNumber = $purchase->receipt_number;
 
         return response($pdf->output(), 200, [
             'Content-Type' => 'application/pdf',
-            'Content-Disposition' => 'attachment; filename="'.$invoiceNumber.'.pdf"',
+            'Content-Disposition' => 'attachment; filename="'.$receiptNumber.'.pdf"',
         ]);
     }
 
-    public function sendInvoiceEmail(Purchase $purchase, SendPurchaseInvoiceEmail $sender): RedirectResponse
+    /**
+     * @param  array<string, mixed>  $data
+     */
+    /**
+     * @param  array<string, mixed>  $data
+     * @return array<string, mixed>
+     */
+    private function withSupplierDocuments(array $data, ?\Illuminate\Http\UploadedFile $invoiceFile, ?\Illuminate\Http\UploadedFile $receiptFile, int $supplierId, ?Purchase $existing = null): array
     {
-        Gate::authorize('view purchases');
+        if ($invoiceFile instanceof \Illuminate\Http\UploadedFile) {
+            if ($existing?->supplier_invoice_path) {
+                Storage::disk('public')->delete($existing->supplier_invoice_path);
+            }
 
-        if ($sender->handle($purchase)) {
-            return back()->with('success', 'Invoice emailed to supplier successfully.');
+            $path = $invoiceFile->store("purchases/{$supplierId}/supplier-invoices", 'public');
+            $data['supplier_invoice_path'] = $path;
+            $data['supplier_invoice_original_name'] = $invoiceFile->getClientOriginalName();
         }
 
-        return back()->with('error', 'Supplier has no email; invoice not sent.');
-    }
+        if ($receiptFile instanceof \Illuminate\Http\UploadedFile) {
+            if ($existing?->supplier_receipt_path) {
+                Storage::disk('public')->delete($existing->supplier_receipt_path);
+            }
 
-    public function printInvoice(Request $request, Purchase $purchase, GeneratePurchaseInvoice $generator): HttpResponse
-    {
-        abort_unless((bool) $request->hasValidSignature(), 403);
+            $path = $receiptFile->store("purchases/{$supplierId}/supplier-receipts", 'public');
+            $data['supplier_receipt_path'] = $path;
+            $data['supplier_receipt_original_name'] = $receiptFile->getClientOriginalName();
+        }
 
-        $pdf = $generator->handle($purchase);
-        $invoiceNumber = $purchase->invoice_number;
+        unset($data['supplier_invoice_file'], $data['supplier_receipt_file']);
 
-        return response($pdf->output(), 200, [
-            'Content-Type' => 'application/pdf',
-            'Content-Disposition' => 'inline; filename="'.$invoiceNumber.'.pdf"',
-        ]);
-    }
-
-    public function generateInvoiceLink(Purchase $purchase): JsonResponse
-    {
-        Gate::authorize('view purchases');
-
-        $url = URL::temporarySignedRoute(
-            'purchases.invoice.print',
-            now()->addDays(7),
-            ['purchase' => $purchase]
-        );
-
-        return response()->json(['url' => $url]);
+        return $data;
     }
 }
