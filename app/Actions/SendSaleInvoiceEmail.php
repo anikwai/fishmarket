@@ -13,12 +13,12 @@ final readonly class SendSaleInvoiceEmail
 {
     public function handle(Sale $sale): bool
     {
-        $sale->load('customer');
+        $sale->loadMissing('customer');
 
-        $recipient = $sale->customer->email ?? null;
+        $recipient = $sale->customer?->email;
 
         // Ensure we have a customer with a valid email before attempting to send.
-        if (! $recipient) {
+        if (! is_string($recipient) || $recipient === '') {
             Log::warning("Cannot send sale invoice email: Sale {$sale->id} has no customer email.");
 
             return false;
