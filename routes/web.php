@@ -13,9 +13,6 @@ use App\Http\Controllers\UserTwoFactorAuthenticationController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
-Route::get('s/purchases/{purchase}/invoice', [App\Http\Controllers\PurchaseController::class, 'printInvoice'])
-    ->name('purchases.invoice.print')
-    ->middleware('signed');
 Route::get('s/sales/{sale}/invoice', [App\Http\Controllers\SaleController::class, 'printInvoice'])
     ->name('sales.invoice.print')
     ->middleware('signed');
@@ -35,9 +32,7 @@ Route::middleware(['auth', 'verified'])->group(function (): void {
     Route::post('sales/{sale}/invoice/email', [App\Http\Controllers\SaleController::class, 'sendInvoiceEmail'])->name('sales.invoice.email');
 
     Route::resource('purchases', App\Http\Controllers\PurchaseController::class)->except(['create', 'edit', 'show']);
-    Route::get('purchases/{purchase}/invoice/download', [App\Http\Controllers\PurchaseController::class, 'downloadInvoice'])->name('purchases.invoice.download');
-    Route::get('purchases/{purchase}/invoice/link', [App\Http\Controllers\PurchaseController::class, 'generateInvoiceLink'])->name('purchases.invoice.link');
-    Route::post('purchases/{purchase}/invoice/email', [App\Http\Controllers\PurchaseController::class, 'sendInvoiceEmail'])->name('purchases.invoice.email');
+    Route::get('purchases/{purchase}/receipt/download', [App\Http\Controllers\PurchaseController::class, 'downloadReceipt'])->name('purchases.receipt.download');
 
     Route::resource('expenses', App\Http\Controllers\ExpenseController::class)->except(['create', 'edit', 'show']);
     Route::resource('payments', App\Http\Controllers\PaymentController::class)->except(['create', 'edit', 'show']);
