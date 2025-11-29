@@ -1,5 +1,15 @@
 import { DatePicker } from '@/components/date-picker';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -58,6 +68,7 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
+import { useClipboard } from '@/hooks/use-clipboard';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Head, router, useForm } from '@inertiajs/react';
@@ -88,6 +99,7 @@ import {
     EyeIcon,
     FileText,
     InfoIcon,
+    Link as LinkIcon,
     MailIcon,
     MoreHorizontal,
     PencilIcon,
@@ -99,6 +111,7 @@ import {
     User,
 } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { toast } from 'sonner';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -150,6 +163,7 @@ interface SaleItem {
 interface Sale {
     id: number;
     sale_date: string;
+    invoice_number: string;
     subtotal: number | string;
     delivery_fee: number | string;
     total_amount: number | string;
@@ -217,6 +231,12 @@ export default function SalesIndex({
     const [deleteOpen, setDeleteOpen] = useState(false);
     const [showOpen, setShowOpen] = useState(false);
     const [selectedSale, setSelectedSale] = useState<Sale | null>(null);
+    const [invoiceEmailDialogOpen, setInvoiceEmailDialogOpen] = useState(false);
+    const [saleToEmailInvoice, setSaleToEmailInvoice] = useState<Sale | null>(
+        null,
+    );
+    const [isEmailingInvoice, setIsEmailingInvoice] = useState(false);
+    const [, copyToClipboard] = useClipboard();
     const formatQuantity = (value: number | string) => {
         const parsed = Number(value);
         if (Number.isNaN(parsed)) {
@@ -453,18 +473,68 @@ export default function SalesIndex({
         });
     };
 
-    const handleDownloadReceipt = (saleId: number) => {
+    const handleDownloadReceipt = useCallback((saleId: number) => {
         window.open(`/sales/${saleId}/receipt/download`, '_blank');
-    };
+    }, []);
 
-    const handleSendReceiptEmail = (saleId: number) => {
+    const handleSendReceiptEmail = useCallback((saleId: number) => {
         router.post(
             `/sales/${saleId}/receipt/email`,
             {},
             {
                 preserveScroll: true,
+            },
+        );
+    }, []);
+
+    const handleDownloadInvoice = useCallback((saleId: number) => {
+        window.open(`/sales/${saleId}/invoice/download`, '_blank');
+    }, []);
+
+    const handleCopyInvoiceLink = useCallback(
+        async (sale: Sale) => {
+            try {
+                const response = await fetch(`/sales/${sale.id}/invoice/link`);
+                if (!response.ok) throw new Error('Failed to generate link');
+                const data = await response.json();
+
+                const success = await copyToClipboard(data.url);
+                if (success) {
+                    toast.success('Invoice link copied to clipboard');
+                } else {
+                    toast.error('Failed to copy link');
+                }
+            } catch (error) {
+                toast.error('Could not generate invoice link');
+                console.error(error);
+            }
+        },
+        [copyToClipboard],
+    );
+
+    const handleEmailInvoice = useCallback((sale: Sale) => {
+        setSaleToEmailInvoice(sale);
+        setInvoiceEmailDialogOpen(true);
+    }, []);
+
+    const confirmEmailInvoice = () => {
+        if (!saleToEmailInvoice || isEmailingInvoice) return;
+
+        setIsEmailingInvoice(true);
+        router.post(
+            `/sales/${saleToEmailInvoice.id}/invoice/email`,
+            {},
+            {
+                preserveScroll: true,
                 onSuccess: () => {
-                    // Show success message
+                    setInvoiceEmailDialogOpen(false);
+                    setSaleToEmailInvoice(null);
+                },
+                onError: () => {
+                    setInvoiceEmailDialogOpen(false);
+                },
+                onFinish: () => {
+                    setIsEmailingInvoice(false);
                 },
             },
         );
@@ -744,6 +814,34 @@ export default function SalesIndex({
                                         <EyeIcon className="mr-2 h-4 w-4" />
                                         View Details
                                     </DropdownMenuItem>
+                                    <DropdownMenuSeparator />
+                                    <DropdownMenuItem
+                                        onClick={() =>
+                                            handleDownloadInvoice(sale.id)
+                                        }
+                                    >
+                                        <FileText className="mr-2 h-4 w-4" />
+                                        Download Invoice
+                                    </DropdownMenuItem>
+                                    {sale.customer.email && (
+                                        <DropdownMenuItem
+                                            onClick={() =>
+                                                handleEmailInvoice(sale)
+                                            }
+                                        >
+                                            <MailIcon className="mr-2 h-4 w-4" />
+                                            Email Invoice
+                                        </DropdownMenuItem>
+                                    )}
+                                    <DropdownMenuItem
+                                        onClick={() =>
+                                            handleCopyInvoiceLink(sale)
+                                        }
+                                    >
+                                        <LinkIcon className="mr-2 h-4 w-4" />
+                                        Copy Invoice Link
+                                    </DropdownMenuItem>
+                                    <DropdownMenuSeparator />
                                     <DropdownMenuItem
                                         onClick={() =>
                                             handleDownloadReceipt(sale.id)
@@ -786,7 +884,14 @@ export default function SalesIndex({
                 },
             },
         ],
-        [handleEdit],
+        [
+            handleEdit,
+            handleDownloadInvoice,
+            handleEmailInvoice,
+            handleCopyInvoiceLink,
+            handleDownloadReceipt,
+            handleSendReceiptEmail,
+        ],
     );
 
     const table = useReactTable({
@@ -828,9 +933,11 @@ export default function SalesIndex({
                         discounts, charge delivery fees, and mark sales as
                         credit sales for customers who pay later. For credit
                         sales, use the Payments page to record payments.
-                        Download or email receipts to customers who have email
-                        addresses. The system tracks profit/loss by comparing
-                        sale prices with purchase prices.
+                        Generate invoices before collecting payment (download,
+                        email, or copy a shareable link) and email receipts to
+                        customers who have email addresses. The system tracks
+                        profit/loss by comparing sale prices with purchase
+                        prices.
                     </AlertDescription>
                 </Alert>
 
@@ -2474,6 +2581,44 @@ export default function SalesIndex({
                         </DialogFooter>
                     </DialogContent>
                 </Dialog>
+
+                {/* Email Invoice Alert Dialog */}
+                <AlertDialog
+                    open={invoiceEmailDialogOpen}
+                    onOpenChange={(open) => {
+                        setInvoiceEmailDialogOpen(open);
+                        if (!open) setSaleToEmailInvoice(null);
+                    }}
+                >
+                    <AlertDialogContent>
+                        <AlertDialogHeader>
+                            <AlertDialogTitle>Email Invoice</AlertDialogTitle>
+                            <AlertDialogDescription>
+                                {saleToEmailInvoice?.customer?.email
+                                    ? `Send this invoice to ${saleToEmailInvoice.customer.email}?`
+                                    : 'Customer does not have an email on file.'}
+                            </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                            <AlertDialogCancel
+                                onClick={() => setSaleToEmailInvoice(null)}
+                            >
+                                Cancel
+                            </AlertDialogCancel>
+                            <AlertDialogAction
+                                onClick={confirmEmailInvoice}
+                                disabled={
+                                    isEmailingInvoice ||
+                                    !saleToEmailInvoice?.customer?.email
+                                }
+                            >
+                                {isEmailingInvoice
+                                    ? 'Sending...'
+                                    : 'Email Invoice'}
+                            </AlertDialogAction>
+                        </AlertDialogFooter>
+                    </AlertDialogContent>
+                </AlertDialog>
 
                 {/* Delete Modal */}
                 <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}>

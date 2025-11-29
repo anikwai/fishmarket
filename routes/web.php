@@ -16,6 +16,9 @@ use Inertia\Inertia;
 Route::get('s/purchases/{purchase}/invoice', [App\Http\Controllers\PurchaseController::class, 'printInvoice'])
     ->name('purchases.invoice.print')
     ->middleware('signed');
+Route::get('s/sales/{sale}/invoice', [App\Http\Controllers\SaleController::class, 'printInvoice'])
+    ->name('sales.invoice.print')
+    ->middleware('signed');
 
 Route::get('/', [SessionController::class, 'create'])->name('home');
 
@@ -27,6 +30,9 @@ Route::middleware(['auth', 'verified'])->group(function (): void {
     Route::resource('sales', App\Http\Controllers\SaleController::class)->except(['create', 'edit', 'show']);
     Route::get('sales/{sale}/receipt/download', [App\Http\Controllers\SaleController::class, 'downloadReceipt'])->name('sales.receipt.download');
     Route::post('sales/{sale}/receipt/email', [App\Http\Controllers\SaleController::class, 'sendReceiptEmail'])->name('sales.receipt.email');
+    Route::get('sales/{sale}/invoice/download', [App\Http\Controllers\SaleController::class, 'downloadInvoice'])->name('sales.invoice.download');
+    Route::get('sales/{sale}/invoice/link', [App\Http\Controllers\SaleController::class, 'generateInvoiceLink'])->name('sales.invoice.link');
+    Route::post('sales/{sale}/invoice/email', [App\Http\Controllers\SaleController::class, 'sendInvoiceEmail'])->name('sales.invoice.email');
 
     Route::resource('purchases', App\Http\Controllers\PurchaseController::class)->except(['create', 'edit', 'show']);
     Route::get('purchases/{purchase}/invoice/download', [App\Http\Controllers\PurchaseController::class, 'downloadInvoice'])->name('purchases.invoice.download');
