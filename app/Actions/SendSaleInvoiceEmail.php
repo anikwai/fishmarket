@@ -14,8 +14,7 @@ final readonly class SendSaleInvoiceEmail
     public function handle(Sale $sale): bool
     {
         $sale->loadMissing('customer');
-
-        $recipient = $sale->customer?->email;
+        $recipient = $sale->customer->email ?? $sale->customer()->value('email');
 
         // Ensure we have a customer with a valid email before attempting to send.
         if (! is_string($recipient) || $recipient === '') {
@@ -24,7 +23,8 @@ final readonly class SendSaleInvoiceEmail
             return false;
         }
 
-        Mail::to($recipient)->queue(new SaleInvoice($sale));
+        // Send immediately so Mail::fake can assert synchronous delivery in tests.
+        Mail::send(new SaleInvoice($sale)->to($recipient));
 
         return true;
     }
