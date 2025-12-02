@@ -199,10 +199,17 @@ final class ImportPurchaseDocuments extends Command
             return [null, null];
         }
 
-        Storage::disk($disk)->put($targetPath, $stream);
-        fclose($stream);
+        try {
+            $success = Storage::disk($disk)->put($targetPath, $stream);
 
-        return [$targetPath, $originalName];
+            if (! $success) {
+                return [null, null];
+            }
+
+            return [$targetPath, $originalName];
+        } finally {
+            fclose($stream);
+        }
     }
 
     private function nullableNumber(mixed $value): ?float
