@@ -560,7 +560,7 @@
                 <tbody>
                     @foreach($sale->items as $item)
                         <tr>
-                            <td><span class="item-name">{{ $item->purchase->description ?? $item->purchase->supplier->name ?? 'Seafood' }}</span></td>
+                            <td><span class="item-name">{{ $item->purchase?->description ?? $item->purchase?->supplier?->name ?? 'Seafood' }}</span></td>
                             <td class="text-right">{{ number_format($item->quantity_kg, 2) }} kg</td>
                             <td class="text-right">SBD {{ number_format($item->price_per_kg, 2) }}</td>
                             <td class="text-right amount">SBD {{ number_format($item->total_price, 2) }}</td>
