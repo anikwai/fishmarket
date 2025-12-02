@@ -190,7 +190,9 @@ final class ImportPurchaseDocuments extends Command
         }
 
         $originalName = basename($fullSource);
-        $targetPath = mb_rtrim($targetDir, '/').'/'.$originalName;
+        $extension = pathinfo($originalName, PATHINFO_EXTENSION);
+        $baseName = pathinfo($originalName, PATHINFO_FILENAME);
+        $targetPath = mb_rtrim($targetDir, '/').'/'.$baseName.'_'.Str::ulid().'.'.$extension;
 
         $stream = fopen($fullSource, 'r');
         if ($stream === false) {
