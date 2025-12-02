@@ -27,6 +27,17 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property-read float $total_revenue
  * @property-read float $sold_quantity
  * @property-read float $remaining_quantity
+ * @property-read string $receipt_number
+ * @property string|null $supplier_invoice_number
+ * @property CarbonInterface|null $supplier_invoice_date
+ * @property float|null $supplier_invoice_amount
+ * @property string|null $supplier_invoice_path
+ * @property string|null $supplier_invoice_original_name
+ * @property string|null $supplier_receipt_number
+ * @property CarbonInterface|null $supplier_receipt_date
+ * @property float|null $supplier_receipt_amount
+ * @property string|null $supplier_receipt_path
+ * @property string|null $supplier_receipt_original_name
  */
 final class Purchase extends Model
 {
@@ -40,7 +51,7 @@ final class Purchase extends Model
      *
      * @var list<string>
      */
-    protected $appends = ['profit', 'total_revenue', 'invoice_number'];
+    protected $appends = ['profit', 'total_revenue', 'receipt_number'];
 
     /**
      * @return array<string, string>
@@ -55,6 +66,16 @@ final class Purchase extends Model
             'price_per_kg' => 'decimal:2',
             'total_cost' => 'decimal:2',
             'notes' => 'string',
+            'supplier_invoice_number' => 'string',
+            'supplier_invoice_date' => 'date',
+            'supplier_invoice_amount' => 'decimal:2',
+            'supplier_invoice_path' => 'string',
+            'supplier_invoice_original_name' => 'string',
+            'supplier_receipt_number' => 'string',
+            'supplier_receipt_date' => 'date',
+            'supplier_receipt_amount' => 'decimal:2',
+            'supplier_receipt_path' => 'string',
+            'supplier_receipt_original_name' => 'string',
             'created_at' => 'datetime',
             'updated_at' => 'datetime',
         ];
@@ -106,9 +127,15 @@ final class Purchase extends Model
         });
     }
 
+    protected function getReceiptNumberAttribute(): string
+    {
+        return 'RCT-'.mb_str_pad((string) $this->id, 6, '0', STR_PAD_LEFT);
+    }
+
     protected function getInvoiceNumberAttribute(): string
     {
-        return 'INV-'.mb_str_pad((string) $this->id, 6, '0', STR_PAD_LEFT);
+        // Backward compatibility: map any invoice references to the receipt number.
+        return $this->receipt_number;
     }
 
     protected function getTotalExpensesAttribute(): float

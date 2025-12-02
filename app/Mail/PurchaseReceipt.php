@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Mail;
 
-use App\Actions\GeneratePurchaseInvoice;
+use App\Actions\GeneratePurchaseReceipt;
 use App\Models\Purchase;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
@@ -13,7 +13,7 @@ use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 
-final class PurchaseInvoice extends Mailable
+final class PurchaseReceipt extends Mailable
 {
     use Queueable, SerializesModels;
 
@@ -27,14 +27,14 @@ final class PurchaseInvoice extends Mailable
         $appName = config('app.name');
 
         return new Envelope(
-            subject: 'Invoice '.$this->purchase->invoice_number.' - '.$appName,
+            subject: 'Receipt '.$this->purchase->receipt_number.' - '.$appName,
         );
     }
 
     public function content(): Content
     {
         return new Content(
-            view: 'emails.purchase-invoice',
+            view: 'emails.purchase-receipt',
             with: [
                 'purchase' => $this->purchase,
             ],
@@ -48,10 +48,10 @@ final class PurchaseInvoice extends Mailable
     {
         return [
             Attachment::fromData(function (): string {
-                $pdf = app(GeneratePurchaseInvoice::class)->handle($this->purchase);
+                $pdf = app(GeneratePurchaseReceipt::class)->handle($this->purchase);
 
                 return $pdf->output();
-            }, $this->purchase->invoice_number.'.pdf')
+            }, $this->purchase->receipt_number.'.pdf')
                 ->withMime('application/pdf'),
         ];
     }
