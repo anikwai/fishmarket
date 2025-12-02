@@ -192,7 +192,7 @@ final class ImportPurchaseDocuments extends Command
         $originalName = basename($fullSource);
         $extension = pathinfo($originalName, PATHINFO_EXTENSION);
         $baseName = pathinfo($originalName, PATHINFO_FILENAME);
-        $targetPath = Str::rtrim($targetDir, '/').'/'.$baseName.'_'.Str::ulid().'.'.$extension;
+        $targetPath = Str::rtrim($targetDir, '/').'/'.$baseName.'_'.Str::ulid().($extension !== '' ? '.'.$extension : '');
 
         $stream = fopen($fullSource, 'r');
         if ($stream === false) {
