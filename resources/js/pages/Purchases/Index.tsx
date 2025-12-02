@@ -30,7 +30,6 @@ import {
     Field,
     FieldDescription,
     FieldError,
-    FieldGroup,
     FieldLabel,
 } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
@@ -38,6 +37,8 @@ import {
     Item,
     ItemContent,
     ItemDescription,
+    ItemGroup,
+    ItemHeader,
     ItemMedia,
     ItemTitle,
 } from '@/components/ui/item';
@@ -57,6 +58,7 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
+import { Textarea } from '@/components/ui/textarea';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Head, router, useForm } from '@inertiajs/react';
@@ -1089,475 +1091,554 @@ export default function PurchasesIndex({
                             </DialogDescription>
                         </DialogHeader>
                         <div className="flex-1 overflow-y-auto px-1">
-                            <FieldGroup className="gap-6">
-                                <Field
-                                    data-invalid={
-                                        !!createForm.errors.supplier_id
-                                    }
+                            <ItemGroup className="gap-4 p-1">
+                                <Item
+                                    variant="outline"
+                                    className="flex-col items-start gap-4 p-4"
                                 >
-                                    <div className="flex items-center justify-between">
-                                        <FieldLabel htmlFor="supplier_id">
-                                            Supplier *
-                                        </FieldLabel>
-                                        <Button
-                                            type="button"
-                                            variant="link"
-                                            size="sm"
-                                            className="h-auto p-0 text-xs"
-                                            onClick={() =>
-                                                setShowAddSupplier(true)
-                                            }
-                                        >
-                                            <PlusIcon className="mr-1 size-3" />
-                                            Add New Supplier
-                                        </Button>
-                                    </div>
-                                    <div className="relative">
-                                        <UserCircle className="absolute top-1/2 left-3 z-10 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                                        <Select
-                                            value={createForm.data.supplier_id}
-                                            onValueChange={(value) =>
-                                                createForm.setData(
-                                                    'supplier_id',
-                                                    value,
-                                                )
-                                            }
-                                        >
-                                            <SelectTrigger
-                                                id="supplier_id"
-                                                className="pl-9"
+                                    <ItemHeader>
+                                        <ItemTitle>
+                                            General Information
+                                        </ItemTitle>
+                                    </ItemHeader>
+                                    <ItemContent className="w-full gap-4">
+                                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                                            <Field
+                                                data-invalid={
+                                                    !!createForm.errors
+                                                        .supplier_id
+                                                }
                                             >
-                                                <SelectValue placeholder="Select supplier" />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                {suppliers &&
-                                                suppliers.length > 0 ? (
-                                                    suppliers.map(
-                                                        (supplier) => (
-                                                            <SelectItem
-                                                                key={
-                                                                    supplier.id
-                                                                }
-                                                                value={supplier.id.toString()}
-                                                            >
-                                                                {supplier.name}
-                                                            </SelectItem>
-                                                        ),
-                                                    )
-                                                ) : (
-                                                    <div className="px-2 py-1.5 text-sm text-muted-foreground">
-                                                        No suppliers found.
-                                                        Click "Add New Supplier"
-                                                        to create one.
-                                                    </div>
-                                                )}
-                                            </SelectContent>
-                                        </Select>
-                                    </div>
-                                    <FieldError>
-                                        {createForm.errors.supplier_id}
-                                    </FieldError>
-                                </Field>
-                                <Field
-                                    data-invalid={
-                                        !!createForm.errors.purchase_date
-                                    }
+                                                <div className="flex items-center justify-between">
+                                                    <FieldLabel htmlFor="supplier_id">
+                                                        Supplier *
+                                                    </FieldLabel>
+                                                    <Button
+                                                        type="button"
+                                                        variant="link"
+                                                        size="sm"
+                                                        className="h-auto p-0 text-xs"
+                                                        onClick={() =>
+                                                            setShowAddSupplier(
+                                                                true,
+                                                            )
+                                                        }
+                                                    >
+                                                        <PlusIcon className="mr-1 size-3" />
+                                                        Add New Supplier
+                                                    </Button>
+                                                </div>
+                                                <Select
+                                                    value={
+                                                        createForm.data
+                                                            .supplier_id
+                                                    }
+                                                    onValueChange={(value) =>
+                                                        createForm.setData(
+                                                            'supplier_id',
+                                                            value,
+                                                        )
+                                                    }
+                                                >
+                                                    <SelectTrigger id="supplier_id">
+                                                        <SelectValue placeholder="Select supplier" />
+                                                    </SelectTrigger>
+                                                    <SelectContent>
+                                                        {suppliers &&
+                                                        suppliers.length > 0 ? (
+                                                            suppliers.map(
+                                                                (supplier) => (
+                                                                    <SelectItem
+                                                                        key={
+                                                                            supplier.id
+                                                                        }
+                                                                        value={supplier.id.toString()}
+                                                                    >
+                                                                        {
+                                                                            supplier.name
+                                                                        }
+                                                                    </SelectItem>
+                                                                ),
+                                                            )
+                                                        ) : (
+                                                            <div className="px-2 py-1.5 text-sm text-muted-foreground">
+                                                                No suppliers
+                                                                found. Click
+                                                                "Add New
+                                                                Supplier" to
+                                                                create one.
+                                                            </div>
+                                                        )}
+                                                    </SelectContent>
+                                                </Select>
+                                                <FieldError>
+                                                    {
+                                                        createForm.errors
+                                                            .supplier_id
+                                                    }
+                                                </FieldError>
+                                            </Field>
+                                            <Field
+                                                data-invalid={
+                                                    !!createForm.errors
+                                                        .purchase_date
+                                                }
+                                            >
+                                                <FieldLabel htmlFor="purchase_date">
+                                                    Purchase Date *
+                                                </FieldLabel>
+                                                <div className="relative">
+                                                    <Calendar className="absolute top-1/2 left-3 z-10 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                                                    <DatePicker
+                                                        id="purchase_date"
+                                                        value={
+                                                            createForm.data
+                                                                .purchase_date
+                                                        }
+                                                        onChange={(value) =>
+                                                            createForm.setData(
+                                                                'purchase_date',
+                                                                value,
+                                                            )
+                                                        }
+                                                        placeholder="Select purchase date"
+                                                        className="pl-9"
+                                                    />
+                                                </div>
+                                                <FieldError>
+                                                    {
+                                                        createForm.errors
+                                                            .purchase_date
+                                                    }
+                                                </FieldError>
+                                            </Field>
+                                        </div>
+                                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                                            <Field
+                                                data-invalid={
+                                                    !!createForm.errors
+                                                        .quantity_kg
+                                                }
+                                            >
+                                                <FieldLabel htmlFor="quantity_kg">
+                                                    Quantity (kg) *
+                                                </FieldLabel>
+                                                <Input
+                                                    id="quantity_kg"
+                                                    type="number"
+                                                    step="0.01"
+                                                    value={
+                                                        createForm.data
+                                                            .quantity_kg
+                                                    }
+                                                    onChange={(e) =>
+                                                        createForm.setData(
+                                                            'quantity_kg',
+                                                            e.target.value,
+                                                        )
+                                                    }
+                                                    placeholder="0.00"
+                                                    autoFocus
+                                                />
+                                                <FieldError>
+                                                    {
+                                                        createForm.errors
+                                                            .quantity_kg
+                                                    }
+                                                </FieldError>
+                                            </Field>
+                                            <Field
+                                                data-invalid={
+                                                    !!createForm.errors
+                                                        .price_per_kg
+                                                }
+                                            >
+                                                <FieldLabel htmlFor="price_per_kg">
+                                                    Price per kg (SBD) *
+                                                </FieldLabel>
+                                                <Input
+                                                    id="price_per_kg"
+                                                    type="number"
+                                                    step="0.01"
+                                                    value={
+                                                        createForm.data
+                                                            .price_per_kg
+                                                    }
+                                                    onChange={(e) =>
+                                                        createForm.setData(
+                                                            'price_per_kg',
+                                                            e.target.value,
+                                                        )
+                                                    }
+                                                    placeholder="0.00"
+                                                />
+                                                <FieldError>
+                                                    {
+                                                        createForm.errors
+                                                            .price_per_kg
+                                                    }
+                                                </FieldError>
+                                            </Field>
+                                        </div>
+                                    </ItemContent>
+                                </Item>
+
+                                <Item
+                                    variant="outline"
+                                    className="flex-col items-start gap-4 p-4"
                                 >
-                                    <FieldLabel htmlFor="purchase_date">
-                                        Purchase Date *
-                                    </FieldLabel>
-                                    <div className="relative">
-                                        <Calendar className="absolute top-1/2 left-3 z-10 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                                        <DatePicker
-                                            id="purchase_date"
-                                            value={
-                                                createForm.data.purchase_date
+                                    <ItemHeader>
+                                        <ItemTitle>Product Details</ItemTitle>
+                                    </ItemHeader>
+                                    <ItemContent className="w-full gap-4">
+                                        <Field
+                                            data-invalid={
+                                                !!createForm.errors.description
                                             }
-                                            onChange={(value) =>
-                                                createForm.setData(
-                                                    'purchase_date',
-                                                    value,
-                                                )
-                                            }
-                                            placeholder="Select purchase date"
-                                            className="pl-9"
-                                        />
-                                    </div>
-                                    <FieldError>
-                                        {createForm.errors.purchase_date}
-                                    </FieldError>
-                                </Field>
-                                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                                    <Field
-                                        data-invalid={
-                                            !!createForm.errors.quantity_kg
-                                        }
-                                    >
-                                        <FieldLabel htmlFor="quantity_kg">
-                                            Quantity (kg) *
-                                        </FieldLabel>
-                                        <div className="relative">
-                                            <Package className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                                        >
+                                            <FieldLabel htmlFor="description">
+                                                Description
+                                            </FieldLabel>
                                             <Input
-                                                id="quantity_kg"
-                                                type="number"
-                                                step="0.01"
+                                                id="description"
                                                 value={
-                                                    createForm.data.quantity_kg
+                                                    createForm.data.description
                                                 }
                                                 onChange={(e) =>
                                                     createForm.setData(
-                                                        'quantity_kg',
+                                                        'description',
                                                         e.target.value,
                                                     )
                                                 }
-                                                className="pl-9"
-                                                placeholder="0.00"
-                                                autoFocus
+                                                placeholder="e.g., Yellow Fin Flakes"
                                             />
-                                        </div>
-                                        <FieldError>
-                                            {createForm.errors.quantity_kg}
-                                        </FieldError>
-                                    </Field>
-                                    <Field
-                                        data-invalid={
-                                            !!createForm.errors.price_per_kg
-                                        }
-                                    >
-                                        <FieldLabel htmlFor="price_per_kg">
-                                            Price per kg (SBD) *
-                                        </FieldLabel>
-                                        <div className="relative">
-                                            <DollarSign className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                                            <Input
-                                                id="price_per_kg"
-                                                type="number"
-                                                step="0.01"
-                                                value={
-                                                    createForm.data.price_per_kg
-                                                }
+                                            <FieldDescription>
+                                                Customer-facing product name
+                                                (e.g., "Yellow Fin Flakes")
+                                            </FieldDescription>
+                                            <FieldError>
+                                                {createForm.errors.description}
+                                            </FieldError>
+                                        </Field>
+                                        <Field
+                                            data-invalid={
+                                                !!createForm.errors.notes
+                                            }
+                                        >
+                                            <FieldLabel htmlFor="notes">
+                                                Notes
+                                            </FieldLabel>
+                                            <Textarea
+                                                id="notes"
+                                                value={createForm.data.notes}
                                                 onChange={(e) =>
                                                     createForm.setData(
-                                                        'price_per_kg',
+                                                        'notes',
                                                         e.target.value,
                                                     )
                                                 }
-                                                className="pl-9"
-                                                placeholder="0.00"
+                                                className="min-h-[80px]"
+                                                placeholder="Additional notes about this purchase..."
                                             />
-                                        </div>
-                                        <FieldError>
-                                            {createForm.errors.price_per_kg}
-                                        </FieldError>
-                                    </Field>
-                                </div>
-                                <Field
-                                    data-invalid={
-                                        !!createForm.errors.description
-                                    }
+                                            <FieldDescription>
+                                                Optional notes for internal
+                                                reference.
+                                            </FieldDescription>
+                                            <FieldError>
+                                                {createForm.errors.notes}
+                                            </FieldError>
+                                        </Field>
+                                    </ItemContent>
+                                </Item>
+
+                                <Item
+                                    variant="outline"
+                                    className="flex-col items-start gap-4 p-4"
                                 >
-                                    <FieldLabel htmlFor="description">
-                                        Description
-                                    </FieldLabel>
-                                    <div className="relative">
-                                        <FileText className="absolute top-3 left-3 h-4 w-4 text-muted-foreground" />
-                                        <Input
-                                            id="description"
-                                            value={createForm.data.description}
-                                            onChange={(e) =>
-                                                createForm.setData(
-                                                    'description',
-                                                    e.target.value,
-                                                )
-                                            }
-                                            className="pl-9"
-                                            placeholder="e.g., Yellow Fin Flakes"
-                                        />
-                                    </div>
-                                    <FieldDescription>
-                                        Customer-facing product name (e.g.,
-                                        "Yellow Fin Flakes")
-                                    </FieldDescription>
-                                    <FieldError>
-                                        {createForm.errors.description}
-                                    </FieldError>
-                                </Field>
-                                <Field data-invalid={!!createForm.errors.notes}>
-                                    <FieldLabel htmlFor="notes">
-                                        Notes
-                                    </FieldLabel>
-                                    <div className="relative">
-                                        <FileText className="absolute top-3 left-3 h-4 w-4 text-muted-foreground" />
-                                        <textarea
-                                            id="notes"
-                                            value={createForm.data.notes}
-                                            onChange={(e) =>
-                                                createForm.setData(
-                                                    'notes',
-                                                    e.target.value,
-                                                )
-                                            }
-                                            className="flex min-h-[80px] w-full rounded-md border border-input bg-transparent px-3 py-2 pl-9 text-sm"
-                                            placeholder="Additional notes about this purchase..."
-                                        />
-                                    </div>
-                                    <FieldDescription>
-                                        Optional notes for internal reference.
-                                    </FieldDescription>
-                                    <FieldError>
-                                        {createForm.errors.notes}
-                                    </FieldError>
-                                </Field>
-                                <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-                                    <Field
-                                        data-invalid={
-                                            !!createForm.errors
-                                                .supplier_invoice_number
-                                        }
-                                    >
-                                        <FieldLabel htmlFor="supplier_invoice_number">
-                                            Supplier Invoice #
-                                        </FieldLabel>
-                                        <Input
-                                            id="supplier_invoice_number"
-                                            value={
-                                                createForm.data
-                                                    .supplier_invoice_number
-                                            }
-                                            onChange={(e) =>
-                                                createForm.setData(
-                                                    'supplier_invoice_number',
-                                                    e.target.value,
-                                                )
-                                            }
-                                            placeholder="e.g., INV-1234"
-                                        />
-                                        <FieldError>
-                                            {
-                                                createForm.errors
-                                                    .supplier_invoice_number
-                                            }
-                                        </FieldError>
-                                    </Field>
-                                    <Field
-                                        data-invalid={
-                                            !!createForm.errors
-                                                .supplier_invoice_date
-                                        }
-                                    >
-                                        <FieldLabel htmlFor="supplier_invoice_date">
-                                            Supplier Invoice Date
-                                        </FieldLabel>
-                                        <Input
-                                            id="supplier_invoice_date"
-                                            type="date"
-                                            value={
-                                                createForm.data
-                                                    .supplier_invoice_date
-                                            }
-                                            onChange={(e) =>
-                                                createForm.setData(
-                                                    'supplier_invoice_date',
-                                                    e.target.value,
-                                                )
-                                            }
-                                        />
-                                        <FieldError>
-                                            {
-                                                createForm.errors
-                                                    .supplier_invoice_date
-                                            }
-                                        </FieldError>
-                                    </Field>
-                                    <Field
-                                        data-invalid={
-                                            !!createForm.errors
-                                                .supplier_invoice_amount
-                                        }
-                                    >
-                                        <FieldLabel htmlFor="supplier_invoice_amount">
-                                            Supplier Invoice Amount (SBD)
-                                        </FieldLabel>
-                                        <Input
-                                            id="supplier_invoice_amount"
-                                            type="number"
-                                            step="0.01"
-                                            value={
-                                                createForm.data
-                                                    .supplier_invoice_amount
-                                            }
-                                            onChange={(e) =>
-                                                createForm.setData(
-                                                    'supplier_invoice_amount',
-                                                    e.target.value,
-                                                )
-                                            }
-                                            placeholder="0.00"
-                                        />
-                                        <FieldError>
-                                            {
-                                                createForm.errors
-                                                    .supplier_invoice_amount
-                                            }
-                                        </FieldError>
-                                    </Field>
-                                    <Field
-                                        data-invalid={
-                                            !!createForm.errors
-                                                .supplier_invoice_file
-                                        }
-                                    >
-                                        <FieldLabel htmlFor="supplier_invoice_file">
-                                            Upload Supplier Invoice
-                                            (PDF/JPG/PNG)
-                                        </FieldLabel>
-                                        <Input
-                                            id="supplier_invoice_file"
-                                            type="file"
-                                            accept=".pdf,.jpg,.jpeg,.png"
-                                            onChange={(e) =>
-                                                createForm.setData(
-                                                    'supplier_invoice_file',
-                                                    e.target.files?.[0] ?? null,
-                                                )
-                                            }
-                                        />
-                                        <FieldDescription>
-                                            Optional; max 2MB.
-                                        </FieldDescription>
-                                        <FieldError>
-                                            {
-                                                createForm.errors
-                                                    .supplier_invoice_file
-                                            }
-                                        </FieldError>
-                                    </Field>
-                                    <Field
-                                        data-invalid={
-                                            !!createForm.errors
-                                                .supplier_receipt_number
-                                        }
-                                    >
-                                        <FieldLabel htmlFor="supplier_receipt_number">
-                                            Supplier Receipt #
-                                        </FieldLabel>
-                                        <Input
-                                            id="supplier_receipt_number"
-                                            value={
-                                                createForm.data
-                                                    .supplier_receipt_number
-                                            }
-                                            onChange={(e) =>
-                                                createForm.setData(
-                                                    'supplier_receipt_number',
-                                                    e.target.value,
-                                                )
-                                            }
-                                            placeholder="e.g., RCT-1234"
-                                        />
-                                        <FieldError>
-                                            {
-                                                createForm.errors
-                                                    .supplier_receipt_number
-                                            }
-                                        </FieldError>
-                                    </Field>
-                                    <Field
-                                        data-invalid={
-                                            !!createForm.errors
-                                                .supplier_receipt_date
-                                        }
-                                    >
-                                        <FieldLabel htmlFor="supplier_receipt_date">
-                                            Supplier Receipt Date
-                                        </FieldLabel>
-                                        <Input
-                                            id="supplier_receipt_date"
-                                            type="date"
-                                            value={
-                                                createForm.data
-                                                    .supplier_receipt_date
-                                            }
-                                            onChange={(e) =>
-                                                createForm.setData(
-                                                    'supplier_receipt_date',
-                                                    e.target.value,
-                                                )
-                                            }
-                                        />
-                                        <FieldError>
-                                            {
-                                                createForm.errors
-                                                    .supplier_receipt_date
-                                            }
-                                        </FieldError>
-                                    </Field>
-                                    <Field
-                                        data-invalid={
-                                            !!createForm.errors
-                                                .supplier_receipt_amount
-                                        }
-                                    >
-                                        <FieldLabel htmlFor="supplier_receipt_amount">
-                                            Supplier Receipt Amount (SBD)
-                                        </FieldLabel>
-                                        <Input
-                                            id="supplier_receipt_amount"
-                                            type="number"
-                                            step="0.01"
-                                            value={
-                                                createForm.data
-                                                    .supplier_receipt_amount
-                                            }
-                                            onChange={(e) =>
-                                                createForm.setData(
-                                                    'supplier_receipt_amount',
-                                                    e.target.value,
-                                                )
-                                            }
-                                            placeholder="0.00"
-                                        />
-                                        <FieldError>
-                                            {
-                                                createForm.errors
-                                                    .supplier_receipt_amount
-                                            }
-                                        </FieldError>
-                                    </Field>
-                                    <Field
-                                        data-invalid={
-                                            !!createForm.errors
-                                                .supplier_receipt_file
-                                        }
-                                    >
-                                        <FieldLabel htmlFor="supplier_receipt_file">
-                                            Upload Supplier Receipt
-                                            (PDF/JPG/PNG)
-                                        </FieldLabel>
-                                        <Input
-                                            id="supplier_receipt_file"
-                                            type="file"
-                                            accept=".pdf,.jpg,.jpeg,.png"
-                                            onChange={(e) =>
-                                                createForm.setData(
-                                                    'supplier_receipt_file',
-                                                    e.target.files?.[0] ?? null,
-                                                )
-                                            }
-                                        />
-                                        <FieldDescription>
-                                            Optional; max 2MB.
-                                        </FieldDescription>
-                                        <FieldError>
-                                            {
-                                                createForm.errors
-                                                    .supplier_receipt_file
-                                            }
-                                        </FieldError>
-                                    </Field>
-                                </div>
-                            </FieldGroup>
+                                    <ItemHeader>
+                                        <ItemTitle>Supplier Invoice</ItemTitle>
+                                        <ItemDescription>
+                                            Invoice details from the supplier.
+                                        </ItemDescription>
+                                    </ItemHeader>
+                                    <ItemContent className="w-full gap-4">
+                                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                                            <Field
+                                                data-invalid={
+                                                    !!createForm.errors
+                                                        .supplier_invoice_number
+                                                }
+                                            >
+                                                <FieldLabel htmlFor="supplier_invoice_number">
+                                                    Supplier Invoice #
+                                                </FieldLabel>
+                                                <Input
+                                                    id="supplier_invoice_number"
+                                                    value={
+                                                        createForm.data
+                                                            .supplier_invoice_number
+                                                    }
+                                                    onChange={(e) =>
+                                                        createForm.setData(
+                                                            'supplier_invoice_number',
+                                                            e.target.value,
+                                                        )
+                                                    }
+                                                    placeholder="e.g., INV-1234"
+                                                />
+                                                <FieldError>
+                                                    {
+                                                        createForm.errors
+                                                            .supplier_invoice_number
+                                                    }
+                                                </FieldError>
+                                            </Field>
+                                            <Field
+                                                data-invalid={
+                                                    !!createForm.errors
+                                                        .supplier_invoice_date
+                                                }
+                                            >
+                                                <FieldLabel htmlFor="supplier_invoice_date">
+                                                    Supplier Invoice Date
+                                                </FieldLabel>
+                                                <DatePicker
+                                                    id="supplier_invoice_date"
+                                                    value={
+                                                        createForm.data
+                                                            .supplier_invoice_date
+                                                    }
+                                                    onChange={(value) =>
+                                                        createForm.setData(
+                                                            'supplier_invoice_date',
+                                                            value,
+                                                        )
+                                                    }
+                                                    placeholder="Select date"
+                                                />
+                                                <FieldError>
+                                                    {
+                                                        createForm.errors
+                                                            .supplier_invoice_date
+                                                    }
+                                                </FieldError>
+                                            </Field>
+                                        </div>
+                                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                                            <Field
+                                                data-invalid={
+                                                    !!createForm.errors
+                                                        .supplier_invoice_amount
+                                                }
+                                            >
+                                                <FieldLabel htmlFor="supplier_invoice_amount">
+                                                    Supplier Invoice Amount
+                                                    (SBD)
+                                                </FieldLabel>
+                                                <Input
+                                                    id="supplier_invoice_amount"
+                                                    type="number"
+                                                    step="0.01"
+                                                    value={
+                                                        createForm.data
+                                                            .supplier_invoice_amount
+                                                    }
+                                                    onChange={(e) =>
+                                                        createForm.setData(
+                                                            'supplier_invoice_amount',
+                                                            e.target.value,
+                                                        )
+                                                    }
+                                                    placeholder="0.00"
+                                                />
+                                                <FieldError>
+                                                    {
+                                                        createForm.errors
+                                                            .supplier_invoice_amount
+                                                    }
+                                                </FieldError>
+                                            </Field>
+                                            <Field
+                                                data-invalid={
+                                                    !!createForm.errors
+                                                        .supplier_invoice_file
+                                                }
+                                            >
+                                                <FieldLabel htmlFor="supplier_invoice_file">
+                                                    Upload Supplier Invoice
+                                                    (PDF/JPG/PNG)
+                                                </FieldLabel>
+                                                <Input
+                                                    id="supplier_invoice_file"
+                                                    type="file"
+                                                    accept=".pdf,.jpg,.jpeg,.png"
+                                                    onChange={(e) =>
+                                                        createForm.setData(
+                                                            'supplier_invoice_file',
+                                                            e.target
+                                                                .files?.[0] ??
+                                                                null,
+                                                        )
+                                                    }
+                                                />
+                                                <FieldDescription>
+                                                    Optional; max 2MB.
+                                                </FieldDescription>
+                                                <FieldError>
+                                                    {
+                                                        createForm.errors
+                                                            .supplier_invoice_file
+                                                    }
+                                                </FieldError>
+                                            </Field>
+                                        </div>
+                                    </ItemContent>
+                                </Item>
+
+                                <Item
+                                    variant="outline"
+                                    className="flex-col items-start gap-4 p-4"
+                                >
+                                    <ItemHeader>
+                                        <ItemTitle>Supplier Receipt</ItemTitle>
+                                        <ItemDescription>
+                                            Receipt details from the supplier.
+                                        </ItemDescription>
+                                    </ItemHeader>
+                                    <ItemContent className="w-full gap-4">
+                                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                                            <Field
+                                                data-invalid={
+                                                    !!createForm.errors
+                                                        .supplier_receipt_number
+                                                }
+                                            >
+                                                <FieldLabel htmlFor="supplier_receipt_number">
+                                                    Supplier Receipt #
+                                                </FieldLabel>
+                                                <Input
+                                                    id="supplier_receipt_number"
+                                                    value={
+                                                        createForm.data
+                                                            .supplier_receipt_number
+                                                    }
+                                                    onChange={(e) =>
+                                                        createForm.setData(
+                                                            'supplier_receipt_number',
+                                                            e.target.value,
+                                                        )
+                                                    }
+                                                    placeholder="e.g., RCT-1234"
+                                                />
+                                                <FieldError>
+                                                    {
+                                                        createForm.errors
+                                                            .supplier_receipt_number
+                                                    }
+                                                </FieldError>
+                                            </Field>
+                                            <Field
+                                                data-invalid={
+                                                    !!createForm.errors
+                                                        .supplier_receipt_date
+                                                }
+                                            >
+                                                <FieldLabel htmlFor="supplier_receipt_date">
+                                                    Supplier Receipt Date
+                                                </FieldLabel>
+                                                <DatePicker
+                                                    id="supplier_receipt_date"
+                                                    value={
+                                                        createForm.data
+                                                            .supplier_receipt_date
+                                                    }
+                                                    onChange={(value) =>
+                                                        createForm.setData(
+                                                            'supplier_receipt_date',
+                                                            value,
+                                                        )
+                                                    }
+                                                    placeholder="Select date"
+                                                />
+                                                <FieldError>
+                                                    {
+                                                        createForm.errors
+                                                            .supplier_receipt_date
+                                                    }
+                                                </FieldError>
+                                            </Field>
+                                        </div>
+                                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                                            <Field
+                                                data-invalid={
+                                                    !!createForm.errors
+                                                        .supplier_receipt_amount
+                                                }
+                                            >
+                                                <FieldLabel htmlFor="supplier_receipt_amount">
+                                                    Supplier Receipt Amount
+                                                    (SBD)
+                                                </FieldLabel>
+                                                <Input
+                                                    id="supplier_receipt_amount"
+                                                    type="number"
+                                                    step="0.01"
+                                                    value={
+                                                        createForm.data
+                                                            .supplier_receipt_amount
+                                                    }
+                                                    onChange={(e) =>
+                                                        createForm.setData(
+                                                            'supplier_receipt_amount',
+                                                            e.target.value,
+                                                        )
+                                                    }
+                                                    placeholder="0.00"
+                                                />
+                                                <FieldError>
+                                                    {
+                                                        createForm.errors
+                                                            .supplier_receipt_amount
+                                                    }
+                                                </FieldError>
+                                            </Field>
+                                            <Field
+                                                data-invalid={
+                                                    !!createForm.errors
+                                                        .supplier_receipt_file
+                                                }
+                                            >
+                                                <FieldLabel htmlFor="supplier_receipt_file">
+                                                    Upload Supplier Receipt
+                                                    (PDF/JPG/PNG)
+                                                </FieldLabel>
+                                                <Input
+                                                    id="supplier_receipt_file"
+                                                    type="file"
+                                                    accept=".pdf,.jpg,.jpeg,.png"
+                                                    onChange={(e) =>
+                                                        createForm.setData(
+                                                            'supplier_receipt_file',
+                                                            e.target
+                                                                .files?.[0] ??
+                                                                null,
+                                                        )
+                                                    }
+                                                />
+                                                <FieldDescription>
+                                                    Optional; max 2MB.
+                                                </FieldDescription>
+                                                <FieldError>
+                                                    {
+                                                        createForm.errors
+                                                            .supplier_receipt_file
+                                                    }
+                                                </FieldError>
+                                            </Field>
+                                        </div>
+                                    </ItemContent>
+                                </Item>
+                            </ItemGroup>
                         </div>
                         <DialogFooter className="flex-shrink-0 border-t pt-4">
                             <Button
@@ -1597,482 +1678,558 @@ export default function PurchasesIndex({
                             </DialogDescription>
                         </DialogHeader>
                         <div className="flex-1 overflow-y-auto px-1">
-                            <FieldGroup className="gap-6">
-                                <Field
-                                    data-invalid={!!editForm.errors.supplier_id}
-                                >
-                                    <FieldLabel htmlFor="edit-supplier_id">
-                                        Supplier *
-                                    </FieldLabel>
-                                    <div className="relative">
-                                        <UserCircle className="absolute top-1/2 left-3 z-10 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                                        <Select
-                                            value={editForm.data.supplier_id}
-                                            onValueChange={(value) =>
-                                                editForm.setData(
-                                                    'supplier_id',
-                                                    value,
-                                                )
+                            <ItemGroup>
+                                <Item>
+                                    <ItemHeader>
+                                        <ItemTitle>
+                                            General Information
+                                        </ItemTitle>
+                                        <ItemDescription>
+                                            Basic details about the purchase.
+                                        </ItemDescription>
+                                    </ItemHeader>
+                                    <ItemContent>
+                                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                                            <Field
+                                                data-invalid={
+                                                    !!editForm.errors
+                                                        .supplier_id
+                                                }
+                                            >
+                                                <FieldLabel htmlFor="edit-supplier_id">
+                                                    Supplier *
+                                                </FieldLabel>
+                                                <Select
+                                                    value={
+                                                        editForm.data
+                                                            .supplier_id
+                                                    }
+                                                    onValueChange={(value) =>
+                                                        editForm.setData(
+                                                            'supplier_id',
+                                                            value,
+                                                        )
+                                                    }
+                                                >
+                                                    <SelectTrigger id="edit-supplier_id">
+                                                        <SelectValue placeholder="Select supplier" />
+                                                    </SelectTrigger>
+                                                    <SelectContent>
+                                                        {suppliers &&
+                                                        suppliers.length > 0
+                                                            ? suppliers.map(
+                                                                  (
+                                                                      supplier,
+                                                                  ) => (
+                                                                      <SelectItem
+                                                                          key={
+                                                                              supplier.id
+                                                                          }
+                                                                          value={supplier.id.toString()}
+                                                                      >
+                                                                          {
+                                                                              supplier.name
+                                                                          }
+                                                                      </SelectItem>
+                                                                  ),
+                                                              )
+                                                            : null}
+                                                    </SelectContent>
+                                                </Select>
+                                                <FieldError>
+                                                    {
+                                                        editForm.errors
+                                                            .supplier_id
+                                                    }
+                                                </FieldError>
+                                            </Field>
+                                            <Field
+                                                data-invalid={
+                                                    !!editForm.errors
+                                                        .purchase_date
+                                                }
+                                            >
+                                                <FieldLabel htmlFor="edit-purchase_date">
+                                                    Purchase Date *
+                                                </FieldLabel>
+                                                <DatePicker
+                                                    id="edit-purchase_date"
+                                                    value={
+                                                        editForm.data
+                                                            .purchase_date
+                                                    }
+                                                    onChange={(value) =>
+                                                        editForm.setData(
+                                                            'purchase_date',
+                                                            value,
+                                                        )
+                                                    }
+                                                    placeholder="Select purchase date"
+                                                />
+                                                <FieldError>
+                                                    {
+                                                        editForm.errors
+                                                            .purchase_date
+                                                    }
+                                                </FieldError>
+                                            </Field>
+                                        </div>
+                                    </ItemContent>
+                                </Item>
+
+                                <Item>
+                                    <ItemHeader>
+                                        <ItemTitle>Product Details</ItemTitle>
+                                        <ItemDescription>
+                                            Information about the product being
+                                            purchased.
+                                        </ItemDescription>
+                                    </ItemHeader>
+                                    <ItemContent>
+                                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                                            <Field
+                                                data-invalid={
+                                                    !!editForm.errors
+                                                        .quantity_kg
+                                                }
+                                            >
+                                                <FieldLabel htmlFor="edit-quantity_kg">
+                                                    Quantity (kg) *
+                                                </FieldLabel>
+                                                <Input
+                                                    id="edit-quantity_kg"
+                                                    type="number"
+                                                    step="0.01"
+                                                    value={
+                                                        editForm.data
+                                                            .quantity_kg
+                                                    }
+                                                    onChange={(e) =>
+                                                        editForm.setData(
+                                                            'quantity_kg',
+                                                            e.target.value,
+                                                        )
+                                                    }
+                                                    placeholder="0.00"
+                                                />
+                                                <FieldError>
+                                                    {
+                                                        editForm.errors
+                                                            .quantity_kg
+                                                    }
+                                                </FieldError>
+                                            </Field>
+                                            <Field
+                                                data-invalid={
+                                                    !!editForm.errors
+                                                        .price_per_kg
+                                                }
+                                            >
+                                                <FieldLabel htmlFor="edit-price_per_kg">
+                                                    Price per kg (SBD) *
+                                                </FieldLabel>
+                                                <Input
+                                                    id="edit-price_per_kg"
+                                                    type="number"
+                                                    step="0.01"
+                                                    value={
+                                                        editForm.data
+                                                            .price_per_kg
+                                                    }
+                                                    onChange={(e) =>
+                                                        editForm.setData(
+                                                            'price_per_kg',
+                                                            e.target.value,
+                                                        )
+                                                    }
+                                                    placeholder="0.00"
+                                                />
+                                                <FieldError>
+                                                    {
+                                                        editForm.errors
+                                                            .price_per_kg
+                                                    }
+                                                </FieldError>
+                                            </Field>
+                                        </div>
+                                        <Field
+                                            data-invalid={
+                                                !!editForm.errors.description
                                             }
                                         >
-                                            <SelectTrigger
-                                                id="edit-supplier_id"
-                                                className="pl-9"
+                                            <FieldLabel htmlFor="edit-description">
+                                                Description
+                                            </FieldLabel>
+                                            <Input
+                                                id="edit-description"
+                                                value={
+                                                    editForm.data.description
+                                                }
+                                                onChange={(e) =>
+                                                    editForm.setData(
+                                                        'description',
+                                                        e.target.value,
+                                                    )
+                                                }
+                                                placeholder="e.g., Yellow Fin Flakes"
+                                            />
+                                            <FieldDescription>
+                                                Customer-facing product name
+                                                (e.g., "Yellow Fin Flakes")
+                                            </FieldDescription>
+                                            <FieldError>
+                                                {editForm.errors.description}
+                                            </FieldError>
+                                        </Field>
+                                        <Field
+                                            data-invalid={
+                                                !!editForm.errors.notes
+                                            }
+                                        >
+                                            <FieldLabel htmlFor="edit-notes">
+                                                Notes
+                                            </FieldLabel>
+                                            <Textarea
+                                                id="edit-notes"
+                                                value={editForm.data.notes}
+                                                onChange={(e) =>
+                                                    editForm.setData(
+                                                        'notes',
+                                                        e.target.value,
+                                                    )
+                                                }
+                                                className="min-h-[80px]"
+                                                placeholder="Additional notes about this purchase..."
+                                            />
+                                            <FieldDescription>
+                                                Optional notes for internal
+                                                reference.
+                                            </FieldDescription>
+                                            <FieldError>
+                                                {editForm.errors.notes}
+                                            </FieldError>
+                                        </Field>
+                                    </ItemContent>
+                                </Item>
+
+                                <Item>
+                                    <ItemHeader>
+                                        <ItemTitle>Supplier Invoice</ItemTitle>
+                                        <ItemDescription>
+                                            Details regarding the supplier's
+                                            invoice.
+                                        </ItemDescription>
+                                    </ItemHeader>
+                                    <ItemContent>
+                                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                                            <Field
+                                                data-invalid={
+                                                    !!editForm.errors
+                                                        .supplier_invoice_number
+                                                }
                                             >
-                                                <SelectValue placeholder="Select supplier" />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                {suppliers &&
-                                                suppliers.length > 0
-                                                    ? suppliers.map(
-                                                          (supplier) => (
-                                                              <SelectItem
-                                                                  key={
-                                                                      supplier.id
-                                                                  }
-                                                                  value={supplier.id.toString()}
-                                                              >
-                                                                  {
-                                                                      supplier.name
-                                                                  }
-                                                              </SelectItem>
-                                                          ),
-                                                      )
-                                                    : null}
-                                            </SelectContent>
-                                        </Select>
-                                    </div>
-                                    <FieldError>
-                                        {editForm.errors.supplier_id}
-                                    </FieldError>
-                                </Field>
-                                <Field
-                                    data-invalid={
-                                        !!editForm.errors.purchase_date
-                                    }
-                                >
-                                    <FieldLabel htmlFor="edit-purchase_date">
-                                        Purchase Date *
-                                    </FieldLabel>
-                                    <div className="relative">
-                                        <Calendar className="absolute top-1/2 left-3 z-10 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                                        <DatePicker
-                                            id="edit-purchase_date"
-                                            value={editForm.data.purchase_date}
-                                            onChange={(value) =>
-                                                editForm.setData(
-                                                    'purchase_date',
-                                                    value,
-                                                )
-                                            }
-                                            placeholder="Select purchase date"
-                                            className="pl-9"
-                                        />
-                                    </div>
-                                    <FieldError>
-                                        {editForm.errors.purchase_date}
-                                    </FieldError>
-                                </Field>
-                                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                                    <Field
-                                        data-invalid={
-                                            !!editForm.errors.quantity_kg
-                                        }
-                                    >
-                                        <FieldLabel htmlFor="edit-quantity_kg">
-                                            Quantity (kg) *
-                                        </FieldLabel>
-                                        <div className="relative">
-                                            <Package className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                                            <Input
-                                                id="edit-quantity_kg"
-                                                type="number"
-                                                step="0.01"
-                                                value={
-                                                    editForm.data.quantity_kg
-                                                }
-                                                onChange={(e) =>
-                                                    editForm.setData(
-                                                        'quantity_kg',
-                                                        e.target.value,
-                                                    )
-                                                }
-                                                className="pl-9"
-                                                placeholder="0.00"
-                                            />
-                                        </div>
-                                        <FieldError>
-                                            {editForm.errors.quantity_kg}
-                                        </FieldError>
-                                    </Field>
-                                    <Field
-                                        data-invalid={
-                                            !!editForm.errors.price_per_kg
-                                        }
-                                    >
-                                        <FieldLabel htmlFor="edit-price_per_kg">
-                                            Price per kg (SBD) *
-                                        </FieldLabel>
-                                        <div className="relative">
-                                            <DollarSign className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                                            <Input
-                                                id="edit-price_per_kg"
-                                                type="number"
-                                                step="0.01"
-                                                value={
-                                                    editForm.data.price_per_kg
-                                                }
-                                                onChange={(e) =>
-                                                    editForm.setData(
-                                                        'price_per_kg',
-                                                        e.target.value,
-                                                    )
-                                                }
-                                                className="pl-9"
-                                                placeholder="0.00"
-                                            />
-                                        </div>
-                                        <FieldError>
-                                            {editForm.errors.price_per_kg}
-                                        </FieldError>
-                                    </Field>
-                                </div>
-                                <Field
-                                    data-invalid={!!editForm.errors.description}
-                                >
-                                    <FieldLabel htmlFor="edit-description">
-                                        Description
-                                    </FieldLabel>
-                                    <div className="relative">
-                                        <FileText className="absolute top-3 left-3 h-4 w-4 text-muted-foreground" />
-                                        <Input
-                                            id="edit-description"
-                                            value={editForm.data.description}
-                                            onChange={(e) =>
-                                                editForm.setData(
-                                                    'description',
-                                                    e.target.value,
-                                                )
-                                            }
-                                            className="pl-9"
-                                            placeholder="e.g., Yellow Fin Flakes"
-                                        />
-                                    </div>
-                                    <FieldDescription>
-                                        Customer-facing product name (e.g.,
-                                        "Yellow Fin Flakes")
-                                    </FieldDescription>
-                                    <FieldError>
-                                        {editForm.errors.description}
-                                    </FieldError>
-                                </Field>
-                                <Field data-invalid={!!editForm.errors.notes}>
-                                    <FieldLabel htmlFor="edit-notes">
-                                        Notes
-                                    </FieldLabel>
-                                    <div className="relative">
-                                        <FileText className="absolute top-3 left-3 h-4 w-4 text-muted-foreground" />
-                                        <textarea
-                                            id="edit-notes"
-                                            value={editForm.data.notes}
-                                            onChange={(e) =>
-                                                editForm.setData(
-                                                    'notes',
-                                                    e.target.value,
-                                                )
-                                            }
-                                            className="flex min-h-[80px] w-full rounded-md border border-input bg-transparent px-3 py-2 pl-9 text-sm"
-                                            placeholder="Additional notes about this purchase..."
-                                        />
-                                    </div>
-                                    <FieldDescription>
-                                        Optional notes for internal reference.
-                                    </FieldDescription>
-                                    <FieldError>
-                                        {editForm.errors.notes}
-                                    </FieldError>
-                                </Field>
-                                <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-                                    <Field
-                                        data-invalid={
-                                            !!editForm.errors
-                                                .supplier_invoice_number
-                                        }
-                                    >
-                                        <FieldLabel htmlFor="edit-supplier_invoice_number">
-                                            Supplier Invoice #
-                                        </FieldLabel>
-                                        <Input
-                                            id="edit-supplier_invoice_number"
-                                            value={
-                                                editForm.data
-                                                    .supplier_invoice_number
-                                            }
-                                            onChange={(e) =>
-                                                editForm.setData(
-                                                    'supplier_invoice_number',
-                                                    e.target.value,
-                                                )
-                                            }
-                                            placeholder="e.g., INV-1234"
-                                        />
-                                        {selectedPurchase?.supplier_invoice_original_name && (
-                                            <FieldDescription>
-                                                Current file:{' '}
-                                                <a
-                                                    className="text-primary underline"
-                                                    href={`/storage/${selectedPurchase.supplier_invoice_path}`}
-                                                    target="_blank"
-                                                    rel="noreferrer"
-                                                >
-                                                    {
-                                                        selectedPurchase.supplier_invoice_original_name
+                                                <FieldLabel htmlFor="edit-supplier_invoice_number">
+                                                    Supplier Invoice #
+                                                </FieldLabel>
+                                                <Input
+                                                    id="edit-supplier_invoice_number"
+                                                    value={
+                                                        editForm.data
+                                                            .supplier_invoice_number
                                                     }
-                                                </a>
-                                            </FieldDescription>
-                                        )}
-                                        <FieldError>
-                                            {
-                                                editForm.errors
-                                                    .supplier_invoice_number
-                                            }
-                                        </FieldError>
-                                    </Field>
-                                    <Field
-                                        data-invalid={
-                                            !!editForm.errors
-                                                .supplier_invoice_date
-                                        }
-                                    >
-                                        <FieldLabel htmlFor="edit-supplier_invoice_date">
-                                            Supplier Invoice Date
-                                        </FieldLabel>
-                                        <Input
-                                            id="edit-supplier_invoice_date"
-                                            type="date"
-                                            value={
-                                                editForm.data
-                                                    .supplier_invoice_date
-                                            }
-                                            onChange={(e) =>
-                                                editForm.setData(
-                                                    'supplier_invoice_date',
-                                                    e.target.value,
-                                                )
-                                            }
-                                        />
-                                        <FieldError>
-                                            {
-                                                editForm.errors
-                                                    .supplier_invoice_date
-                                            }
-                                        </FieldError>
-                                    </Field>
-                                    <Field
-                                        data-invalid={
-                                            !!editForm.errors
-                                                .supplier_invoice_amount
-                                        }
-                                    >
-                                        <FieldLabel htmlFor="edit-supplier_invoice_amount">
-                                            Supplier Invoice Amount (SBD)
-                                        </FieldLabel>
-                                        <Input
-                                            id="edit-supplier_invoice_amount"
-                                            type="number"
-                                            step="0.01"
-                                            value={
-                                                editForm.data
-                                                    .supplier_invoice_amount
-                                            }
-                                            onChange={(e) =>
-                                                editForm.setData(
-                                                    'supplier_invoice_amount',
-                                                    e.target.value,
-                                                )
-                                            }
-                                            placeholder="0.00"
-                                        />
-                                        <FieldError>
-                                            {
-                                                editForm.errors
-                                                    .supplier_invoice_amount
-                                            }
-                                        </FieldError>
-                                    </Field>
-                                    <Field
-                                        data-invalid={
-                                            !!editForm.errors
-                                                .supplier_invoice_file
-                                        }
-                                    >
-                                        <FieldLabel htmlFor="edit-supplier_invoice_file">
-                                            Upload Supplier Invoice
-                                            (PDF/JPG/PNG)
-                                        </FieldLabel>
-                                        <Input
-                                            id="edit-supplier_invoice_file"
-                                            type="file"
-                                            accept=".pdf,.jpg,.jpeg,.png"
-                                            onChange={(e) =>
-                                                editForm.setData(
-                                                    'supplier_invoice_file',
-                                                    e.target.files?.[0] ?? null,
-                                                )
-                                            }
-                                        />
-                                        <FieldDescription>
-                                            Upload to replace the current file
-                                            (optional, max 2MB).
-                                        </FieldDescription>
-                                        <FieldError>
-                                            {
-                                                editForm.errors
-                                                    .supplier_invoice_file
-                                            }
-                                        </FieldError>
-                                    </Field>
-                                    <Field
-                                        data-invalid={
-                                            !!editForm.errors
-                                                .supplier_receipt_number
-                                        }
-                                    >
-                                        <FieldLabel htmlFor="edit-supplier_receipt_number">
-                                            Supplier Receipt #
-                                        </FieldLabel>
-                                        <Input
-                                            id="edit-supplier_receipt_number"
-                                            value={
-                                                editForm.data
-                                                    .supplier_receipt_number
-                                            }
-                                            onChange={(e) =>
-                                                editForm.setData(
-                                                    'supplier_receipt_number',
-                                                    e.target.value,
-                                                )
-                                            }
-                                            placeholder="e.g., RCT-1234"
-                                        />
-                                        {selectedPurchase?.supplier_receipt_original_name && (
-                                            <FieldDescription>
-                                                Current file:{' '}
-                                                <a
-                                                    className="text-primary underline"
-                                                    href={`/storage/${selectedPurchase.supplier_receipt_path}`}
-                                                    target="_blank"
-                                                    rel="noreferrer"
-                                                >
-                                                    {
-                                                        selectedPurchase.supplier_receipt_original_name
+                                                    onChange={(e) =>
+                                                        editForm.setData(
+                                                            'supplier_invoice_number',
+                                                            e.target.value,
+                                                        )
                                                     }
-                                                </a>
-                                            </FieldDescription>
-                                        )}
-                                        <FieldError>
-                                            {
-                                                editForm.errors
-                                                    .supplier_receipt_number
-                                            }
-                                        </FieldError>
-                                    </Field>
-                                    <Field
-                                        data-invalid={
-                                            !!editForm.errors
-                                                .supplier_receipt_date
-                                        }
-                                    >
-                                        <FieldLabel htmlFor="edit-supplier_receipt_date">
-                                            Supplier Receipt Date
-                                        </FieldLabel>
-                                        <Input
-                                            id="edit-supplier_receipt_date"
-                                            type="date"
-                                            value={
-                                                editForm.data
-                                                    .supplier_receipt_date
-                                            }
-                                            onChange={(e) =>
-                                                editForm.setData(
-                                                    'supplier_receipt_date',
-                                                    e.target.value,
-                                                )
-                                            }
-                                        />
-                                        <FieldError>
-                                            {
-                                                editForm.errors
-                                                    .supplier_receipt_date
-                                            }
-                                        </FieldError>
-                                    </Field>
-                                    <Field
-                                        data-invalid={
-                                            !!editForm.errors
-                                                .supplier_receipt_amount
-                                        }
-                                    >
-                                        <FieldLabel htmlFor="edit-supplier_receipt_amount">
-                                            Supplier Receipt Amount (SBD)
-                                        </FieldLabel>
-                                        <Input
-                                            id="edit-supplier_receipt_amount"
-                                            type="number"
-                                            step="0.01"
-                                            value={
-                                                editForm.data
-                                                    .supplier_receipt_amount
-                                            }
-                                            onChange={(e) =>
-                                                editForm.setData(
-                                                    'supplier_receipt_amount',
-                                                    e.target.value,
-                                                )
-                                            }
-                                            placeholder="0.00"
-                                        />
-                                        <FieldError>
-                                            {
-                                                editForm.errors
-                                                    .supplier_receipt_amount
-                                            }
-                                        </FieldError>
-                                    </Field>
-                                    <Field
-                                        data-invalid={
-                                            !!editForm.errors
-                                                .supplier_receipt_file
-                                        }
-                                    >
-                                        <FieldLabel htmlFor="edit-supplier_receipt_file">
-                                            Upload Supplier Receipt
-                                            (PDF/JPG/PNG)
-                                        </FieldLabel>
-                                        <Input
-                                            id="edit-supplier_receipt_file"
-                                            type="file"
-                                            accept=".pdf,.jpg,.jpeg,.png"
-                                            onChange={(e) =>
-                                                editForm.setData(
-                                                    'supplier_receipt_file',
-                                                    e.target.files?.[0] ?? null,
-                                                )
-                                            }
-                                        />
-                                        <FieldDescription>
-                                            Upload to replace the current file
-                                            (optional, max 2MB).
-                                        </FieldDescription>
-                                        <FieldError>
-                                            {
-                                                editForm.errors
-                                                    .supplier_receipt_file
-                                            }
-                                        </FieldError>
-                                    </Field>
-                                </div>
-                            </FieldGroup>
+                                                    placeholder="e.g., INV-1234"
+                                                />
+                                                {selectedPurchase?.supplier_invoice_original_name && (
+                                                    <FieldDescription>
+                                                        Current file:{' '}
+                                                        <a
+                                                            className="text-primary underline"
+                                                            href={`/storage/${selectedPurchase.supplier_invoice_path}`}
+                                                            target="_blank"
+                                                            rel="noreferrer"
+                                                        >
+                                                            {
+                                                                selectedPurchase.supplier_invoice_original_name
+                                                            }
+                                                        </a>
+                                                    </FieldDescription>
+                                                )}
+                                                <FieldError>
+                                                    {
+                                                        editForm.errors
+                                                            .supplier_invoice_number
+                                                    }
+                                                </FieldError>
+                                            </Field>
+                                            <Field
+                                                data-invalid={
+                                                    !!editForm.errors
+                                                        .supplier_invoice_date
+                                                }
+                                            >
+                                                <FieldLabel htmlFor="edit-supplier_invoice_date">
+                                                    Supplier Invoice Date
+                                                </FieldLabel>
+                                                <DatePicker
+                                                    id="edit-supplier_invoice_date"
+                                                    value={
+                                                        editForm.data
+                                                            .supplier_invoice_date
+                                                    }
+                                                    onChange={(value) =>
+                                                        editForm.setData(
+                                                            'supplier_invoice_date',
+                                                            value,
+                                                        )
+                                                    }
+                                                    placeholder="Select date"
+                                                />
+                                                <FieldError>
+                                                    {
+                                                        editForm.errors
+                                                            .supplier_invoice_date
+                                                    }
+                                                </FieldError>
+                                            </Field>
+                                        </div>
+                                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                                            <Field
+                                                data-invalid={
+                                                    !!editForm.errors
+                                                        .supplier_invoice_amount
+                                                }
+                                            >
+                                                <FieldLabel htmlFor="edit-supplier_invoice_amount">
+                                                    Supplier Invoice Amount
+                                                    (SBD)
+                                                </FieldLabel>
+                                                <Input
+                                                    id="edit-supplier_invoice_amount"
+                                                    type="number"
+                                                    step="0.01"
+                                                    value={
+                                                        editForm.data
+                                                            .supplier_invoice_amount
+                                                    }
+                                                    onChange={(e) =>
+                                                        editForm.setData(
+                                                            'supplier_invoice_amount',
+                                                            e.target.value,
+                                                        )
+                                                    }
+                                                    placeholder="0.00"
+                                                />
+                                                <FieldError>
+                                                    {
+                                                        editForm.errors
+                                                            .supplier_invoice_amount
+                                                    }
+                                                </FieldError>
+                                            </Field>
+                                            <Field
+                                                data-invalid={
+                                                    !!editForm.errors
+                                                        .supplier_invoice_file
+                                                }
+                                            >
+                                                <FieldLabel htmlFor="edit-supplier_invoice_file">
+                                                    Upload Supplier Invoice
+                                                    (PDF/JPG/PNG)
+                                                </FieldLabel>
+                                                <Input
+                                                    id="edit-supplier_invoice_file"
+                                                    type="file"
+                                                    accept=".pdf,.jpg,.jpeg,.png"
+                                                    onChange={(e) =>
+                                                        editForm.setData(
+                                                            'supplier_invoice_file',
+                                                            e.target
+                                                                .files?.[0] ??
+                                                                null,
+                                                        )
+                                                    }
+                                                />
+                                                <FieldDescription>
+                                                    Upload to replace the
+                                                    current file (optional, max
+                                                    2MB).
+                                                </FieldDescription>
+                                                <FieldError>
+                                                    {
+                                                        editForm.errors
+                                                            .supplier_invoice_file
+                                                    }
+                                                </FieldError>
+                                            </Field>
+                                        </div>
+                                    </ItemContent>
+                                </Item>
+
+                                <Item>
+                                    <ItemHeader>
+                                        <ItemTitle>Supplier Receipt</ItemTitle>
+                                        <ItemDescription>
+                                            Details regarding the supplier's
+                                            receipt.
+                                        </ItemDescription>
+                                    </ItemHeader>
+                                    <ItemContent>
+                                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                                            <Field
+                                                data-invalid={
+                                                    !!editForm.errors
+                                                        .supplier_receipt_number
+                                                }
+                                            >
+                                                <FieldLabel htmlFor="edit-supplier_receipt_number">
+                                                    Supplier Receipt #
+                                                </FieldLabel>
+                                                <Input
+                                                    id="edit-supplier_receipt_number"
+                                                    value={
+                                                        editForm.data
+                                                            .supplier_receipt_number
+                                                    }
+                                                    onChange={(e) =>
+                                                        editForm.setData(
+                                                            'supplier_receipt_number',
+                                                            e.target.value,
+                                                        )
+                                                    }
+                                                    placeholder="e.g., RCT-1234"
+                                                />
+                                                {selectedPurchase?.supplier_receipt_original_name && (
+                                                    <FieldDescription>
+                                                        Current file:{' '}
+                                                        <a
+                                                            className="text-primary underline"
+                                                            href={`/storage/${selectedPurchase.supplier_receipt_path}`}
+                                                            target="_blank"
+                                                            rel="noreferrer"
+                                                        >
+                                                            {
+                                                                selectedPurchase.supplier_receipt_original_name
+                                                            }
+                                                        </a>
+                                                    </FieldDescription>
+                                                )}
+                                                <FieldError>
+                                                    {
+                                                        editForm.errors
+                                                            .supplier_receipt_number
+                                                    }
+                                                </FieldError>
+                                            </Field>
+                                            <Field
+                                                data-invalid={
+                                                    !!editForm.errors
+                                                        .supplier_receipt_date
+                                                }
+                                            >
+                                                <FieldLabel htmlFor="edit-supplier_receipt_date">
+                                                    Supplier Receipt Date
+                                                </FieldLabel>
+                                                <DatePicker
+                                                    id="edit-supplier_receipt_date"
+                                                    value={
+                                                        editForm.data
+                                                            .supplier_receipt_date
+                                                    }
+                                                    onChange={(value) =>
+                                                        editForm.setData(
+                                                            'supplier_receipt_date',
+                                                            value,
+                                                        )
+                                                    }
+                                                    placeholder="Select date"
+                                                />
+                                                <FieldError>
+                                                    {
+                                                        editForm.errors
+                                                            .supplier_receipt_date
+                                                    }
+                                                </FieldError>
+                                            </Field>
+                                        </div>
+                                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                                            <Field
+                                                data-invalid={
+                                                    !!editForm.errors
+                                                        .supplier_receipt_amount
+                                                }
+                                            >
+                                                <FieldLabel htmlFor="edit-supplier_receipt_amount">
+                                                    Supplier Receipt Amount
+                                                    (SBD)
+                                                </FieldLabel>
+                                                <Input
+                                                    id="edit-supplier_receipt_amount"
+                                                    type="number"
+                                                    step="0.01"
+                                                    value={
+                                                        editForm.data
+                                                            .supplier_receipt_amount
+                                                    }
+                                                    onChange={(e) =>
+                                                        editForm.setData(
+                                                            'supplier_receipt_amount',
+                                                            e.target.value,
+                                                        )
+                                                    }
+                                                    placeholder="0.00"
+                                                />
+                                                <FieldError>
+                                                    {
+                                                        editForm.errors
+                                                            .supplier_receipt_amount
+                                                    }
+                                                </FieldError>
+                                            </Field>
+                                            <Field
+                                                data-invalid={
+                                                    !!editForm.errors
+                                                        .supplier_receipt_file
+                                                }
+                                            >
+                                                <FieldLabel htmlFor="edit-supplier_receipt_file">
+                                                    Upload Supplier Receipt
+                                                    (PDF/JPG/PNG)
+                                                </FieldLabel>
+                                                <Input
+                                                    id="edit-supplier_receipt_file"
+                                                    type="file"
+                                                    accept=".pdf,.jpg,.jpeg,.png"
+                                                    onChange={(e) =>
+                                                        editForm.setData(
+                                                            'supplier_receipt_file',
+                                                            e.target
+                                                                .files?.[0] ??
+                                                                null,
+                                                        )
+                                                    }
+                                                />
+                                                <FieldDescription>
+                                                    Upload to replace the
+                                                    current file (optional, max
+                                                    2MB).
+                                                </FieldDescription>
+                                                <FieldError>
+                                                    {
+                                                        editForm.errors
+                                                            .supplier_receipt_file
+                                                    }
+                                                </FieldError>
+                                            </Field>
+                                        </div>
+                                    </ItemContent>
+                                </Item>
+                            </ItemGroup>
                         </div>
                         <DialogFooter className="flex-shrink-0 border-t pt-4">
                             <Button
@@ -2467,71 +2624,80 @@ export default function PurchasesIndex({
                                 Create a new supplier to use in purchases.
                             </DialogDescription>
                         </DialogHeader>
-                        <div className="space-y-4">
-                            <div>
-                                <Label htmlFor="supplier-name">Name *</Label>
-                                <Input
-                                    id="supplier-name"
-                                    value={supplierForm.data.name}
-                                    onChange={(e) =>
-                                        supplierForm.setData(
-                                            'name',
-                                            e.target.value,
-                                        )
-                                    }
-                                    className="mt-1"
-                                />
-                                {supplierForm.errors.name && (
-                                    <p className="mt-1 text-sm text-destructive">
-                                        {supplierForm.errors.name}
-                                    </p>
-                                )}
-                            </div>
-                            <div>
-                                <Label htmlFor="supplier-phone">Phone</Label>
-                                <Input
-                                    id="supplier-phone"
-                                    value={supplierForm.data.phone}
-                                    onChange={(e) =>
-                                        supplierForm.setData(
-                                            'phone',
-                                            e.target.value,
-                                        )
-                                    }
-                                    className="mt-1"
-                                />
-                            </div>
-                            <div>
-                                <Label htmlFor="supplier-address">
-                                    Address
-                                </Label>
-                                <Input
-                                    id="supplier-address"
-                                    value={supplierForm.data.address}
-                                    onChange={(e) =>
-                                        supplierForm.setData(
-                                            'address',
-                                            e.target.value,
-                                        )
-                                    }
-                                    className="mt-1"
-                                />
-                            </div>
-                            <div>
-                                <Label htmlFor="supplier-notes">Notes</Label>
-                                <textarea
-                                    id="supplier-notes"
-                                    value={supplierForm.data.notes}
-                                    onChange={(e) =>
-                                        supplierForm.setData(
-                                            'notes',
-                                            e.target.value,
-                                        )
-                                    }
-                                    className="mt-1 flex min-h-[80px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm"
-                                />
-                            </div>
-                        </div>
+                        <ItemGroup>
+                            <Item>
+                                <ItemContent>
+                                    <Field
+                                        data-invalid={
+                                            !!supplierForm.errors.name
+                                        }
+                                    >
+                                        <FieldLabel htmlFor="supplier-name">
+                                            Name *
+                                        </FieldLabel>
+                                        <Input
+                                            id="supplier-name"
+                                            value={supplierForm.data.name}
+                                            onChange={(e) =>
+                                                supplierForm.setData(
+                                                    'name',
+                                                    e.target.value,
+                                                )
+                                            }
+                                        />
+                                        <FieldError>
+                                            {supplierForm.errors.name}
+                                        </FieldError>
+                                    </Field>
+                                    <Field>
+                                        <FieldLabel htmlFor="supplier-phone">
+                                            Phone
+                                        </FieldLabel>
+                                        <Input
+                                            id="supplier-phone"
+                                            value={supplierForm.data.phone}
+                                            onChange={(e) =>
+                                                supplierForm.setData(
+                                                    'phone',
+                                                    e.target.value,
+                                                )
+                                            }
+                                        />
+                                    </Field>
+                                    <Field>
+                                        <FieldLabel htmlFor="supplier-address">
+                                            Address
+                                        </FieldLabel>
+                                        <Input
+                                            id="supplier-address"
+                                            value={supplierForm.data.address}
+                                            onChange={(e) =>
+                                                supplierForm.setData(
+                                                    'address',
+                                                    e.target.value,
+                                                )
+                                            }
+                                        />
+                                    </Field>
+                                    <Field>
+                                        <FieldLabel htmlFor="supplier-notes">
+                                            Notes
+                                        </FieldLabel>
+                                        <Textarea
+                                            id="supplier-notes"
+                                            value={supplierForm.data.notes}
+                                            onChange={(e) =>
+                                                supplierForm.setData(
+                                                    'notes',
+                                                    e.target.value,
+                                                )
+                                            }
+                                            className="min-h-[80px]"
+                                        />
+                                    </Field>
+                                </ItemContent>
+                            </Item>
+                        </ItemGroup>
                         <DialogFooter>
                             <Button
                                 variant="outline"
