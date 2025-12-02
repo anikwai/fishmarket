@@ -8,6 +8,7 @@ use App\Models\Purchase;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use RuntimeException;
 
 final class ImportPurchaseDocuments extends Command
 {
@@ -146,10 +147,35 @@ final class ImportPurchaseDocuments extends Command
 
     private function resolvePath(string $path): string
     {
-        if (Str::startsWith($path, ['/', '~'])) {
+        // Handle tilde expansion for home directory
+        if (Str::startsWith($path, '~')) {
+            $home = getenv('HOME') ?: ($_SERVER['HOME'] ?? null);
+
+            throw_if(! is_string($home) || $home === '', RuntimeException::class, 'Cannot expand ~ in path: HOME environment variable is not set.');
+
+            // Remove trailing slash from home directory to avoid duplicates
+            $home = mb_rtrim($home, '/');
+
+            // Replace leading ~ with home directory
+            if ($path === '~') {
+                return $home;
+            }
+
+            // Replace ~/ with home directory
+            if (Str::startsWith($path, '~/')) {
+                return $home.mb_substr($path, 1);
+            }
+
+            // ~username is not supported
+            throw new RuntimeException("Unsupported tilde syntax: '{$path}'. Only '~' or '~/' is supported.");
+        }
+
+        // Already absolute path
+        if (Str::startsWith($path, '/')) {
             return $path;
         }
 
+        // Relative path, resolve relative to project base
         return base_path($path);
     }
 
