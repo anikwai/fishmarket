@@ -5,6 +5,7 @@ declare(strict_types=1);
 use Rector\Caching\ValueObject\Storage\FileCacheStorage;
 use Rector\Config\RectorConfig;
 use Rector\Php83\Rector\ClassMethod\AddOverrideAttributeToOverriddenMethodsRector;
+use RectorLaravel\Rector\ArrayDimFetch\ServerVariableToRequestFacadeRector;
 use RectorLaravel\Set\LaravelSetList;
 use RectorLaravel\Set\LaravelSetProvider;
 
@@ -38,6 +39,10 @@ return RectorConfig::configure()
     ])
     ->withSkip([
         AddOverrideAttributeToOverriddenMethodsRector::class,
+        // Skip Request facade for console commands - $_SERVER is appropriate in CLI context
+        ServerVariableToRequestFacadeRector::class => [
+            __DIR__.'/app/Console',
+        ],
     ])
     ->withPreparedSets(
         deadCode: true,
