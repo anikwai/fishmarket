@@ -154,7 +154,7 @@ final class ImportPurchaseDocuments extends Command
             throw_if(! is_string($home) || $home === '', RuntimeException::class, 'Cannot expand ~ in path: HOME environment variable is not set.');
 
             // Remove trailing slash from home directory to avoid duplicates
-            $home = mb_rtrim($home, '/');
+            $home = Str::rtrim($home, '/');
 
             // Replace leading ~ with home directory
             if ($path === '~') {
@@ -192,7 +192,7 @@ final class ImportPurchaseDocuments extends Command
         $originalName = basename($fullSource);
         $extension = pathinfo($originalName, PATHINFO_EXTENSION);
         $baseName = pathinfo($originalName, PATHINFO_FILENAME);
-        $targetPath = mb_rtrim($targetDir, '/').'/'.$baseName.'_'.Str::ulid().'.'.$extension;
+        $targetPath = Str::rtrim($targetDir, '/').'/'.$baseName.'_'.Str::ulid().'.'.$extension;
 
         $stream = fopen($fullSource, 'r');
         if ($stream === false) {
