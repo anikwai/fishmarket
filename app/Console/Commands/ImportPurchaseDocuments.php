@@ -37,6 +37,12 @@ final class ImportPurchaseDocuments extends Command
             return self::FAILURE;
         }
 
+        if (! is_readable($fullCsvPath)) {
+            $this->error("CSV is not readable (check permissions): {$fullCsvPath}");
+
+            return self::FAILURE;
+        }
+
         $rows = $this->readCsv($fullCsvPath);
         if (count($rows) === 0) {
             $this->warn('No rows found in CSV.');
