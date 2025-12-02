@@ -124,7 +124,7 @@ final class ImportPurchaseDocuments extends Command
         $headers = [];
         while (($data = fgetcsv($handle, 0, ',', escape: '\\')) !== false) {
             if ($headers === []) {
-                $headers = array_map(static fn ($header) => Str::snake(mb_trim((string) $header)), $data);
+                $headers = array_map(static fn ($header) => Str::snake(Str::trim((string) $header)), $data);
 
                 continue;
             }
