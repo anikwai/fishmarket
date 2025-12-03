@@ -8,7 +8,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Receipt {{ $receiptNumber }}</title>
-    @include('pdf.partials.styles', ['headerColor' => '#e91e63'])
+    @include('pdf.partials.styles', ['headerColor' => '#1e88e5'])
     <style>
         /* Receipt-specific payment boxes */
         .payment-confirmation {
@@ -140,7 +140,7 @@
                 'subtotal' => $sale->subtotal,
                 'deliveryFee' => $sale->delivery_fee ?? 0,
                 'total' => $sale->total_amount,
-                'showDelivery' => true,
+                'showDelivery' => ($sale->delivery_fee ?? 0) > 0,
             ]])
 
             @include('pdf.partials.notes', ['notes' => $sale->notes])
