@@ -15,6 +15,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 /**
  * @property-read int $id
  * @property-read int $supplier_id
+ * @property string|null $description
  * @property-read CarbonInterface $purchase_date
  * @property-read float $quantity_kg
  * @property-read float $price_per_kg
@@ -61,6 +62,7 @@ final class Purchase extends Model
         return [
             'id' => 'integer',
             'supplier_id' => 'integer',
+            'description' => 'string',
             'purchase_date' => 'date',
             'quantity_kg' => 'decimal:2',
             'price_per_kg' => 'decimal:2',
