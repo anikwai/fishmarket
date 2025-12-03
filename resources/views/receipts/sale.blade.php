@@ -83,10 +83,12 @@
 
                 $rightSection = [
                     'title' => 'Transaction Details',
-                    'content' => '<strong>Receipt #' . str_pad((string) $sale->id, 6, '0', STR_PAD_LEFT) . '</strong><br>' .
-                                'Order Type: ' . ($sale->is_delivery ? 'Delivery' : 'Pickup') . '<br>' .
-                                'Payment: ' . ($sale->is_credit ? 'Credit Terms' : 'Immediate') . '<br>' .
-                                'Date: ' . $sale->sale_date->format('M d, Y'),
+                    'items' => [
+                        ['label' => 'Receipt #', 'value' => $receiptNumber],
+                        ['label' => 'Sale Date', 'value' => $sale->sale_date->format('F d, Y')],
+                        ['label' => 'Order Type', 'value' => $sale->is_delivery ? 'Delivery' : 'Pickup'],
+                        ['label' => 'Payment', 'value' => $sale->is_credit ? 'Credit Terms' : 'Paid at Sale'],
+                    ]
                 ];
             @endphp
 

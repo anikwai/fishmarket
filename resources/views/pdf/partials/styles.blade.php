@@ -25,7 +25,7 @@
 
     /* Add page margins for proper spacing on all pages */
     @page {
-        margin: 50px 30px 30px 30px;
+        margin: 120px 30px 30px 30px;
     }
 
     /* First page has no top margin (header takes care of it) */
@@ -132,8 +132,8 @@
     .footer::before {
         content: '';
         display: block;
-        height: 50px;
-        margin-bottom: -50px;
+        height: 80px;
+        margin-bottom: -80px;
     }
 
     /* Remove extra spacing from first element */
@@ -448,7 +448,7 @@
         }
 
         @page {
-            margin: 50px 30px 30px 30px;
+            margin: 120px 30px 30px 30px;
         }
 
         @page :first {
