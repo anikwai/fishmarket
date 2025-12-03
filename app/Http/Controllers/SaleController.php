@@ -172,15 +172,13 @@ final readonly class SaleController
         return back()->with('success', 'Sale deleted successfully.');
     }
 
-    public function downloadReceipt(Sale $sale, GenerateReceipt $action): HttpResponse|RedirectResponse
+    public function downloadReceipt(Sale $sale, GenerateReceipt $action): HttpResponse
     {
         Gate::authorize('download sales receipts');
 
         $receipt = $sale->activeReceipt ?? $sale->receipts()->latest()->first();
 
-        if (! $receipt instanceof \App\Models\Receipt) {
-            return back()->with('error', 'No receipt found for this sale.');
-        }
+        abort_unless($receipt instanceof \App\Models\Receipt, 404, 'No receipt found for this sale.');
 
         $pdf = $action->handle($receipt);
         $filename = $receipt->receipt_number.'.pdf';
