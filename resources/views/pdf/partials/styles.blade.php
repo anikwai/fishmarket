@@ -14,7 +14,7 @@
     }
 
     body {
-        font-family: 'Outfit', sans-serif;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
         color: #1a1625; /* foreground */
         background: #fcfcfd; /* background */
         padding: 0;
@@ -223,8 +223,6 @@
     .info-content strong {
         font-size: 12px;
         font-weight: 600;
-        display: block;
-        margin-bottom: 4px;
         color: #1a1625; /* foreground */
     }
 
@@ -297,7 +295,7 @@
     }
 
     .item-code {
-        font-family: 'Fira Code', monospace;
+        font-family: 'Courier New', Courier, monospace;
         font-size: 9.6px;
         color: #71717a; /* muted-foreground */
         font-weight: 500;
