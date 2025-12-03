@@ -678,6 +678,7 @@ export default function SalesIndex({
                         {row.getValue('id')}
                     </div>
                 ),
+                enableHiding: false,
             },
             {
                 accessorKey: 'sale_date',
